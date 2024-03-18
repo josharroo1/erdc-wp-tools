@@ -11,6 +11,12 @@ function cac_auth_custom_fields_section_callback() {
 // Render custom registration fields
 function cac_auth_render_custom_fields() {
     $custom_fields = get_option('cac_auth_registration_fields', array());
+
+    // Check if $custom_fields is an array, if not, convert it to an empty array
+    if (!is_array($custom_fields)) {
+        $custom_fields = array();
+    }
+
     ?>
     <table class="cac-auth-custom-fields">
         <thead>
@@ -22,7 +28,7 @@ function cac_auth_render_custom_fields() {
         <tbody>
             <?php foreach ($custom_fields as $field_id => $field_label) : ?>
                 <tr>
-                    <td><input type="text" name="cac_auth_registration_fields[<?php echo $field_id; ?>]" value="<?php echo esc_attr($field_label); ?>"></td>
+                    <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>]" value="<?php echo esc_attr($field_label); ?>"></td>
                     <td><button type="button" class="button button-secondary cac-auth-remove-field">Remove</button></td>
                 </tr>
             <?php endforeach; ?>
@@ -42,7 +48,7 @@ function cac_auth_save_custom_fields($options) {
                 $custom_fields[$field_id] = $field_label;
             }
         }
-        $options['cac_auth_registration_fields'] = $custom_fields;
+        $options = $custom_fields;
     }
     return $options;
 }
