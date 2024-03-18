@@ -34,10 +34,10 @@ function cac_render_registration_form() {
     $custom_fields = get_option('cac_auth_registration_fields', array());
 
     foreach ($custom_fields as $field_id => $field_data) {
-        $field_label = $field_data['label'];
-        $field_type = $field_data['type'];
-        $field_options = $field_data['options'];
-
+        $field_label = isset($field_data['label']) ? $field_data['label'] : '';
+        $field_type = isset($field_data['type']) ? $field_data['type'] : 'text';
+        $field_options = isset($field_data['options']) ? $field_data['options'] : '';
+    
         switch ($field_type) {
             case 'text':
             case 'number':
@@ -56,13 +56,21 @@ function cac_render_registration_form() {
                     <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
                         <?php foreach ($options as $option) : ?>
                             <?php
-                            $option_parts = explode(':', $option);
+                            $option_parts = explode(':', $option, 2);
                             $option_key = trim($option_parts[0]);
                             $option_value = isset($option_parts[1]) ? trim($option_parts[1]) : $option_key;
                             ?>
                             <option value="<?php echo esc_attr($option_key); ?>"><?php echo esc_html($option_value); ?></option>
                         <?php endforeach; ?>
                     </select>
+                </div>
+                <?php
+                break;
+            default:
+                ?>
+                <div class="form-field">
+                    <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                    <input type="text" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
                 </div>
                 <?php
                 break;
