@@ -35,6 +35,7 @@ function cac_auth_render_settings_page() {
 // Register CAC Authentication settings
 function cac_auth_register_settings() {
     register_setting('cac_auth_settings', 'cac_auth_redirect_page');
+    register_setting('cac_auth_settings', 'cac_auth_registration_page');
 
     add_settings_section(
         'cac_auth_redirect_section',
@@ -58,7 +59,7 @@ function cac_auth_register_settings() {
         'cac-auth-settings',
         'cac_auth_redirect_section'
     );
-    
+
     add_settings_section(
         'cac_auth_custom_fields_section',
         'Custom Registration Fields',
@@ -86,7 +87,7 @@ function cac_auth_register_settings() {
         'cac-auth-settings'
     );
 }
-    add_action('admin_init', 'cac_auth_register_settings');
+add_action('admin_init', 'cac_auth_register_settings');
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
