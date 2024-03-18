@@ -77,6 +77,14 @@ function cac_auth_register_settings() {
     register_setting('cac_auth_settings', 'cac_auth_registration_fields', array(
         'sanitize_callback' => 'cac_auth_save_custom_fields',
     ));
+
+    // Usage Instructions section
+    add_settings_section(
+        'cac_auth_usage_section',
+        'Usage Instructions',
+        'cac_auth_usage_section_callback',
+        'cac-auth-settings'
+    );
 }
     add_action('admin_init', 'cac_auth_register_settings');
 
@@ -107,4 +115,13 @@ function cac_auth_registration_page_callback() {
         'option_none_value' => '0',
         'selected' => $selected_page,
     ));
+}
+
+function cac_auth_usage_section_callback() {
+    ?>
+    <p>To display the CAC registration form on a page or post, use the following shortcode:</p>
+    <code>[cac_registration]</code>
+    <p>Simply place this shortcode in the content of the desired page or post where you want the registration form to appear.</p>
+    <p>Users will be able to fill out the registration form, including any custom fields you have defined, and submit it to register using their CAC credentials.</p>
+    <?php
 }
