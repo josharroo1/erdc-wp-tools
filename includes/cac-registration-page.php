@@ -34,6 +34,9 @@ function cac_render_registration_form() {
             $custom_fields = get_option('cac_auth_registration_fields', array());
 
             foreach ($custom_fields as $field_id => $field_label) {
+                if (is_array($field_label)) {
+                    $field_label = implode(', ', $field_label);
+                }
                 ?>
                 <div class="form-field">
                     <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
