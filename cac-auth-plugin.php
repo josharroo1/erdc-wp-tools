@@ -4,7 +4,7 @@
  * Plugin URI: https://example.com/
  * Description: A WordPress plugin for CAC authentication and user synchronization.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Josh Arruda
  * Author URI: https://example.com/
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -27,7 +27,9 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 // Plugin update checker
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
-$updateChecker = Puc_v4_Factory::buildUpdateChecker(
+use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
+
+$updateChecker = PucFactory::buildUpdateChecker(
     'https://raw.githubusercontent.com/josharroo1/WP-DoD-CAC-User/main/cac-auth-plugin-update.json',
     __FILE__,
     'cac-auth-plugin'
