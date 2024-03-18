@@ -36,8 +36,8 @@ function cac_render_registration_form() {
             foreach ($custom_fields as $field_id => $field_label) {
                 ?>
                 <div class="form-field">
-                    <label for="cac_field_<?php echo $field_id; ?>"><?php echo $field_label; ?></label>
-                    <input type="text" name="cac_field_<?php echo $field_id; ?>" id="cac_field_<?php echo $field_id; ?>">
+                    <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                    <input type="text" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
                 </div>
                 <?php
             }
