@@ -1,0 +1,74 @@
+/* CAC Registration Form Styles */
+.cac-registration-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+}
+
+.cac-registration-form h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.cac-registration-form .form-field {
+    margin-bottom: 20px;
+}
+
+.cac-registration-form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.cac-registration-form input[type="text"],
+.cac-registration-form input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.cac-registration-form input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.cac-registration-form input[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+.cac-registration-error {
+    color: red;
+    margin-bottom: 10px;
+}
+
+/* Admin Settings Page Styles */
+.cac-auth-custom-fields {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.cac-auth-custom-fields th,
+.cac-auth-custom-fields td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #ccc;
+}
+
+.cac-auth-custom-fields input[type="text"] {
+    width: 100%;
+    padding: 5px;
+}
+
+.cac-auth-custom-fields .button {
+    margin-right: 5px;
+}

@@ -1,0 +1,8 @@
+{
+    "name": "CAC Authentication Plugin",
+    "version": "1.0.0",
+    "download_url": "https://github.com/josharroo1/WP-DoD-CAC-User/archive/main.zip",
+    "sections": {
+      "description": "A WordPress plugin for CAC authentication and user synchronization."
+    }
+  }
