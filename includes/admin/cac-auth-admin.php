@@ -2,6 +2,7 @@
 /**
  * CAC Authentication Admin Settings
  */
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
@@ -43,22 +44,41 @@ function cac_auth_register_settings() {
     );
 
     add_settings_field(
-        'cac_auth_redirect_page',
-        'Redirect Page',
-        'cac_auth_redirect_page_callback',
-        'cac-auth-settings',
-        'cac_auth_redirect_section'
-    );
-
-    add_settings_field(
         'cac_auth_registration_page',
         'Registration Page',
         'cac_auth_registration_page_callback',
         'cac-auth-settings',
         'cac_auth_redirect_section'
     );
+
+    add_settings_field(
+        'cac_auth_redirect_page',
+        'Redirect Page',
+        'cac_auth_redirect_page_callback',
+        'cac-auth-settings',
+        'cac_auth_redirect_section'
+    );
+    
+    add_settings_section(
+        'cac_auth_custom_fields_section',
+        'Custom Registration Fields',
+        'cac_auth_custom_fields_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_custom_fields',
+        'Custom Fields',
+        'cac_auth_render_custom_fields',
+        'cac-auth-settings',
+        'cac_auth_custom_fields_section'
+    );
+
+    register_setting('cac_auth_settings', 'cac_auth_registration_fields', array(
+        'sanitize_callback' => 'cac_auth_save_custom_fields',
+    ));
 }
-add_action('admin_init', 'cac_auth_register_settings');
+    add_action('admin_init', 'cac_auth_register_settings');
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
