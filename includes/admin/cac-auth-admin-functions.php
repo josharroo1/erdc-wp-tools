@@ -52,17 +52,10 @@ function cac_auth_render_custom_fields() {
 function cac_auth_save_custom_fields($options) {
     if (isset($_POST['cac_auth_registration_fields'])) {
         $custom_fields = array();
-        foreach ($_POST['cac_auth_registration_fields'] as $field_id => $field_data) {
-            $field_label = sanitize_text_field($field_data['label']);
-            $field_type = sanitize_text_field($field_data['type']);
-            $field_options = sanitize_text_field($field_data['options']);
-
+        foreach ($_POST['cac_auth_registration_fields'] as $field_id => $field_label) {
+            $field_label = sanitize_text_field($field_label);
             if (!empty($field_label)) {
-                $custom_fields[$field_id] = array(
-                    'label' => $field_label,
-                    'type' => $field_type,
-                    'options' => $field_options,
-                );
+                $custom_fields[$field_id] = $field_label;
             }
         }
         $options = $custom_fields;
