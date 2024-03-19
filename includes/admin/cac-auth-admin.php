@@ -76,6 +76,13 @@ function cac_auth_register_settings() {
         'cac_auth_custom_fields_section'
     );
 
+    add_settings_section(
+        'cac_auth_general_section',
+        'General Settings',
+        'cac_auth_general_section_callback',
+        'cac-auth-settings'
+    );
+
     add_settings_field(
         'cac_auth_enabled',
         'Enable CAC Authentication',
@@ -165,4 +172,9 @@ function cac_auth_fallback_action_callback() {
         <option value="block" <?php selected($fallback_action, 'block'); ?>>Block access for non-admins</option>
     </select>
     <?php
+}
+
+// General section callback
+function cac_auth_general_section_callback() {
+    echo '<p>Configure the general settings for CAC authentication.</p>';
 }
