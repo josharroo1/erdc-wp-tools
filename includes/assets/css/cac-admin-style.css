@@ -64,3 +64,19 @@ button.button.button-secondary.cac-auth-add-field {
     opacity: 0.5;
     pointer-events: none !important;
 }
+
+.wp-core-ui .notice.is-dismissible {
+    padding-right: 38px;
+    position: relative;
+    margin: 0 0 0 35px;
+    background: none;
+    color: white;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+}
+
+button.notice-dismiss::before {
+    color: white;
+    font: normal 13px / 21px dashicons;
+}
