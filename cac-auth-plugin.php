@@ -3,7 +3,7 @@
  * Plugin Name: CAC Authentication Plugin
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A WordPress plugin for CAC authentication and user synchronization.
- * Version: 2.2.0
+ * Version: 2.2.1
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * License: GPL-2.0+

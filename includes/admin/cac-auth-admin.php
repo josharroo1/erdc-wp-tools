@@ -37,6 +37,22 @@ function cac_auth_register_settings() {
     register_setting('cac_auth_settings', 'cac_auth_redirect_page');
     register_setting('cac_auth_settings', 'cac_auth_registration_page');
 
+    add_settings_field(
+        'cac_auth_enabled',
+        'Enable CAC Authentication',
+        'cac_auth_enabled_callback',
+        'cac-auth-settings',
+        'cac_auth_general_section'
+    );
+
+    add_settings_field(
+        'cac_auth_fallback_action',
+        'Fallback Action',
+        'cac_auth_fallback_action_callback',
+        'cac-auth-settings',
+        'cac_auth_general_section'
+    );
+
     add_settings_section(
         'cac_auth_redirect_section',
         'Redirection Settings',
@@ -118,11 +134,34 @@ function cac_auth_registration_page_callback() {
     ));
 }
 
+// CAC Registration Form usage callback
 function cac_auth_usage_section_callback() {
     ?>
     <p>To display the CAC registration form on a page or post, use the following shortcode:</p>
     <code>[cac_registration]</code>
     <p>Simply place this shortcode in the content of the desired page or post where you want the registration form to appear.</p>
     <p>Users will be able to fill out the registration form, including any custom fields you have defined, and submit it to register using their CAC credentials.</p>
+    <?php
+}
+
+// Enable CAC Authentication callback
+function cac_auth_enabled_callback() {
+    $enabled = get_option('cac_auth_enabled', 'yes');
+    ?>
+    <select name="cac_auth_enabled">
+        <option value="yes" <?php selected($enabled, 'yes'); ?>>Yes</option>
+        <option value="no" <?php selected($enabled, 'no'); ?>>No</option>
+    </select>
+    <?php
+}
+
+// Fallback Action callback
+function cac_auth_fallback_action_callback() {
+    $fallback_action = get_option('cac_auth_fallback_action', 'allow');
+    ?>
+    <select name="cac_auth_fallback_action">
+        <option value="allow" <?php selected($fallback_action, 'allow'); ?>>Allow access</option>
+        <option value="block" <?php selected($fallback_action, 'block'); ?>>Block access for non-admins</option>
+    </select>
     <?php
 }
