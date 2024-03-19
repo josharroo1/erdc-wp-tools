@@ -37,21 +37,6 @@ function cac_auth_register_settings() {
     register_setting('cac_auth_settings', 'cac_auth_redirect_page');
     register_setting('cac_auth_settings', 'cac_auth_registration_page');
 
-    add_settings_field(
-        'cac_auth_enabled',
-        'Enable CAC Authentication',
-        'cac_auth_enabled_callback',
-        'cac-auth-settings',
-        'cac_auth_general_section'
-    );
-
-    add_settings_field(
-        'cac_auth_fallback_action',
-        'Fallback Action',
-        'cac_auth_fallback_action_callback',
-        'cac-auth-settings',
-        'cac_auth_general_section'
-    );
 
     add_settings_section(
         'cac_auth_redirect_section',
@@ -89,6 +74,22 @@ function cac_auth_register_settings() {
         'cac_auth_render_custom_fields',
         'cac-auth-settings',
         'cac_auth_custom_fields_section'
+    );
+
+    add_settings_field(
+        'cac_auth_enabled',
+        'Enable CAC Authentication',
+        'cac_auth_enabled_callback',
+        'cac-auth-settings',
+        'cac_auth_general_section'
+    );
+
+    add_settings_field(
+        'cac_auth_fallback_action',
+        'Fallback Action',
+        'cac_auth_fallback_action_callback',
+        'cac-auth-settings',
+        'cac_auth_general_section'
     );
 
     register_setting('cac_auth_settings', 'cac_auth_registration_fields', array(
