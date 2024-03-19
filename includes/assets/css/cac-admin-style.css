@@ -59,3 +59,8 @@ button.button.button-secondary.cac-auth-add-field {
     height: 22px;
     width: 33px;
 }
+
+.disabled-style {
+    opacity: 0.5;
+    pointer-events: none !important;
+}

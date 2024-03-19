@@ -15,33 +15,29 @@ jQuery(document).ready(function($) {
     });
 });
 
-//disable the form if CAC auth turned off
+//Superficially disable the form if CAC auth turned off
 document.addEventListener('DOMContentLoaded', function() {
-    // Select the cac_auth_enabled dropdown
     var cacAuthEnabledSelect = document.querySelector('select[name="cac_auth_enabled"]');
 
-    // Add an event listener for when the value of the dropdown changes
     cacAuthEnabledSelect.addEventListener('change', function() {
-        // Check if the selected value is 'no'
         var isDisabled = this.value === 'no';
-
-        // Get all form elements
         var form = this.form;
         var formElements = form.elements;
 
-        // Loop through each form element
         for (var i = 0; i < formElements.length; i++) {
             var element = formElements[i];
-
-            // Skip disabling the cac_auth_enabled select itself and any submit buttons
             if (element !== cacAuthEnabledSelect && element.type !== 'submit') {
-                element.disabled = isDisabled;
+                // Add or remove the 'disabled-style' class
+                if (isDisabled) {
+                    element.classList.add('disabled-style');
+                } else {
+                    element.classList.remove('disabled-style');
+                }
             }
         }
     });
 
-    // Optionally, you may want to trigger the change event on page load
-    // in case the form is loaded with 'no' already selected
+    // Trigger the change event on page load
     var event = new Event('change');
     cacAuthEnabledSelect.dispatchEvent(event);
 });
