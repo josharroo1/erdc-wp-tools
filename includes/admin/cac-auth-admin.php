@@ -83,7 +83,7 @@ function cac_auth_register_settings() {
 
     add_settings_field(
         'cac_auth_redirect_page',
-        'Redirect Page',
+        'User Account Page',
         'cac_auth_redirect_page_callback',
         'cac-auth-settings',
         'cac_auth_redirect_section'
@@ -91,7 +91,7 @@ function cac_auth_register_settings() {
 
     add_settings_section(
         'cac_auth_custom_fields_section',
-        'Custom Registration Fields',
+        'CAC Registration Fields',
         'cac_auth_custom_fields_section_callback',
         'cac-auth-settings'
     );
@@ -107,7 +107,7 @@ function cac_auth_register_settings() {
     // Usage Instructions section
     add_settings_section(
         'cac_auth_usage_section',
-        'Usage Instructions',
+        'CAC Registration Form Instructions',
         'cac_auth_usage_section_callback',
         'cac-auth-settings'
     );
