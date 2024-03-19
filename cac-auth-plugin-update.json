@@ -1,6 +1,6 @@
 {
     "name": "WP CAC Block (DoD)",
-    "version": "2.2.6",
+    "version": "2.2.7",
     "download_url": "https://github.com/josharroo1/WP-DoD-CAC-User/archive/main.zip",
     "sections": {
       "description": "A WordPress plugin for CAC authentication and user synchronization."

@@ -9,8 +9,9 @@
 
 .cac-registration-form h2 {
     margin-top: 0;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: center;
+    font-weight: 700;
 }
 
 .cac-registration-form .form-field {
@@ -71,4 +72,12 @@
 
 .cac-auth-custom-fields .button {
     margin-right: 5px;
+}
+
+.form-subtitle {
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 20px;
+    text-align: center;
 }

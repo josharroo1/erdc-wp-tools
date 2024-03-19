@@ -1,0 +1,19 @@
+table.form-table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin: 20px 0;
+    border: 20px solid #fff;
+    background: white;
+}
+
+table.cac-auth-custom-fields td {
+    background: #ececec;
+    padding: 10px;
+    border: 1px solid #ececec;
+    border-radius: 3px;
+}
+
+table.cac-auth-custom-fields input {
+    min-height: 39px;
+    border: none;
+}

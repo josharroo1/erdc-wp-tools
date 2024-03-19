@@ -7,8 +7,8 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php'
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
     add_options_page(
-        'CAC Authentication Settings',
-        'CAC Authentication',
+        'WP CAC Block Settings',
+        'WP CAC Block',
         'manage_options',
         'cac-auth-settings',
         'cac_auth_render_settings_page'
