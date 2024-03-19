@@ -1,7 +1,6 @@
 h1 {
     font-weight: 700 !important;
-    padding: 20px !important;
-    background: #1e3740;
+    padding: 0px !important;
     color: white;
     text-transform: uppercase;
 }
@@ -42,4 +41,19 @@ table.cac-auth-custom-fields input {
 
 button.button.button-secondary.cac-auth-add-field {
     margin-top: 15px;
+}
+
+.settings-header {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+    background: #1e3740;
+    padding: 15px;
+}
+
+.settings-header svg {
+    fill: white;
+    height: 31px;
+    width: 45px;
 }
