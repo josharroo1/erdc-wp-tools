@@ -52,7 +52,7 @@ function cac_auth_register_settings() {
 
     add_settings_field(
         'cac_auth_enabled',
-        'Enable CAC Sync to WordPress?',
+        'Enable WP CAC Sync?',
         'cac_auth_enabled_callback',
         'cac-auth-settings',
         'cac_auth_general_section'
