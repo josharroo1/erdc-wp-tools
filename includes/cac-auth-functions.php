@@ -79,7 +79,7 @@ function cac_handle_authentication() {
                 wp_redirect(get_permalink($registration_page_id));
             } else {
                 // Redirect to the default registration page if no page is selected
-                wp_redirect(home_url('/cac-registration/'));
+                wp_redirect(home_url());
             }
             exit;
         } else {

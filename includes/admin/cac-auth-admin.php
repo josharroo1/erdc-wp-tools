@@ -51,17 +51,17 @@ function cac_auth_register_settings() {
     );
 
     add_settings_field(
-        'cac_auth_fallback_action',
-        'Non-CAC Fallback',
-        'cac_auth_fallback_action_callback',
+        'cac_auth_enabled',
+        'Enable CAC Sync to WordPress?',
+        'cac_auth_enabled_callback',
         'cac-auth-settings',
         'cac_auth_general_section'
     );
-    
+
     add_settings_field(
-        'cac_auth_enabled',
-        'CAC Sync to WP User?',
-        'cac_auth_enabled_callback',
+        'cac_auth_fallback_action',
+        'Non-CAC Fallback',
+        'cac_auth_fallback_action_callback',
         'cac-auth-settings',
         'cac_auth_general_section'
     );
@@ -116,7 +116,7 @@ add_action('admin_init', 'cac_auth_register_settings');
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
-    echo '<p>Select the page to redirect users to after successful CAC authentication.</p>';
+    echo '<p>Select the pages to redirect users to after successful CAC authentication.</p><p>The registration page will be shown to non-synced/unregistered users who have authenticated via CAC.</p>';
 }
 
 // Redirect page callback
