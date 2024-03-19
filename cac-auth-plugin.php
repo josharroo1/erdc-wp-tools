@@ -3,7 +3,7 @@
  * Plugin Name: WP CAC Block (DoD)
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A WordPress plugin for CAC authentication and user synchronization for the DoD.
- * Version: 2.2.9
+ * Version: 2.3.0
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '2.2.9');
+define('CAC_AUTH_PLUGIN_VERSION', '2.3.0');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 

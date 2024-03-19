@@ -104,20 +104,33 @@ function cac_handle_authentication() {
 }
 add_action('template_redirect', 'cac_handle_authentication');
 
-// Restrict access to CAC registration page for logged-in users (except admins)
 function cac_restrict_registration_page() {
     $registration_page_id = get_option('cac_auth_registration_page');
-    
-    if ($registration_page_id && is_page($registration_page_id) && is_user_logged_in() && !current_user_can('manage_options')) {
-        $redirect_page_id = get_option('cac_auth_redirect_page');
-        
-        if ($redirect_page_id) {
-            wp_redirect(get_permalink($redirect_page_id));
-        } else {
-            wp_redirect(home_url());
-        }
-        
-        exit;
+    $cac_enabled = get_option('cac_auth_enabled', 'yes');
+    $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
+    $is_cac_page = $registration_page_id && is_page($registration_page_id);
+
+    // Conditions to redirect:
+    // 1. If it's the CAC registration page and a user is logged in without admin rights.
+    // 2. If it's the CAC registration page, CAC is enabled, fallback is 'allow', no CN is set, and the user is not logged in.
+    if ($is_cac_page && is_user_logged_in() && !current_user_can('manage_options')) {
+        cac_perform_redirect();
+    } elseif ($is_cac_page && $cac_enabled === 'yes' && $cac_fallback_action === 'allow' && !isset($_SERVER['SSL_CLIENT_S_DN_CN']) && !is_user_logged_in()) {
+        cac_perform_redirect();
     }
 }
+
+// Helper function to perform the redirect to avoid code duplication
+function cac_perform_redirect() {
+    $redirect_page_id = get_option('cac_auth_redirect_page');
+
+    if ($redirect_page_id) {
+        wp_redirect(get_permalink($redirect_page_id));
+    } else {
+        wp_redirect(home_url());
+    }
+
+    exit;
+}
+
 add_action('template_redirect', 'cac_restrict_registration_page');
