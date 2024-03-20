@@ -54,6 +54,7 @@ function cac_handle_authentication() {
         }
         return;
     }
+
     if (isset($_SERVER['SSL_CLIENT_S_DN_CN']) && !is_user_logged_in()) {
         $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
         $dod_id = cac_extract_dod_id($dn);
@@ -74,28 +75,29 @@ function cac_handle_authentication() {
             // Get the selected registration page ID from the plugin settings
             $registration_page_id = get_option('cac_auth_registration_page');
 
-            if ($registration_page_id) {
-                // Redirect to the selected registration page
+            if ($registration_page_id && !is_page($registration_page_id)) {
+                // Redirect to the selected registration page if the user is not already on it
                 wp_redirect(get_permalink($registration_page_id));
-            } else {
-                // Redirect to the default registration page if no page is selected
+                exit;
+            } elseif (!$registration_page_id && !is_front_page()) {
+                // Redirect to the home page if no registration page is selected and the user is not already on the front page
                 wp_redirect(home_url());
+                exit;
             }
-            exit;
         } else {
             // Log the user in
             wp_set_current_user($user[0]->ID);
             wp_set_auth_cookie($user[0]->ID);
-    
+
             // Get the selected redirect page ID
             $redirect_page_id = get_option('cac_auth_redirect_page');
-    
-            if ($redirect_page_id) {
-                // Redirect to the selected page
+
+            if ($redirect_page_id && !is_page($redirect_page_id)) {
+                // Redirect to the selected page if the user is not already on it
                 wp_redirect(get_permalink($redirect_page_id));
                 exit;
-            } else {
-                // Redirect to the default account page
+            } elseif (!$redirect_page_id && !is_front_page()) {
+                // Redirect to the home page if no redirect page is selected and the user is not already on the front page
                 wp_redirect(home_url());
                 exit;
             }
