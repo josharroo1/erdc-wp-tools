@@ -64,7 +64,9 @@ function cac_process_registration() {
     $email = sanitize_email($_POST['cac_email']);
 
     if (empty($email)) {
-        wp_redirect(add_query_arg('registration_error', 'missing_email', home_url('/cac-registration/')));
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'missing_email', $registration_page_url));
         exit;
     }
 
@@ -73,7 +75,9 @@ function cac_process_registration() {
     $names = cac_extract_names($dn);
 
     if (!$dod_id || !$names) {
-        wp_redirect(add_query_arg('registration_error', 'cac_extraction_failed', home_url('/cac-registration/')));
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'cac_extraction_failed', $registration_page_url));
         exit;
     }
 
@@ -81,10 +85,13 @@ function cac_process_registration() {
     $user_query = get_users(array('meta_key' => 'hashed_dod_id', 'meta_value' => $hashed_dod_id));
 
     if (!empty($user_query)) {
-        wp_redirect(add_query_arg('registration_error', 'user_exists', home_url('/cac-registration/')));
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'user_exists', $registration_page_url));
         exit;
     }
 
+    $default_role = get_option('cac_auth_default_role', 'subscriber');
     $username = cac_generate_username($names, $email);
     $user_id = wp_insert_user(array(
         'user_login' => $username,
@@ -92,10 +99,13 @@ function cac_process_registration() {
         'first_name' => $names['first_name'],
         'last_name' => $names['last_name'],
         'user_pass' => wp_generate_password(),
+        'role' => $default_role,
     ));
 
     if (is_wp_error($user_id)) {
-        wp_redirect(add_query_arg('registration_error', 'user_creation_failed', home_url('/cac-registration/')));
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'user_creation_failed', $registration_page_url));
         exit;
     }
 

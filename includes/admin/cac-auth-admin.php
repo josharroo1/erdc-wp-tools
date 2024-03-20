@@ -41,6 +41,7 @@ function cac_auth_register_settings() {
     register_setting('cac_auth_settings', 'cac_auth_registration_page');
     register_setting('cac_auth_settings', 'cac_auth_enabled');
     register_setting('cac_auth_settings', 'cac_auth_fallback_action');
+    register_setting('cac_auth_settings', 'cac_auth_default_role');
     register_setting('cac_auth_settings', 'cac_auth_registration_fields', array(
         'sanitize_callback' => 'cac_auth_save_custom_fields',
     ));
@@ -92,6 +93,20 @@ function cac_auth_register_settings() {
         'cac_auth_redirect_section'
     );
 
+    add_settings_section(
+        'cac_auth_registration_settings_section',
+        'Registration Settings',
+        'cac_auth_registration_settings_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_default_role',
+        'Default User Role',
+        'cac_auth_default_role_callback',
+        'cac-auth-settings',
+        'cac_auth_registration_settings_section'
+    );
     add_settings_section(
         'cac_auth_custom_fields_section',
         'CAC Registration Fields',
@@ -181,4 +196,22 @@ function cac_auth_fallback_action_callback() {
 // General section callback
 function cac_auth_general_section_callback() {
     echo '<p>Configure the general settings for CAC authentication.</p>';
+}
+
+// Registration settings section callback
+function cac_auth_registration_settings_section_callback() {
+    echo '<p>Configure the registration settings for CAC authentication.</p>';
+}
+
+// Default user role callback
+function cac_auth_default_role_callback() {
+    $selected_role = get_option('cac_auth_default_role', 'subscriber');
+    $roles = get_editable_roles();
+    ?>
+    <select name="cac_auth_default_role">
+        <?php foreach ($roles as $role_name => $role_info) : ?>
+            <option value="<?php echo esc_attr($role_name); ?>" <?php selected($selected_role, $role_name); ?>><?php echo esc_html($role_info['name']); ?></option>
+        <?php endforeach; ?>
+    </select>
+    <?php
 }
