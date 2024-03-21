@@ -86,7 +86,7 @@ function cac_auth_save_custom_fields($options) {
                     $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
                     if (!empty($csv_file_name)) {
                         // Generate a unique file name to prevent collisions
-                        $unique_file_name = $field_id . '_' . time() . '_' . sanitize_file_name($csv_file_name);
+                        $unique_file_name = $field_id . '_' . sanitize_file_name($csv_file_name);
                         $upload_dir = wp_upload_dir();
                         $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
                         $target_file = $target_dir . $unique_file_name;

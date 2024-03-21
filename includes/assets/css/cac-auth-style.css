@@ -33,16 +33,24 @@
     border-radius: 4px;
 }
 
+.cac-registration-form select {
+    width: 100%;
+    padding: 14px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
 .cac-registration-form input[type="submit"] {
     width: 100%;
     padding: 10px;
-    background-color: #4CAF50;
+    background-color: #1e1e1e;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
     text-transform: uppercase;
+    margin-top: 20px;
 }
 
 .cac-registration-form input[type="submit"]:hover {
