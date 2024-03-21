@@ -85,3 +85,10 @@ button.notice-dismiss::before {
     opacity: 0.5;
     pointer-events: none;
 }
+
+.small-desc {
+    font-size: 11px;
+    font-style: italic;
+    color: #1f7280;
+    padding: 0px;
+}
