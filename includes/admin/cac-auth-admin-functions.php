@@ -86,13 +86,20 @@ function cac_auth_save_custom_fields($options) {
                         $upload_dir = wp_upload_dir();
                         $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
                         $target_file = $target_dir . $csv_file;
-
+                
                         if (!file_exists($target_dir)) {
-                            wp_mkdir_p($target_dir);
+                            if (wp_mkdir_p($target_dir)) {
+                                error_log('Directory created successfully: ' . $target_dir);
+                            } else {
+                                error_log('Failed to create directory: ' . $target_dir);
+                            }
                         }
-
+                
                         if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
                             $custom_fields[$field_id]['csv_file'] = $csv_file;
+                            error_log('File uploaded successfully: ' . $target_file);
+                        } else {
+                            error_log('Failed to move uploaded file: ' . $csv_file);
                         }
                     }
                 }
