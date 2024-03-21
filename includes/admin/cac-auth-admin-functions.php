@@ -116,9 +116,16 @@ function cac_auth_save_custom_fields($options) {
                     'csv_file' => $csv_file,
                 );
             } else {
-                // Remove the field from the options array if the label is empty
-                unset($options[$field_id]);
-                error_log('Field label is empty. Field will be removed.');
+                // Retain the CSV file information for fields with empty labels
+                if (isset($options[$field_id]['csv_file'])) {
+                    $custom_fields[$field_id] = array(
+                        'label' => '',
+                        'type' => $field_type,
+                        'options' => $field_options,
+                        'csv_file' => $options[$field_id]['csv_file'],
+                    );
+                }
+                error_log('Field label is empty. Field will be saved with an empty label.');
             }
         }
 
