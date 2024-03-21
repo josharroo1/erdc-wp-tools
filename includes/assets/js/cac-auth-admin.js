@@ -11,13 +11,19 @@ jQuery(document).ready(function($) {
             '<option value="select">Select</option>' +
             '</select>' +
             '</td>' +
-            '<td><input type="text" name="cac_auth_registration_fields[' + fieldId + '][options]" value="" placeholder="Enter options (comma-separated)"></td>' +
+            '<td><input type="text" name="cac_auth_registration_fields[' + fieldId + '][options]" value="" placeholder="Enter options (comma-separated)" class="cac-auth-options-input"></td>' +
             '<td>' +
-            '<input type="file" name="cac_auth_registration_fields[' + fieldId + '][csv_file]" accept=".csv">' +
+            '<input type="file" name="cac_auth_registration_fields[' + fieldId + '][csv_file]" accept=".csv" class="cac-auth-options-input">' +
             '</td>' +
             '<td><button type="button" class="button button-secondary cac-auth-remove-field">Remove</button></td>' +
             '</tr>';
         $('.cac-auth-custom-fields tbody').append(fieldRow);
+        $('.cac-auth-custom-fields tbody tr:last-child select[name$="[type]"]').trigger('change');
+    });
+
+    // Remove custom field
+    $('.cac-auth-custom-fields').on('click', '.cac-auth-remove-field', function() {
+        $(this).closest('tr').remove();
     });
 
     // Toggle options input field based on field type
@@ -29,11 +35,6 @@ jQuery(document).ready(function($) {
         } else {
             optionsInput.addClass('disabled');
         }
-    });
-
-    // Remove custom field
-    $('.cac-auth-custom-fields').on('click', '.cac-auth-remove-field', function() {
-        $(this).closest('tr').remove();
     });
 });
 
