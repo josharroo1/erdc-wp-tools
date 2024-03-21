@@ -65,9 +65,15 @@ function cac_auth_render_custom_fields() {
 
 // Save custom registration fields
 function cac_auth_save_custom_fields($options) {
+    error_log('Entering cac_auth_save_custom_fields function');
+
     if (isset($_POST['cac_auth_registration_fields'])) {
+        error_log('$_POST[cac_auth_registration_fields] is set');
+
         $custom_fields = array();
         foreach ($_POST['cac_auth_registration_fields'] as $field_id => $field_data) {
+            error_log('Processing field ID: ' . $field_id);
+
             $field_label = sanitize_text_field($field_data['label']);
             $field_type = sanitize_text_field($field_data['type']);
             $field_options = sanitize_text_field($field_data['options']);
@@ -81,12 +87,14 @@ function cac_auth_save_custom_fields($options) {
                 );
 
                 if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
+                    error_log('Processing CSV file for field ID: ' . $field_id);
+
                     $csv_file = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
                     if (!empty($csv_file)) {
                         $upload_dir = wp_upload_dir();
                         $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
                         $target_file = $target_dir . $csv_file;
-                
+
                         if (!file_exists($target_dir)) {
                             if (wp_mkdir_p($target_dir)) {
                                 error_log('Directory created successfully: ' . $target_dir);
@@ -94,7 +102,7 @@ function cac_auth_save_custom_fields($options) {
                                 error_log('Failed to create directory: ' . $target_dir);
                             }
                         }
-                
+
                         if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
                             $custom_fields[$field_id]['csv_file'] = $csv_file;
                             error_log('File uploaded successfully: ' . $target_file);
@@ -106,7 +114,12 @@ function cac_auth_save_custom_fields($options) {
             }
         }
         $options = $custom_fields;
+    } else {
+        error_log('$_POST[cac_auth_registration_fields] is not set');
     }
+
+    error_log('Leaving cac_auth_save_custom_fields function');
+
     return $options;
 }
 add_filter('cac_auth_settings_sanitize', 'cac_auth_save_custom_fields');
