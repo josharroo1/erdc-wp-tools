@@ -134,7 +134,7 @@ add_action('admin_init', 'cac_auth_register_settings');
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
-    echo '<p>Select the pages to redirect users to after successful CAC authentication.</p><p>The registration page will be shown to non-synced/unregistered users who have authenticated via CAC.</p>';
+    echo '<p>Select the pages to redirect users to after successful CAC authentication.</p><p>The <em><strong>registration page</strong></em> will be shown to non-synced/unregistered users who have authenticated via CAC.</p><p> The <strong><em>account page</em></strong> will be shown to synced/registered users who have authenticated via CAC.</p>';
 }
 
 // Redirect page callback
