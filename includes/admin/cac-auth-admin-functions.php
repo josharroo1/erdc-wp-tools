@@ -102,6 +102,9 @@ function cac_auth_save_custom_fields($options) {
                             error_log('Failed to move uploaded file: ' . $csv_file_name);
                         }
                     }
+                } else {
+                    // Retain the previously saved CSV file information
+                    $csv_file = isset($options[$field_id]['csv_file']) ? $options[$field_id]['csv_file'] : '';
                 }
 
                 $custom_fields[$field_id] = array(
@@ -110,6 +113,8 @@ function cac_auth_save_custom_fields($options) {
                     'options' => $field_options,
                     'csv_file' => $csv_file,
                 );
+            } else {
+                error_log('Field label is empty. Field will not be saved.');
             }
         }
 
