@@ -31,21 +31,57 @@ function cac_render_registration_form() {
             </div>
 
             <?php
-            // Retrieve custom registration fields from the plugin settings
-            $custom_fields = get_option('cac_auth_registration_fields', array());
+    // Retrieve custom registration fields from the plugin settings
+    $custom_fields = get_option('cac_auth_registration_fields', array());
 
-            foreach ($custom_fields as $field_id => $field_label) {
-                if (is_array($field_label)) {
-                    $field_label = implode(', ', $field_label);
+    foreach ($custom_fields as $field_id => $field_data) {
+        $field_label = $field_data['label'];
+        $field_type = $field_data['type'];
+        $field_options = $field_data['options'];
+
+        switch ($field_type) {
+            case 'text':
+            case 'number':
+                ?>
+                <div class="form-field">
+                    <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                    <input type="<?php echo esc_attr($field_type); ?>" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
+                </div>
+                <?php
+                break;
+            case 'select':
+                $options = array();
+                if (!empty($field_data['csv_file'])) {
+                    $csv_file = $field_data['csv_file'];
+                    $upload_dir = wp_upload_dir();
+                    $csv_path = $upload_dir['basedir'] . '/cac-auth-csv-files/' . $csv_file;
+                    if (file_exists($csv_path)) {
+                        $csv_data = array_map('str_getcsv', file($csv_path));
+                        array_walk($csv_data, function(&$a) use ($csv_data) {
+                            $a = array_combine($csv_data[0], $a);
+                        });
+                        array_shift($csv_data);
+                        foreach ($csv_data as $row) {
+                            $options[$row['key']] = $row['value'];
+                        }
+                    }
+                } else {
+                    $options = array_map('trim', explode(',', $field_options));
                 }
                 ?>
                 <div class="form-field">
                     <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
-                    <input type="text" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
+                    <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
+                        <?php foreach ($options as $key => $value) : ?>
+                            <option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($value); ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <?php
-            }
-            ?>
+                break;
+        }
+    }
+    ?>
 
             <div class="form-field">
                 <input type="submit" value="Register">
