@@ -3,7 +3,18 @@ jQuery(document).ready(function($) {
     $('.cac-auth-add-field').on('click', function() {
         var fieldId = Date.now();
         var fieldRow = '<tr>' +
-            '<td><input type="text" name="cac_auth_registration_fields[' + fieldId + ']" value=""></td>' +
+            '<td><input type="text" name="cac_auth_registration_fields[' + fieldId + '][label]" value=""></td>' +
+            '<td>' +
+            '<select name="cac_auth_registration_fields[' + fieldId + '][type]">' +
+            '<option value="text">Text</option>' +
+            '<option value="number">Number</option>' +
+            '<option value="select">Select</option>' +
+            '</select>' +
+            '</td>' +
+            '<td><input type="text" name="cac_auth_registration_fields[' + fieldId + '][options]" value="" placeholder="Enter options (comma-separated)"></td>' +
+            '<td>' +
+            '<input type="file" name="cac_auth_registration_fields[' + fieldId + '][csv_file]" accept=".csv">' +
+            '</td>' +
             '<td><button type="button" class="button button-secondary cac-auth-remove-field">Remove</button></td>' +
             '</tr>';
         $('.cac-auth-custom-fields tbody').append(fieldRow);
