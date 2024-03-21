@@ -20,6 +20,7 @@ function cac_render_registration_form() {
     ?>
     <div class="cac-registration-form">
         <h2>CAC Registration</h2>
+        <p class="form-subtitle">We just need a few more details</p>
         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
             <input type="hidden" name="action" value="cac_process_registration">
             <?php wp_nonce_field('cac_registration', 'cac_registration_nonce'); ?>
