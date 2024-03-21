@@ -14,7 +14,7 @@ function cac_auth_render_custom_fields() {
     if (!is_array($custom_fields)) {
         $custom_fields = array();
     }
-
+    
     ?>
     <table class="cac-auth-custom-fields">
         <thead>
@@ -28,6 +28,16 @@ function cac_auth_render_custom_fields() {
         </thead>
         <tbody>
             <?php foreach ($custom_fields as $field_id => $field_data) : ?>
+                <?php
+                if (!is_array($field_data)) {
+                    $field_data = array(
+                        'label' => '',
+                        'type' => 'text',
+                        'options' => '',
+                        'csv_file' => '',
+                    );
+                }
+                ?>
                 <tr>
                     <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][label]" value="<?php echo esc_attr($field_data['label']); ?>"></td>
                     <td>
