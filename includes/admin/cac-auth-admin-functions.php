@@ -79,54 +79,42 @@ function cac_auth_save_custom_fields($options) {
             $field_options = sanitize_text_field($field_data['options']);
             $csv_file = '';
 
-            if (!empty($field_label)) {
-                if ($field_type === 'select') {
-                    if (isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
-                        error_log('Processing CSV file for field ID: ' . $field_id);
+            // Check if the field already exists in the options array
+            if (isset($options[$field_id])) {
+                // Retain the previously saved CSV file information
+                $csv_file = $options[$field_id]['csv_file'];
+            }
 
-                        $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
-                        if (!empty($csv_file_name)) {
-                            // Generate a unique file name to prevent collisions
-                            $unique_file_name = $field_id . '_' . sanitize_file_name($csv_file_name);
-                            $upload_dir = wp_upload_dir();
-                            $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
-                            $target_file = $target_dir . $unique_file_name;
+            if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
+                error_log('Processing CSV file for field ID: ' . $field_id);
 
-                            if (!file_exists($target_dir)) {
-                                wp_mkdir_p($target_dir);
-                            }
+                $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
+                if (!empty($csv_file_name)) {
+                    // Generate a unique file name to prevent collisions
+                    $unique_file_name = $field_id . '_' . sanitize_file_name($csv_file_name);
+                    $upload_dir = wp_upload_dir();
+                    $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
+                    $target_file = $target_dir . $unique_file_name;
 
-                            if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
-                                $csv_file = $unique_file_name;
-                                error_log('File uploaded successfully: ' . $target_file);
-                            } else {
-                                error_log('Failed to move uploaded file: ' . $csv_file_name);
-                            }
-                        }
+                    if (!file_exists($target_dir)) {
+                        wp_mkdir_p($target_dir);
+                    }
+
+                    if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
+                        $csv_file = $unique_file_name;
+                        error_log('File uploaded successfully: ' . $target_file);
                     } else {
-                        // Retain the previously saved CSV file information
-                        $csv_file = isset($options[$field_id]['csv_file']) ? $options[$field_id]['csv_file'] : '';
+                        error_log('Failed to move uploaded file: ' . $csv_file_name);
                     }
                 }
-
-                $custom_fields[$field_id] = array(
-                    'label' => $field_label,
-                    'type' => $field_type,
-                    'options' => $field_options,
-                    'csv_file' => $csv_file,
-                );
-            } else {
-                // Retain the CSV file information for fields with empty labels
-                if (isset($options[$field_id]['csv_file'])) {
-                    $custom_fields[$field_id] = array(
-                        'label' => '',
-                        'type' => $field_type,
-                        'options' => $field_options,
-                        'csv_file' => $options[$field_id]['csv_file'],
-                    );
-                }
-                error_log('Field label is empty. Field will be saved with an empty label.');
             }
+
+            $custom_fields[$field_id] = array(
+                'label' => $field_label,
+                'type' => $field_type,
+                'options' => $field_options,
+                'csv_file' => $csv_file,
+            );
         }
 
         $options = $custom_fields;
