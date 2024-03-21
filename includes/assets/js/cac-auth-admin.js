@@ -20,6 +20,17 @@ jQuery(document).ready(function($) {
         $('.cac-auth-custom-fields tbody').append(fieldRow);
     });
 
+    // Toggle options input field based on field type
+    $('.cac-auth-custom-fields').on('change', 'select[name$="[type]"]', function() {
+        var fieldType = $(this).val();
+        var optionsInput = $(this).closest('tr').find('.cac-auth-options-input');
+        if (fieldType === 'select') {
+            optionsInput.removeClass('disabled');
+        } else {
+            optionsInput.addClass('disabled');
+        }
+    });
+
     // Remove custom field
     $('.cac-auth-custom-fields').on('click', '.cac-auth-remove-field', function() {
         $(this).closest('tr').remove();

@@ -14,7 +14,7 @@ function cac_auth_render_custom_fields() {
     if (!is_array($custom_fields)) {
         $custom_fields = array();
     }
-    
+
     ?>
     <table class="cac-auth-custom-fields">
         <thead>
@@ -47,7 +47,7 @@ function cac_auth_render_custom_fields() {
                             <option value="select" <?php selected($field_data['type'], 'select'); ?>>Select</option>
                         </select>
                     </td>
-                    <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][options]" value="<?php echo esc_attr($field_data['options']); ?>" placeholder="Enter options (comma-separated)"></td>
+                    <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][options]" value="<?php echo esc_attr($field_data['options']); ?>" placeholder="Enter options (comma-separated)" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>"></td>
                     <td>
                         <input type="file" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][csv_file]" accept=".csv">
                         <?php if (!empty($field_data['csv_file'])) : ?>

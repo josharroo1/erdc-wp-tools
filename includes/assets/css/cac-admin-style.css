@@ -80,3 +80,8 @@ button.notice-dismiss::before {
     color: white;
     font: normal 13px / 21px dashicons;
 }
+
+.cac-auth-custom-fields .disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
