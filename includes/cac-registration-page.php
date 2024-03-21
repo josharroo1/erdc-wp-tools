@@ -75,7 +75,7 @@ function cac_render_registration_form() {
                                 <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
                                 <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
                                     <?php foreach ($options as $key => $value) : ?>
-                                        <option value="<?php echo esc_attr($key); ?>"><?php echo esc_html($value); ?></option>
+                                        <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($key); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
