@@ -77,7 +77,7 @@ function cac_auth_save_custom_fields($options) {
             $field_label = sanitize_text_field($field_data['label']);
             $field_type = sanitize_text_field($field_data['type']);
             $field_options = sanitize_text_field($field_data['options']);
-            $csv_file = '';
+            $csv_file = ''; // Initialize $csv_file as an empty string
 
             // Check if the field already exists in the options array
             if (isset($options[$field_id]['csv_file'])) {

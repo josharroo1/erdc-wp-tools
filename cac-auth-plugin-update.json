@@ -1,6 +1,6 @@
 {
     "name": "WP CAC Sync (DoD)",
-    "version": "2.7.2",
+    "version": "2.7.3",
     "download_url": "https://github.com/josharroo1/wpcac-sync-dod/archive/main.zip",
     "sections": {
       "description": "A WordPress plugin for CAC authentication and user synchronization."
