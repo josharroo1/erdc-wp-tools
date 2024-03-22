@@ -3,7 +3,7 @@
  * Plugin Name: WP CAC Sync (DoD)
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A WordPress plugin for CAC authentication and user synchronization for the DoD.
- * Version: 2.6.4
+ * Version: 2.6.5
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -15,15 +15,8 @@ if (!defined('WPINC')) {
     die;
 }
 
-global $securityMitigationsDescriptions;
-$securityMitigationsDescriptions = [
-    'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
-    'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
-    'remove_script_version' => 'Remove jQuery Version Information',
-];
-
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '2.6.4');
+define('CAC_AUTH_PLUGIN_VERSION', '2.6.5');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
