@@ -1,6 +1,7 @@
 <?php
 
 // Descriptions for Settings Page info
+global $securityMitigationsDescriptions;
 $securityMitigationsDescriptions = [
     'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
