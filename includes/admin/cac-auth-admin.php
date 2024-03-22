@@ -163,9 +163,9 @@ function cac_auth_extract_security_mitigations() {
 
             if ($id == T_DOC_COMMENT && strpos($text, '@SecurityMitigation') !== false) {
                 // Extract the first line of the doc comment as the description
-                if (preg_match('/\*\s*(.*?)\n/', $text, $matches)) {
+                if (preg_match('/\*\s*(.*?)\s*\n/', $text, $matches)) {
                     $docComment = trim($matches[1]);
-                }
+                }                
             }
 
             if ($id == T_FUNCTION) {
