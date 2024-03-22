@@ -26,8 +26,8 @@ function cac_render_registration_form() {
             <?php wp_nonce_field('cac_registration', 'cac_registration_nonce'); ?>
 
             <div class="form-field">
-                <label for="cac_email">Email</label>
-                <input type="email" name="cac_email" id="cac_email" required>
+                <label for="cac_email">Enterprise Email</label>
+                <input placeholder="sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
             </div>
 
             <?php
@@ -163,7 +163,7 @@ function cac_process_registration() {
     foreach ($custom_fields as $field_id => $field_label) {
         if (isset($_POST['cac_field_' . $field_id])) {
             $field_value = sanitize_text_field($_POST['cac_field_' . $field_id]);
-            update_user_meta($user_id, 'cac_field_' . $field_id, $field_value);
+            update_user_meta($user_id, 'cac_field_' . $field_label, $field_value);
         }
     }
 
