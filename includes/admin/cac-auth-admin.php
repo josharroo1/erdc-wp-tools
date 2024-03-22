@@ -142,41 +142,43 @@ add_action('admin_init', 'cac_auth_register_settings');
 
 //Observe Security Mitigations
 function cac_auth_extract_security_mitigations() {
-    // Ensure the path is correctly formed with the CAC_AUTH_PLUGIN_DIR constant
     $fileName = CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php'; // Correct path to dev-sec.php
 
     if (!file_exists($fileName)) {
-        // Handle the error appropriately if the file does not exist
+        error_log("File not found: $fileName");
         return [];
     }
 
     $fileContents = file_get_contents($fileName);
     $tokens = token_get_all($fileContents);
-    $functions = array();
+    $functions = [];
 
-    $nextStringIsFunction = false;
-    $docComment = '';
+    $isDocComment = false;
+    $docCommentContent = "";
 
     foreach ($tokens as $token) {
         if (is_array($token)) {
-            list($id, $text) = $token;
-
-            if ($id == T_DOC_COMMENT && strpos($text, '@SecurityMitigation') !== false) {
-                // Extract the first line of the doc comment as the description
-                if (preg_match('/\*\s*(.*?)\s*\n/', $text, $matches)) {
-                    $docComment = trim($matches[1]);
-                }                
+            if ($token[0] == T_DOC_COMMENT) {
+                if (strpos($token[1], '@SecurityMitigation') !== false) {
+                    $isDocComment = true;
+                    // Extract the descriptive name from the comment
+                    preg_match("/\*\s*(.*?)\s*\n/", $token[1], $matches);
+                    $docCommentContent = $matches[1] ?? '';
+                }
             }
 
-            if ($id == T_FUNCTION) {
-                $nextStringIsFunction = true;
-            } elseif ($nextStringIsFunction && $id == T_STRING) {
-                if (!empty($docComment)) {
-                    // Associate the function name with the extracted description
-                    $functions[$text] = $docComment;
-                    $docComment = ''; // Reset for the next function
-                }
-                $nextStringIsFunction = false;
+            // Check for function keyword
+            if ($isDocComment && $token[0] == T_FUNCTION) {
+                // Skip to the function name
+                continue;
+            }
+
+            // Capture the function name
+            if ($isDocComment && $token[0] == T_STRING) {
+                $functions[$token[1]] = $docCommentContent;
+                // Reset after capturing
+                $isDocComment = false;
+                $docCommentContent = "";
             }
         }
     }
