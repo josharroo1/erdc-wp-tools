@@ -141,8 +141,8 @@ function cac_auth_register_settings() {
 add_action('admin_init', 'cac_auth_register_settings');
 
 //Observe Security Mitigations
-function cac_auth_extract_security_mitigations() {
-    $fileName = CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php'; // Correct path to dev-sec.php
+function cac_auth_extract_security_mitigation_names() {
+    $fileName = CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
 
     if (!file_exists($fileName)) {
         error_log("File not found: $fileName");
@@ -151,48 +151,37 @@ function cac_auth_extract_security_mitigations() {
 
     $fileContents = file_get_contents($fileName);
     $tokens = token_get_all($fileContents);
-    $functions = [];
-
-    $isDocComment = false;
-    $docCommentContent = "";
+    $mitigationNames = [];
 
     foreach ($tokens as $token) {
         if (is_array($token)) {
-            if ($token[0] == T_DOC_COMMENT) {
-                if (strpos($token[1], '@SecurityMitigation') !== false) {
-                    $isDocComment = true;
-                    // Extract the descriptive name from the comment
-                    preg_match("/\*\s*(.*?)\s*\n/", $token[1], $matches);
-                    $docCommentContent = $matches[1] ?? '';
+            $type = $token[0];
+            $value = $token[1];
+
+            if ($type == T_DOC_COMMENT && strpos($value, '@SecurityMitigation') !== false) {
+                // Attempt to extract the descriptive name from the comment
+                if (preg_match('/\*\s*(.*?)\s*\n/', $value, $matches)) {
+                    // Capture and store the descriptive name
+                    $description = trim($matches[1]);
+                    if (!empty($description)) {
+                        $mitigationNames[] = $description;
+                    }
                 }
-            }
-
-            // Check for function keyword
-            if ($isDocComment && $token[0] == T_FUNCTION) {
-                // Skip to the function name
-                continue;
-            }
-
-            // Capture the function name
-            if ($isDocComment && $token[0] == T_STRING) {
-                $functions[$token[1]] = $docCommentContent;
-                // Reset after capturing
-                $isDocComment = false;
-                $docCommentContent = "";
             }
         }
     }
 
-    return $functions;
+    return $mitigationNames;
 }
+
 
 // Security mitigations callback
 function cac_auth_security_section_callback() {
-    $mitigations = cac_auth_extract_security_mitigations();
+    $mitigationNames = cac_auth_extract_security_mitigation_names();
     echo '<p>The following security mitigations are implemented:</p>';
     echo '<ul>';
-    foreach ($mitigations as $funcName => $description) {
-        echo "<li><strong>{$description}</strong> (Function: $funcName)</li>";
+    foreach ($mitigationNames as $name) {
+        echo "<li>$name</li>";
     }
     echo '</ul>';
 }
