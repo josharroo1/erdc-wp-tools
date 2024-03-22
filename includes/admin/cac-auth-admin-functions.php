@@ -70,7 +70,7 @@ function cac_auth_save_custom_fields($options) {
     if (isset($_POST['cac_auth_registration_fields'])) {
         error_log('$_POST[cac_auth_registration_fields] is set');
 
-        $custom_fields = array();
+        $custom_fields = $options; // Use the existing options as the starting point
         foreach ($_POST['cac_auth_registration_fields'] as $field_id => $field_data) {
             error_log('Processing field ID: ' . $field_id);
 
@@ -104,8 +104,8 @@ function cac_auth_save_custom_fields($options) {
                 }
             } else {
                 // Retain the previously saved CSV file
-                if (isset($options[$field_id]['csv_file'])) {
-                    $csv_file = $options[$field_id]['csv_file'];
+                if (isset($custom_fields[$field_id]['csv_file'])) {
+                    $csv_file = $custom_fields[$field_id]['csv_file'];
                 }
             }
 
