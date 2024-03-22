@@ -69,6 +69,7 @@ function cac_render_registration_form() {
                                 }
                             } else {
                                 $options = array_map('trim', explode(',', $field_options));
+                                $options = array_combine($options, $options);
                             }
                             ?>
                             <div class="form-field">
