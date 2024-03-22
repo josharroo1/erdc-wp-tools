@@ -3,7 +3,7 @@
  * CAC Authentication Admin Settings
  */
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
-require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec-config.php'; 
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php'; 
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
     add_options_page(
