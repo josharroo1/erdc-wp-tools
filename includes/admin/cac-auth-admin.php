@@ -129,8 +129,71 @@ function cac_auth_register_settings() {
         'cac_auth_usage_section_callback',
         'cac-auth-settings'
     );
+
+    add_settings_section(
+        'cac_auth_security_section', // Section ID
+        'Security Mitigations', // Section title
+        'cac_auth_security_section_callback', // Callback function
+        'cac-auth-settings' // Page to add the section to
+    );
+    
 }
 add_action('admin_init', 'cac_auth_register_settings');
+
+//Observe Security Mitigations
+function cac_auth_extract_security_mitigations() {
+    // Ensure the path is correctly formed with the CAC_AUTH_PLUGIN_DIR constant
+    $fileName = CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php'; // Correct path to dev-sec.php
+
+    if (!file_exists($fileName)) {
+        // Handle the error appropriately if the file does not exist
+        return [];
+    }
+
+    $fileContents = file_get_contents($fileName);
+    $tokens = token_get_all($fileContents);
+    $functions = array();
+
+    $nextStringIsFunction = false;
+    $docComment = '';
+
+    foreach ($tokens as $token) {
+        if (is_array($token)) {
+            list($id, $text) = $token;
+
+            if ($id == T_DOC_COMMENT && strpos($text, '@SecurityMitigation') !== false) {
+                // Extract the first line of the doc comment as the description
+                if (preg_match('/\*\s*(.*?)\n/', $text, $matches)) {
+                    $docComment = trim($matches[1]);
+                }
+            }
+
+            if ($id == T_FUNCTION) {
+                $nextStringIsFunction = true;
+            } elseif ($nextStringIsFunction && $id == T_STRING) {
+                if (!empty($docComment)) {
+                    // Associate the function name with the extracted description
+                    $functions[$text] = $docComment;
+                    $docComment = ''; // Reset for the next function
+                }
+                $nextStringIsFunction = false;
+            }
+        }
+    }
+
+    return $functions;
+}
+
+// Security mitigations callback
+function cac_auth_security_section_callback() {
+    $mitigations = cac_auth_extract_security_mitigations();
+    echo '<p>The following security mitigations are implemented:</p>';
+    echo '<ul>';
+    foreach ($mitigations as $funcName => $description) {
+        echo "<li><strong>{$description}</strong> (Function: $funcName)</li>";
+    }
+    echo '</ul>';
+}
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {

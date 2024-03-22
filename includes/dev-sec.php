@@ -1,7 +1,11 @@
 <?php
 
-// Disable the Autocomplete feature on login password
-add_action('login_enqueue_scripts', 'disable_password_autocomplete');
+/**
+ * Disable Autocomplete on Login Password
+ * @SecurityMitigation
+ */
+
+ add_action('login_enqueue_scripts', 'disable_password_autocomplete');
 
 function disable_password_autocomplete() {
     echo '<script>
@@ -14,8 +18,11 @@ function disable_password_autocomplete() {
     </script>';
 }
 
+/**
+ * Add HTTPOnly or Secure to Cookies Dynamically
+ * @SecurityMitigation
+ */
 
-// Add HTTPonly or Secure to Cookies Dynamically
 add_action('init', 'set_dynamic_httponly_cookies');
 
 function set_dynamic_httponly_cookies() {
@@ -34,8 +41,12 @@ function set_dynamic_httponly_cookies() {
     }
 }
 
-//Remove jQuery Information
-function remove_script_version( $src ) {
+/**
+ * Remove jQuery Version Information
+ * @SecurityMitigation
+ */
+
+ function remove_script_version( $src ) {
     return $src ? esc_url( remove_query_arg( 'ver', $src ) ) : false;
 }
 add_filter( 'script_loader_src', 'remove_script_version', PHP_INT_MAX );
