@@ -3,7 +3,7 @@
  * CAC Authentication Admin Settings
  */
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
-
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec-config.php'; 
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
     add_options_page(
@@ -140,51 +140,18 @@ function cac_auth_register_settings() {
 }
 add_action('admin_init', 'cac_auth_register_settings');
 
-//Observe Security Mitigations
-function cac_auth_extract_security_mitigation_names() {
-    $fileName = CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
 
-    if (!file_exists($fileName)) {
-        error_log("File not found: $fileName");
-        return [];
-    }
-
-    $fileContents = file_get_contents($fileName);
-    $tokens = token_get_all($fileContents);
-    $mitigationNames = [];
-
-    foreach ($tokens as $token) {
-        if (is_array($token)) {
-            $type = $token[0];
-            $value = $token[1];
-
-            if ($type == T_DOC_COMMENT && strpos($value, '@SecurityMitigation') !== false) {
-                // Attempt to extract the descriptive name from the comment
-                if (preg_match('/\*\s*(.*?)\s*\n/', $value, $matches)) {
-                    // Capture and store the descriptive name
-                    $description = trim($matches[1]);
-                    if (!empty($description)) {
-                        $mitigationNames[] = $description;
-                    }
-                }
-            }
-        }
-    }
-
-    return $mitigationNames;
-}
-
-
-// Security mitigations callback
 function cac_auth_security_section_callback() {
-    $mitigationNames = cac_auth_extract_security_mitigation_names();
+    global $securityMitigationsDescriptions; // If you're using global scope to store the descriptions
+
     echo '<p>The following security mitigations are implemented:</p>';
     echo '<ul>';
-    foreach ($mitigationNames as $name) {
-        echo "<li>$name</li>";
+    foreach ($securityMitigationsDescriptions as $funcName => $description) {
+        echo "<li>$description</li>"; // Displaying the description directly
     }
     echo '</ul>';
 }
+
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
