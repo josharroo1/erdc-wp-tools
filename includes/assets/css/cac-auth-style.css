@@ -92,3 +92,7 @@
     margin-bottom: 25px;
     text-align: center;
 }
+
+input::placeholder {
+    opacity: .35;
+}

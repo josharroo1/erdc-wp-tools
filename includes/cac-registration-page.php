@@ -27,7 +27,7 @@ function cac_render_registration_form() {
 
             <div class="form-field">
                 <label for="cac_email">Enterprise Email</label>
-                <input placeholder="sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
+                <input placeholder="e.g., sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
             </div>
 
             <?php
