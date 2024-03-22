@@ -77,35 +77,36 @@ function cac_auth_save_custom_fields($options) {
             $field_label = sanitize_text_field($field_data['label']);
             $field_type = sanitize_text_field($field_data['type']);
             $field_options = sanitize_text_field($field_data['options']);
-            $csv_file = '';
+            $csv_file = isset($custom_fields[$field_id]['csv_file']) ? $custom_fields[$field_id]['csv_file'] : '';
 
-            // Check if a new CSV file is uploaded
-            if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
-                error_log('Processing CSV file for field ID: ' . $field_id);
+            // Check if the csv_file key exists in the $_POST data
+            if (isset($field_data['csv_file'])) {
+                // Check if a new CSV file is uploaded
+                if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
+                    error_log('Processing CSV file for field ID: ' . $field_id);
 
-                $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
-                if (!empty($csv_file_name)) {
-                    // Generate a unique file name to prevent collisions
-                    $unique_file_name = $field_id . '_' . sanitize_file_name($csv_file_name);
-                    $upload_dir = wp_upload_dir();
-                    $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
-                    $target_file = $target_dir . $unique_file_name;
+                    $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
+                    if (!empty($csv_file_name)) {
+                        // Generate a unique file name to prevent collisions
+                        $unique_file_name = $field_id . '_' . sanitize_file_name($csv_file_name);
+                        $upload_dir = wp_upload_dir();
+                        $target_dir = trailingslashit($upload_dir['basedir']) . 'cac-auth-csv-files/';
+                        $target_file = $target_dir . $unique_file_name;
 
-                    if (!file_exists($target_dir)) {
-                        wp_mkdir_p($target_dir);
+                        if (!file_exists($target_dir)) {
+                            wp_mkdir_p($target_dir);
+                        }
+
+                        if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
+                            $csv_file = $unique_file_name;
+                            error_log('File uploaded successfully: ' . $target_file);
+                        } else {
+                            error_log('Failed to move uploaded file: ' . $csv_file_name);
+                        }
                     }
-
-                    if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
-                        $csv_file = $unique_file_name;
-                        error_log('File uploaded successfully: ' . $target_file);
-                    } else {
-                        error_log('Failed to move uploaded file: ' . $csv_file_name);
-                    }
-                }
-            } else {
-                // Retain the previously saved CSV file
-                if (isset($custom_fields[$field_id]['csv_file'])) {
-                    $csv_file = $custom_fields[$field_id]['csv_file'];
+                } else {
+                    // Retain the previously saved CSV file
+                    $csv_file = $field_data['csv_file'];
                 }
             }
 
