@@ -16,8 +16,8 @@ function cac_extract_names($dn) {
     $attributes = explode(',', $dn);
     $cn = substr($attributes[0], 3);
     $cn_parts = explode('.', $cn);
-    $last_name = $cn_parts[0];
-    $first_name = $cn_parts[1];
+    $last_name = ucwords(strtolower($cn_parts[0]));
+    $first_name = ucwords(strtolower($cn_parts[1]));
 
     error_log("Extracted names: Last Name=$last_name, First Name=$first_name");
     return array('first_name' => $first_name, 'last_name' => $last_name);

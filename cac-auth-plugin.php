@@ -23,6 +23,7 @@ define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 // Include necessary files
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-auth-functions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-registration-page.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 // Plugin update checker
