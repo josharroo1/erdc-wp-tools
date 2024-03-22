@@ -1,12 +1,5 @@
 <?php
 
-// Descriptions of Mitigations for Settings page
-$securityMitigationsDescriptions = [
-    'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
-    'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
-    'remove_script_version' => 'Remove jQuery Version Information',
-];
-
 /**
  * Disable Autocomplete on Login Password
  * @SecurityMitigation

@@ -142,12 +142,12 @@ add_action('admin_init', 'cac_auth_register_settings');
 
 
 function cac_auth_security_section_callback() {
-    global $securityMitigationsDescriptions; // If you're using global scope to store the descriptions
+    global $securityMitigationsDescriptions;
 
     echo '<p>The following security mitigations are implemented:</p>';
     echo '<ul>';
     foreach ($securityMitigationsDescriptions as $funcName => $description) {
-        echo "<li>$description</li>"; // Displaying the description directly
+        echo "<li>$description</li>";
     }
     echo '</ul>';
 }
