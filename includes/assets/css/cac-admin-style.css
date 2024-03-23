@@ -106,3 +106,26 @@ button.notice-dismiss::before {
     box-shadow: none !important;
     outline: none !important;
 }
+
+.security-mitigations {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.security-mitigations li {
+    color: #16850a;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+}
+
+ul.security-mitigations li::before {
+    font-family: dashicons;
+    content: "\f332";
+    font-size: 18px;
+    margin-right: 10px;
+    line-height: 1em;
+}

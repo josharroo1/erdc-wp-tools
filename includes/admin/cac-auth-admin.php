@@ -145,7 +145,7 @@ function cac_auth_security_section_callback() {
     global $securityMitigationsDescriptions;
 
     echo '<p>The following security mitigations are implemented:</p>';
-    echo '<ul>';
+    echo '<ul class="security-mitigations">';
     foreach ($securityMitigationsDescriptions as $funcName => $description) {
         echo "<li>$description</li>";
     }
