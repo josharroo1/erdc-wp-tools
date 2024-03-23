@@ -34,9 +34,10 @@ function cac_auth_render_custom_fields() {
                         'label' => '',
                         'type' => 'text',
                         'options' => '',
-                        'csv_file' => '',
                     );
                 }
+                // Retrieve the CSV file information
+                $csv_file = get_option('cac_auth_csv_file_' . $field_id, '');
                 ?>
                 <tr>
                     <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][label]" value="<?php echo esc_attr($field_data['label']); ?>"></td>
@@ -50,8 +51,8 @@ function cac_auth_render_custom_fields() {
                     <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][options]" value="<?php echo esc_attr($field_data['options']); ?>" placeholder="Enter options (comma-separated)" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>"></td>
                     <td>
                         <input type="file" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][csv_file]" accept=".csv" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>">
-                        <?php if (!empty($field_data['csv_file'])) : ?>
-                            <span class="small-desc">Current file: <?php echo esc_html($field_data['csv_file']); ?></span>
+                        <?php if (!empty($csv_file)) : ?>
+                            <span class="small-desc">Current file: <?php echo esc_html($csv_file); ?></span>
                         <?php endif; ?>
                     </td>
                     <td><button type="button" class="button button-secondary cac-auth-remove-field">Remove</button></td>
@@ -66,6 +67,8 @@ function cac_auth_render_custom_fields() {
 // Save custom registration fields
 function cac_auth_save_custom_fields($options) {
     error_log('Entering cac_auth_save_custom_fields function');
+    error_log(print_r($options, true));
+    error_log(print_r($_FILES, true));
 
     if (isset($_POST['cac_auth_registration_fields'])) {
         error_log('$_POST[cac_auth_registration_fields] is set');
@@ -78,11 +81,8 @@ function cac_auth_save_custom_fields($options) {
             $field_type = sanitize_text_field($field_data['type']);
             $field_options = sanitize_text_field($field_data['options']);
 
-            // Preserve previously uploaded CSV file if no new file is selected
-            $csv_file = isset($options[$field_id]['csv_file']) ? $options[$field_id]['csv_file'] : '';
-
             // Check if a new CSV file is uploaded
-            if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
+            if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file']) && !empty($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
                 error_log('Processing CSV file for field ID: ' . $field_id);
 
                 $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
@@ -98,7 +98,8 @@ function cac_auth_save_custom_fields($options) {
                     }
 
                     if (move_uploaded_file($_FILES['cac_auth_registration_fields']['tmp_name'][$field_id]['csv_file'], $target_file)) {
-                        $csv_file = $unique_file_name;
+                        // Store the CSV file information separately
+                        update_option('cac_auth_csv_file_' . $field_id, $unique_file_name);
                         error_log('File uploaded successfully: ' . $target_file);
                     } else {
                         error_log('Failed to move uploaded file: ' . $csv_file_name);
@@ -110,11 +111,11 @@ function cac_auth_save_custom_fields($options) {
                 'label' => $field_label,
                 'type' => $field_type,
                 'options' => $field_options,
-                'csv_file' => $csv_file, // Use the preserved or newly uploaded file name
             );
         }
 
         $options = $custom_fields;
+        error_log(print_r($options, true));
     } else {
         error_log('$_POST[cac_auth_registration_fields] is not set');
     }

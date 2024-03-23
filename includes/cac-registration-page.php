@@ -53,8 +53,8 @@ function cac_render_registration_form() {
                             break;
                         case 'select':
                             $options = array();
-                            if (!empty($field_data['csv_file'])) {
-                                $csv_file = $field_data['csv_file'];
+                            $csv_file = get_option('cac_auth_csv_file_' . $field_id, '');
+                            if (!empty($csv_file)) {
                                 $upload_dir = wp_upload_dir();
                                 $csv_path = $upload_dir['basedir'] . '/cac-auth-csv-files/' . $csv_file;
                                 if (file_exists($csv_path)) {
