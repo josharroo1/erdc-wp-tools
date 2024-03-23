@@ -106,3 +106,16 @@ input::placeholder {
     text-transform: uppercase;
     font-weight: 600;
 }
+
+.form-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-header svg {
+    fill: #df2f2f;
+    height: 50px;
+}
