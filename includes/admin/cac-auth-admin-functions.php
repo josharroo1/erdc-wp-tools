@@ -21,8 +21,8 @@ function cac_auth_render_custom_fields() {
             <tr>
                 <th>Field Label</th>
                 <th>Field Type</th>
-                <th>Options (for Select fields)</th>
-                <th>CSV File (for Select fields)</th>
+                <th>Select Options (Comma Separated)</th>
+                <th>CSV File (for Select options)</th>
                 <th>Actions</th>
             </tr>
         </thead>
