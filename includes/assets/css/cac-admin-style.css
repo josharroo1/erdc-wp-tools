@@ -94,12 +94,12 @@ button.notice-dismiss::before {
 }
 
 .cac-auth-remove-csv {
-    padding: 0px;
-    border: none;
-    background: none;
-    margin-top: -8px;
-    margin-left: 5px;
-    color: red;
+    padding: 0px !important;
+    border: none !important;
+    background: none !important;
+    margin-top: -8px !important;
+    margin-left: 5px !important;
+    color: red !important;
 }
 
 .cac-auth-remove-csv:focus {
