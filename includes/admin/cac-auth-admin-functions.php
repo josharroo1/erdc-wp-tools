@@ -5,7 +5,7 @@
 
 // Add custom registration fields section
 function cac_auth_custom_fields_section_callback() {
-    echo '<p>Add custom fields to the CAC registration form.</p>';
+    echo '<p>Add custom fields to the CAC registration form.</p><p>For "select" field types, enter select options as a comma separated list OR upload a CSV file with "key" & "value" columns.</p><p><a href="#">Download Example CSV</a></p>';
 }
 
 // Render custom registration fields
