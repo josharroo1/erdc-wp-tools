@@ -26,7 +26,7 @@ function cac_render_registration_form() {
             <?php wp_nonce_field('cac_registration', 'cac_registration_nonce'); ?>
 
             <div class="form-field">
-                <label for="cac_email">Enterprise Email</label>
+                <label for="cac_email">Organization Email</label>
                 <input placeholder="e.g., sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
             </div>
 

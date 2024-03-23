@@ -3,7 +3,7 @@
     max-width: 450px;
     margin: 0 auto;
     padding: 35px;
-    background-color: #f5f5f5;
+    background-color: #e9eaec;
     border-radius: 5px;
 }
 
@@ -22,7 +22,9 @@
 .cac-registration-form label {
     display: block;
     margin-bottom: 5px;
-    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
 }
 
 .cac-registration-form input[type="text"],
@@ -42,19 +44,20 @@
 
 .cac-registration-form input[type="submit"] {
     width: 100%;
-    padding: 10px;
+    padding: 12px 10px;
     background-color: #1e1e1e;
     color: white;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
+    cursor: pointer !important;
     font-weight: 600;
     text-transform: uppercase;
     margin-top: 20px;
+    transition: all .3s ease;
 }
 
 .cac-registration-form input[type="submit"]:hover {
-    background-color: #141414;
+    background-color: #343434;
 }
 
 .cac-registration-error {
@@ -89,10 +92,17 @@
     text-transform: uppercase;
     font-weight: 500;
     font-size: 14px;
-    margin-bottom: 25px;
+    margin-bottom: 35px;
     text-align: center;
 }
 
 input::placeholder {
     opacity: .35;
+}
+
+label:after {
+    content: ":";
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: 600;
 }

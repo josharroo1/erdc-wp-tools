@@ -78,9 +78,11 @@ function cac_auth_save_custom_fields($options) {
             $field_type = sanitize_text_field($field_data['type']);
             $field_options = sanitize_text_field($field_data['options']);
 
-            // Check if a new CSV file is uploaded (using $_FILES)
-            if (isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
-                // New file uploaded, handle upload and update csv_file
+            // Preserve previously uploaded CSV file if no new file is selected
+            $csv_file = isset($options[$field_id]['csv_file']) ? $options[$field_id]['csv_file'] : '';
+
+            // Check if a new CSV file is uploaded
+            if ($field_type === 'select' && isset($_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'])) {
                 error_log('Processing CSV file for field ID: ' . $field_id);
 
                 $csv_file_name = $_FILES['cac_auth_registration_fields']['name'][$field_id]['csv_file'];
@@ -102,16 +104,13 @@ function cac_auth_save_custom_fields($options) {
                         error_log('Failed to move uploaded file: ' . $csv_file_name);
                     }
                 }
-            } else {
-                // No new file uploaded, preserve existing csv_file value
-                $csv_file = isset($options[$field_id]['csv_file']) ? $options[$field_id]['csv_file'] : '';
             }
 
             $custom_fields[$field_id] = array(
                 'label' => $field_label,
                 'type' => $field_type,
                 'options' => $field_options,
-                'csv_file' => $csv_file, // Use preserved or updated value
+                'csv_file' => $csv_file, // Use the preserved or newly uploaded file name
             );
         }
 
