@@ -236,3 +236,15 @@ function cac_auth_default_role_callback() {
     </select>
     <?php
 }
+
+//Ajax to remove the current csv from a field
+function cac_auth_remove_csv() {
+    $field_id = isset($_POST['field_id']) ? sanitize_text_field($_POST['field_id']) : '';
+    if (!empty($field_id)) {
+        delete_option('cac_auth_csv_file_' . $field_id);
+        wp_send_json_success();
+    } else {
+        wp_send_json_error();
+    }
+}
+add_action('wp_ajax_cac_auth_remove_csv', 'cac_auth_remove_csv');

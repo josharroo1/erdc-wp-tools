@@ -92,3 +92,17 @@ button.notice-dismiss::before {
     color: #1f7280;
     padding: 0px;
 }
+
+.cac-auth-remove-csv {
+    padding: 0px;
+    border: none;
+    background: none;
+    margin-top: -8px;
+    margin-left: 5px;
+    color: red;
+}
+
+.cac-auth-remove-csv:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}

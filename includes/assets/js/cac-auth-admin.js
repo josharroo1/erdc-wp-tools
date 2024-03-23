@@ -47,6 +47,23 @@ jQuery(document).ready(function($) {
             }
         });
     });
+    // Remove the current csv
+    $('.cac-auth-custom-fields').on('click', '.cac-auth-remove-csv', function() {
+        var fieldId = $(this).data('field-id');
+        var confirmRemove = confirm('Are you sure you want to remove the CSV file for this field?');
+        if (confirmRemove) {
+            $.post(ajaxurl, {
+                action: 'cac_auth_remove_csv',
+                field_id: fieldId
+            }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Failed to remove the CSV file. Please try again.');
+                }
+            });
+        }
+    });
 });
 
 //Superficially disable the form if CAC auth turned off

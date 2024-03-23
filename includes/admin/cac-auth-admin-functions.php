@@ -52,7 +52,10 @@ function cac_auth_render_custom_fields() {
                     <td>
                         <input type="file" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][csv_file]" accept=".csv" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>">
                         <?php if (!empty($csv_file)) : ?>
-                            <span class="small-desc">Current file: <?php echo esc_html($csv_file); ?></span>
+                            <span class="small-desc">
+                                Current file: <?php echo esc_html($csv_file); ?>
+                                <button type="button" class="button button-small cac-auth-remove-csv" data-field-id="<?php echo esc_attr($field_id); ?>">&times;</button>
+                            </span>
                         <?php endif; ?>
                     </td>
                     <td><button type="button" class="button button-secondary cac-auth-remove-field">Remove</button></td>
