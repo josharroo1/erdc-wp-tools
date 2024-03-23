@@ -21,8 +21,8 @@ function cac_auth_render_custom_fields() {
             <tr>
                 <th>Field Label</th>
                 <th>Field Type</th>
-                <th>Select Options (Comma Separated)</th>
-                <th>CSV File (for Select options)</th>
+                <th>Options (for select field)</th>
+                <th>CSV File (for select field)</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -48,7 +48,7 @@ function cac_auth_render_custom_fields() {
                             <option value="select" <?php selected($field_data['type'], 'select'); ?>>Select</option>
                         </select>
                     </td>
-                    <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][options]" value="<?php echo esc_attr($field_data['options']); ?>" placeholder="Enter options (comma-separated)" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>"></td>
+                    <td><input type="text" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][options]" value="<?php echo esc_attr($field_data['options']); ?>" placeholder="Options (comma-separated)" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>"></td>
                     <td>
                         <input type="file" name="cac_auth_registration_fields[<?php echo esc_attr($field_id); ?>][csv_file]" accept=".csv" class="cac-auth-options-input <?php echo $field_data['type'] !== 'select' ? 'disabled' : ''; ?>">
                         <?php if (!empty($csv_file)) : ?>
