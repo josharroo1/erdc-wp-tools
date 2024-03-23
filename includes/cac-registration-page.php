@@ -100,7 +100,7 @@ function cac_render_registration_form() {
             <div class="form-field">
                 <input type="submit" value="Register">
             </div>
-            <div class="form-footer">You are registering with <a href="<?php echo esc_url(get_site_url()); ?>"><?php echo esc_html(get_site_url()); ?></a></div>
+            <div class="form-footer"><div>You are registering with <a href="<?php echo esc_url(get_site_url()); ?>"><?php echo esc_html(get_site_url()); ?></a></div></div>
         </form>
     </div>
     <?php

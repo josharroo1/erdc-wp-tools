@@ -136,4 +136,5 @@ input::placeholder {
 
 .form-footer a:hover {
     text-decoration: underline;
+    color: #df2e2f;
 }
