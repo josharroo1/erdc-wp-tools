@@ -30,7 +30,7 @@
 .cac-registration-form input[type="text"],
 .cac-registration-form input[type="email"] {
     width: 100%;
-    padding: 10px;
+    padding: 14px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
@@ -90,10 +90,12 @@
 
 .form-subtitle {
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 300;
     font-size: 14px;
     margin-bottom: 35px;
     text-align: center;
+    font-style: italic;
+    margin-top: -5px;
 }
 
 input::placeholder {
@@ -110,7 +112,7 @@ input::placeholder {
 .form-header {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 15px;
     justify-content: center;
     align-items: center;
 }

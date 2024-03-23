@@ -129,3 +129,19 @@ ul.security-mitigations li::before {
     margin-right: 10px;
     line-height: 1em;
 }
+
+.form-footer {
+    font-size: 11px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-style: italic;
+}
+
+.form-footer a {
+    color: #df2e2f;
+}
+
+.form-footer a:hover {
+    text-decoration: underline;
+}
