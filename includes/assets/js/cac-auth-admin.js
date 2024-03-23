@@ -36,6 +36,17 @@ jQuery(document).ready(function($) {
             optionsInput.addClass('disabled');
         }
     });
+
+    // Ensure file input fields are always included in form submission
+    $('.cac-auth-custom-fields form').on('submit', function() {
+        $(this).find('input[type="file"]').each(function() {
+            if ($(this).val() === '') {
+                // Create a hidden input field with the existing file name
+                var existingFileName = $(this).closest('tr').find('span.small-desc').text().replace('Current file: ', '');
+                $('<input type="hidden" name="' + $(this).attr('name') + '" value="' + existingFileName + '">').appendTo($(this).closest('tr'));
+            }
+        });
+    });
 });
 
 //Superficially disable the form if CAC auth turned off

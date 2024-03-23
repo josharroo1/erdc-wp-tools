@@ -100,7 +100,7 @@ input::placeholder {
     opacity: .35;
 }
 
-label:after {
+.cac-registration-form label::after {
     content: ":";
     font-size: 14px;
     text-transform: uppercase;
