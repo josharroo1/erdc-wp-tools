@@ -140,6 +140,61 @@ function cac_auth_register_settings() {
 }
 add_action('admin_init', 'cac_auth_register_settings');
 
+// Register color picker settings
+function cac_auth_register_color_settings() {
+    register_setting('cac_auth_settings', 'cac_auth_svg_fill_color', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_hex_color',
+        'default' => '#000000',
+    ));
+    register_setting('cac_auth_settings', 'cac_auth_link_color', array(
+        'type' => 'string',
+        'sanitize_callback' => 'sanitize_hex_color',
+        'default' => '#0073aa',
+    ));
+    register_setting('cac_auth_settings', 'cac_auth_user_approval', array(
+        'type' => 'boolean',
+        'sanitize_callback' => 'absint',
+        'default' => false,
+    ));
+}
+add_action('admin_init', 'cac_auth_register_color_settings');
+
+// Add color picker fields and user approval toggle to the settings page
+function cac_auth_render_color_settings() {
+    $svg_fill_color = get_option('cac_auth_svg_fill_color', '#000000');
+    $link_color = get_option('cac_auth_link_color', '#0073aa');
+    $user_approval = get_option('cac_auth_user_approval', false);
+    ?>
+    <h2>Color Settings</h2>
+    <table class="form-table">
+        <tr>
+            <th scope="row"><label for="cac_auth_svg_fill_color">SVG Fill Color</label></th>
+            <td>
+                <input type="text" name="cac_auth_svg_fill_color" id="cac_auth_svg_fill_color" value="<?php echo esc_attr($svg_fill_color); ?>" class="cac-color-picker">
+            </td>
+        </tr>
+        <tr>
+            <th scope="row"><label for="cac_auth_link_color">Link Color</label></th>
+            <td>
+                <input type="text" name="cac_auth_link_color" id="cac_auth_link_color" value="<?php echo esc_attr($link_color); ?>" class="cac-color-picker">
+            </td>
+        </tr>
+    </table>
+    <h2>User Approval</h2>
+    <table class="form-table">
+        <tr>
+            <th scope="row"><label for="cac_auth_user_approval">Require User Approval</label></th>
+            <td>
+                <input type="checkbox" name="cac_auth_user_approval" id="cac_auth_user_approval" value="1" <?php checked($user_approval, true); ?>>
+                <p class="description">When enabled, newly registered users will require manual approval by an administrator before they can log in.</p>
+            </td>
+        </tr>
+    </table>
+    <?php
+}
+add_action('cac_auth_settings_page', 'cac_auth_render_color_settings', 20);
+
 
 function cac_auth_security_section_callback() {
     global $securityMitigationsDescriptions;

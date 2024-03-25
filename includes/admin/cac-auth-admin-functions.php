@@ -136,6 +136,7 @@ function cac_auth_admin_enqueue_scripts($hook) {
     }
     wp_enqueue_style('cac-auth-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-admin-style.css', array(), CAC_AUTH_PLUGIN_VERSION);
     wp_enqueue_script('cac-auth-admin', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-admin.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
+    
 }
 add_action('admin_enqueue_scripts', 'cac_auth_admin_enqueue_scripts');
 
@@ -144,8 +145,8 @@ add_action('show_user_profile', 'cac_show_additional_user_meta');
 add_action('edit_user_profile', 'cac_show_additional_user_meta');
 
 function cac_show_additional_user_meta($user) {
-    echo '<h3>Additional Information</h3>';
     echo '<div class="cac-additional-info">';
+    echo '<h3>Additional Information</h3>';
 
     $user_meta = get_user_meta($user->ID);
     foreach ($user_meta as $key => $values) {
@@ -185,7 +186,7 @@ function cac_save_additional_user_meta($user_id) {
 function cac_admin_styles() {
     echo '<style>
         .cac-additional-info {
-            background-color: #f1f1f1;
+            background-color: #ffffff;
             border: 1px solid #ccd0d4;
             padding: 20px;
             margin-top: 20px;
@@ -207,6 +208,11 @@ function cac_admin_styles() {
             border: 1px solid #ccd0d4;
             box-sizing: border-box;
         }
+
+        .cac-additional-info h3 {
+            text-transform: uppercase;
+        }
+    
     </style>';
 }
 

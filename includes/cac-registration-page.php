@@ -13,12 +13,25 @@ add_shortcode('cac_registration', 'cac_registration_shortcode');
 
 // Render CAC registration form
 function cac_render_registration_form() {
+    $svg_fill_color = get_option('cac_auth_svg_fill_color', '#000000');
+    $link_color = get_option('cac_auth_link_color', '#0073aa');
+    ?>
+    <style>
+        .cac-registration-form .form-header svg {
+            fill: <?php echo esc_attr($svg_fill_color); ?>;
+        }
+        .cac-registration-form .form-footer a {
+            color: <?php echo esc_attr($link_color); ?>;
+        }
+    </style>
+    <!-- Rest of the form HTML -->
+    <div class="cac-registration-form">
+    <?php
     if (isset($_GET['registration_error'])) {
         $error_code = $_GET['registration_error'];
         cac_display_registration_error($error_code);
     }
     ?>
-    <div class="cac-registration-form">
     <div class="form-header">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z"/></svg>
         <h2>CAC Registration</h2></div>
@@ -152,6 +165,8 @@ function cac_process_registration() {
     }
 
     $default_role = get_option('cac_auth_default_role', 'subscriber');
+    $user_approval_required = get_option('cac_auth_user_approval', false);
+    $user_status = $user_approval_required ? 'pending' : 'active';
     $username = cac_generate_username($names, $email);
     $user_id = wp_insert_user(array(
         'user_login' => $username,
@@ -160,6 +175,7 @@ function cac_process_registration() {
         'last_name' => $names['last_name'],
         'user_pass' => wp_generate_password(),
         'role' => $default_role,
+        'user_status' => $user_status,
     ));
 
     if (is_wp_error($user_id)) {
