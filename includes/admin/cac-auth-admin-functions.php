@@ -16,6 +16,10 @@ function cac_auth_render_custom_fields() {
     }
 
     ?>
+    <div class="form-information">To display the CAC registration form on a page or post, use the following shortcode: <code>[cac_registration]</code></div>
+    <div class="form-information">Users will fill out the form, including any custom fields you have defined below, and register using their CAC credentials.</div>
+    <div class="form-information"><strong>An orginzation email is always required</strong></div>
+    <div class="csv-information">For select fields, add options as a comma-separated list, or a CSV file upload with "key" & "value" columns.</div>
     <table class="cac-auth-custom-fields">
         <thead>
             <tr>
