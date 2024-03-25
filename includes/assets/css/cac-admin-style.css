@@ -129,3 +129,13 @@ ul.security-mitigations li::before {
     margin-right: 10px;
     line-height: 1em;
 }
+
+table.cac-auth-custom-fields {
+    background: white;
+    padding: 10px 20px 20px 20px;
+    text-align: left;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 10px 15px -6px #00000021;
+    width: 75%;
+}

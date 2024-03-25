@@ -1,8 +1,4 @@
 jQuery(document).ready(function($) {
-    //Add Color Picker
-    $(".cac-color-picker").wpColorPicker();
-    });
-    
     // Add custom field
     $('.cac-auth-add-field').on('click', function() {
         var fieldId = Date.now();
