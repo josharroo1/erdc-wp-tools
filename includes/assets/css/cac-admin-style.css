@@ -129,27 +129,3 @@ ul.security-mitigations li::before {
     margin-right: 10px;
     line-height: 1em;
 }
-
-.cac-additional-info {
-    background-color: #f1f1f1;
-    border: 1px solid #ccd0d4;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 5px;
-}
-.cac-field-row {
-    margin-bottom: 20px;
-}
-.cac-field-row label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-.cac-input {
-    width: 100%;
-    max-width: 400px;
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccd0d4;
-    box-sizing: border-box;
-}

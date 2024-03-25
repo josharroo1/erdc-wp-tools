@@ -145,19 +145,26 @@ add_action('edit_user_profile', 'cac_show_additional_user_meta');
 
 function cac_show_additional_user_meta($user) {
     echo '<h3>Additional Information</h3>';
+    echo '<div class="cac-additional-info">';
+
     $user_meta = get_user_meta($user->ID);
-    foreach ($user_meta as $key => $value) {
+    foreach ($user_meta as $key => $values) {
         if (strpos($key, 'cac_field_') === 0) {
-            $value = maybe_unserialize($value[0]);
-            // Extract a more readable label from the meta key
-            $label = ucwords(str_replace('_', ' ', preg_replace('/cac_field_[a-z]+_/', '', $key)));
-            echo '<div class="form-field">';
+            // Extract the label part of the key and capitalize it
+            $label = ucwords(str_replace('_', ' ', substr($key, 10))); // Remove 'cac_field_' prefix and replace underscores with spaces
+
+            $value = maybe_unserialize($values[0]);
+
+            echo '<div class="cac-field-row">';
             echo '<label for="' . esc_attr($key) . '">' . esc_html($label) . '</label>';
-            echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text" />';
+            echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text">';
             echo '</div>';
         }
     }
+
+    echo '</div>'; // Close .cac-additional-info
 }
+
 
 
 // Editable Meta Section
@@ -174,3 +181,33 @@ function cac_save_additional_user_meta($user_id) {
         }
     }
 }
+
+function cac_admin_styles() {
+    echo '<style>
+        .cac-additional-info {
+            background-color: #f1f1f1;
+            border: 1px solid #ccd0d4;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .cac-field-row {
+            margin-bottom: 20px;
+        }
+        .cac-field-row label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .cac-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccd0d4;
+            box-sizing: border-box;
+        }
+    </style>';
+}
+
+add_action('admin_head', 'cac_admin_styles');

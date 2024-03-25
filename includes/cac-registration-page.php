@@ -177,7 +177,7 @@ function cac_process_registration() {
         if (isset($_POST['cac_field_' . $field_id])) {
             $field_value = sanitize_text_field($_POST['cac_field_' . $field_id]);
             $sanitized_label = strtolower(str_replace(' ', '_', preg_replace('/[^A-Za-z0-9 ]/', '', $field_data['label'])));
-            $meta_key = 'cac_field_' . $sanitized_label . '_' . $field_id;
+            $meta_key = 'cac_field_' . $sanitized_label;
             update_user_meta($user_id, $meta_key, $field_value);
         }
     }
