@@ -173,12 +173,15 @@ function cac_process_registration() {
 
     // Save custom registration field values as user meta
     $custom_fields = get_option('cac_auth_registration_fields', array());
-    foreach ($custom_fields as $field_id => $field_label) {
+    foreach ($custom_fields as $field_id => $field_data) {
         if (isset($_POST['cac_field_' . $field_id])) {
             $field_value = sanitize_text_field($_POST['cac_field_' . $field_id]);
-            update_user_meta($user_id, 'cac_field_' . $field_label, $field_value);
+            $sanitized_label = strtolower(str_replace(' ', '_', preg_replace('/[^A-Za-z0-9 ]/', '', $field_data['label'])));
+            $meta_key = 'cac_field_' . $sanitized_label . '_' . $field_id;
+            update_user_meta($user_id, $meta_key, $field_value);
         }
     }
+
 
     wp_set_current_user($user_id);
     wp_set_auth_cookie($user_id);

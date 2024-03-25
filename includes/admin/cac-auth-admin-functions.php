@@ -144,27 +144,21 @@ add_action('show_user_profile', 'cac_show_additional_user_meta');
 add_action('edit_user_profile', 'cac_show_additional_user_meta');
 
 function cac_show_additional_user_meta($user) {
-    // Start of Additional Information section
     echo '<h3>Additional Information</h3>';
-    echo '<div class="cac-additional-info">';
-
-    $user_id = $user->ID;
-    $user_meta = get_user_meta($user_id);
-    $cac_fields = array_filter($user_meta, function($key) {
-        return strpos($key, 'cac_field') === 0;
-    }, ARRAY_FILTER_USE_KEY);
-
-    foreach ($cac_fields as $key => $value) {
-        $value = maybe_unserialize($value[0]);
-        echo '<div class="cac-field-row">';
-        echo '<label for="' . esc_attr($key) . '">' . esc_html(str_replace('_', ' ', substr($key, 9))) . '</label>';
-        echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text cac-input" />';
-        echo '</div>';
+    $user_meta = get_user_meta($user->ID);
+    foreach ($user_meta as $key => $value) {
+        if (strpos($key, 'cac_field_') === 0) {
+            $value = maybe_unserialize($value[0]);
+            // Extract a more readable label from the meta key
+            $label = ucwords(str_replace('_', ' ', preg_replace('/cac_field_[a-z]+_/', '', $key)));
+            echo '<div class="form-field">';
+            echo '<label for="' . esc_attr($key) . '">' . esc_html($label) . '</label>';
+            echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text" />';
+            echo '</div>';
+        }
     }
-
-    // End of Additional Information section
-    echo '</div>';
 }
+
 
 // Editable Meta Section
 add_action('personal_options_update', 'cac_save_additional_user_meta');
@@ -175,7 +169,7 @@ function cac_save_additional_user_meta($user_id) {
         return false;
     }
     foreach ($_POST as $key => $value) {
-        if (strpos($key, 'cac_field') === 0) {
+        if (strpos($key, 'cac_field_') === 0) {
             update_user_meta($user_id, sanitize_text_field($key), sanitize_text_field($value));
         }
     }
