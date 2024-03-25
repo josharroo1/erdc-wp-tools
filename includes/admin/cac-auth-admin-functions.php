@@ -138,3 +138,45 @@ function cac_auth_admin_enqueue_scripts($hook) {
     wp_enqueue_script('cac-auth-admin', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-admin.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
 }
 add_action('admin_enqueue_scripts', 'cac_auth_admin_enqueue_scripts');
+
+// User Meta from CAC Registration
+add_action('show_user_profile', 'cac_show_additional_user_meta');
+add_action('edit_user_profile', 'cac_show_additional_user_meta');
+
+function cac_show_additional_user_meta($user) {
+    // Start of Additional Information section
+    echo '<h3>Additional Information</h3>';
+    echo '<div class="cac-additional-info">';
+
+    $user_id = $user->ID;
+    $user_meta = get_user_meta($user_id);
+    $cac_fields = array_filter($user_meta, function($key) {
+        return strpos($key, 'cac_field') === 0;
+    }, ARRAY_FILTER_USE_KEY);
+
+    foreach ($cac_fields as $key => $value) {
+        $value = maybe_unserialize($value[0]);
+        echo '<div class="cac-field-row">';
+        echo '<label for="' . esc_attr($key) . '">' . esc_html(str_replace('_', ' ', substr($key, 9))) . '</label>';
+        echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text cac-input" />';
+        echo '</div>';
+    }
+
+    // End of Additional Information section
+    echo '</div>';
+}
+
+// Editable Meta Section
+add_action('personal_options_update', 'cac_save_additional_user_meta');
+add_action('edit_user_profile_update', 'cac_save_additional_user_meta');
+
+function cac_save_additional_user_meta($user_id) {
+    if (!current_user_can('edit_user', $user_id)) {
+        return false;
+    }
+    foreach ($_POST as $key => $value) {
+        if (strpos($key, 'cac_field') === 0) {
+            update_user_meta($user_id, sanitize_text_field($key), sanitize_text_field($value));
+        }
+    }
+}
