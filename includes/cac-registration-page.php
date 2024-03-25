@@ -121,6 +121,14 @@ function cac_process_registration() {
         exit;
     }
 
+    // Check if email already exists
+    if (email_exists($email)) {
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'email_exists', $registration_page_url));
+        exit;
+    }
+
     $dn = $_SERVER['SSL_CLIENT_S_DN'] ?? '';
     $dod_id = cac_extract_dod_id($dn);
     $names = cac_extract_names($dn);
@@ -184,13 +192,14 @@ function cac_process_registration() {
 }
 add_action('admin_post_nopriv_cac_process_registration', 'cac_process_registration');
 
-// Display registration error message
+// Update the error_messages function to include the new 'email_exists' error message
 function cac_display_registration_error($error_code) {
     $error_messages = array(
         'missing_email' => 'Please provide an email address.',
         'cac_extraction_failed' => 'Failed to extract information from CAC.',
         'user_exists' => 'An account with the provided CAC information already exists.',
         'user_creation_failed' => 'Failed to create a new user account.',
+        'email_exists' => 'An account with the provided email address already exists.', // New error message
     );
 
     if (isset($error_messages[$error_code])) {
