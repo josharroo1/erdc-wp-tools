@@ -141,12 +141,22 @@ table.cac-auth-custom-fields {
 }
 
 .cac-auth-add-field, .cac-auth-remove-field {
-    background: black;
-    color: white;
-    border: none;
-    padding: 5px 13px;
-    border-radius: 5px;
-    text-transform: uppercase;
-    font-weight: 600;
-    font-size: 11px;
+    background: black !important;
+    color: white !important;
+    border: none !important;
+    padding: 5px 13px !important;
+    border-radius: 5px !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+}
+
+.form-information {
+    margin-top: 10px;
+}
+
+.csv-information {
+    margin-top: 10px;
+    font-style: italic;
+    color: #6182a7;
 }

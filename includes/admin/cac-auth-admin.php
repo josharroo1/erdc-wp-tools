@@ -145,7 +145,7 @@ function cac_auth_register_settings() {
 
     add_settings_section(
         'cac_auth_security_section', // Section ID
-        'Security Mitigations', // Section title
+        'Active Security Mitigations', // Section title
         'cac_auth_security_section_callback', // Callback function
         'cac-auth-settings' // Page to add the section to
     );
