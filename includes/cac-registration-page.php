@@ -89,7 +89,7 @@ function cac_render_registration_form() {
                             ?>
                             <div class="form-field">
                                 <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
-                                <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" required>
+                                <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" class="cac-select2" required>
                                     <option value="" disabled selected>Select...</option>
                                     <?php foreach ($options as $key => $value) : ?>
                                         <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($key); ?></option>
@@ -117,6 +117,11 @@ function cac_render_registration_form() {
             <div class="form-footer"><div>You are registering with <a href="<?php echo esc_url(get_site_url()); ?>"><?php echo esc_html(get_site_url()); ?></a></div></div>
         </form>
     </div>
+    <script>
+    jQuery(document).ready(function($) {
+        $('.cac-select2').select2();
+    });
+</script>
     <?php
 }
 
