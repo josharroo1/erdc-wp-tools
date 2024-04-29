@@ -206,11 +206,41 @@ function cac_process_registration() {
         // User is not approved, log them out and display an error message
         wp_logout();
         $message = <<<HTML
-<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; padding: 20px; box-sizing: border-box;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Pending Approval</title>
+<style>
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100%;
+        background: none !important; /* Set your desired background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        border: none !important;
+    }
+    #custom-error {
+        width: 80%;
+        max-width: 600px;
+        padding: 20px;
+        background: white; /* Remove default white background */
+        color: #333; /* Set your text color */
+        box-shadow: none; /* Removes the default box shadow */
+    }
+</style>
+</head>
+<body>
+<div id="custom-error">
     <h1 style="font-weight: bold;">Pending Approval</h1>
     <p>Your account is pending approval. Please be patient as no further action is required from you at this point. An administrator will review and approve your account shortly.</p>
-    <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #0073aa; color: white; text-decoration: none; border-radius: 5px;">Go to Home</a>
 </div>
+</body>
+</html>
 HTML;
 
 wp_die($message, 'Account Pending Approval', array('response' => 200));
