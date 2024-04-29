@@ -201,7 +201,12 @@ function cac_process_registration() {
             update_user_meta($user_id, $meta_key, $field_value);
         }
     }
-
+    
+    if ($user_approval_required && $user_status !== 'active') {
+        // User is not approved, log them out and display an error message
+        wp_logout();
+        wp_die('Your account is pending approval. Please wait for an administrator to review and approve your account.');
+    }
 
     wp_set_current_user($user_id);
     wp_set_auth_cookie($user_id);

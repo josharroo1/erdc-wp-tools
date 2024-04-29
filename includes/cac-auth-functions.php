@@ -71,7 +71,31 @@ function cac_handle_authentication() {
         // Check if the user exists in WordPress based on the hashed DoD ID
         $user = get_users(array('meta_key' => 'hashed_dod_id', 'meta_value' => $hashed_dod_id));
 
-        if (empty($user)) {
+        if (!empty($user)) {
+            $user_status = get_user_meta($user[0]->ID, 'user_status', true);
+            $user_approval_required = get_option('cac_auth_user_approval', false);
+
+            if ($user_approval_required && $user_status !== 'active') {
+                wp_die('Your account is pending approval. Please wait for an administrator to review and approve your account.');
+            }
+
+            // Log the user in
+            wp_set_current_user($user[0]->ID);
+            wp_set_auth_cookie($user[0]->ID);
+
+            // Get the selected redirect page ID
+            $redirect_page_id = get_option('cac_auth_redirect_page');
+
+            if ($redirect_page_id && !is_page($redirect_page_id)) {
+                // Redirect to the selected page if the user is not already on it
+                wp_redirect(get_permalink($redirect_page_id));
+                exit;
+            } elseif (!$redirect_page_id && !is_front_page()) {
+                // Redirect to the home page if no redirect page is selected and the user is not already on the front page
+                wp_redirect(home_url());
+                exit;
+            }
+        } else {
             // Get the selected registration page ID from the plugin settings
             $registration_page_id = get_option('cac_auth_registration_page');
 
@@ -79,25 +103,10 @@ function cac_handle_authentication() {
                 // Redirect to the selected registration page if the user is not already on it
                 wp_redirect(get_permalink($registration_page_id));
                 exit;
-            }
-        } else {
-            // Log the user in
-            wp_set_current_user($user[0]->ID);
-            wp_set_auth_cookie($user[0]->ID);
-
-            if (current_user_can('manage_options')) {
-                // Redirect admin users to the WordPress dashboard
-                wp_redirect(admin_url());
+            } elseif (!$registration_page_id && !is_front_page()) {
+                // Redirect to the home page if no registration page is selected and the user is not already on the front page
+                wp_redirect(home_url());
                 exit;
-            } else {
-                // Get the selected redirect page ID
-                $redirect_page_id = get_option('cac_auth_redirect_page');
-
-                if ($redirect_page_id && !is_page($redirect_page_id)) {
-                    // Redirect to the selected page if the user is not already on it
-                    wp_redirect(get_permalink($redirect_page_id));
-                    exit;
-                }
             }
         }
     }
