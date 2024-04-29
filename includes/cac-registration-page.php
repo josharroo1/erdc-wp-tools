@@ -201,11 +201,20 @@ function cac_process_registration() {
             update_user_meta($user_id, $meta_key, $field_value);
         }
     }
-    
+
     if ($user_approval_required && $user_status !== 'active') {
         // User is not approved, log them out and display an error message
         wp_logout();
-        wp_die('Your account is pending approval. Please wait for an administrator to review and approve your account.');
+        $message = <<<HTML
+<div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; text-align: center; padding: 20px; box-sizing: border-box;">
+    <h1 style="font-weight: bold;">Pending Approval</h1>
+    <p>Your account is pending approval. Please be patient as no further action is required from you at this point. An administrator will review and approve your account shortly.</p>
+    <a href="/" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #0073aa; color: white; text-decoration: none; border-radius: 5px;">Go to Home</a>
+</div>
+HTML;
+
+wp_die($message, 'Account Pending Approval', array('response' => 200));
+
     }
 
     wp_set_current_user($user_id);
