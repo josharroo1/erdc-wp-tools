@@ -213,14 +213,24 @@ function cac_auth_redirect_section_callback() {
 
 // Redirect page callback
 function cac_auth_redirect_page_callback() {
-    $selected_page = get_option('cac_auth_redirect_page');
-    wp_dropdown_pages(array(
-        'name' => 'cac_auth_redirect_page',
-        'echo' => 1,
-        'show_option_none' => '&mdash; Select &mdash;',
-        'option_none_value' => '0',
-        'selected' => $selected_page,
-    ));
+    $selected_redirect = get_option('cac_auth_redirect_page', 'wp-admin');
+    ?>
+    <select name="cac_auth_redirect_page">
+        <option value="wp-admin" <?php selected($selected_redirect, 'wp-admin'); ?>>WordPress Admin (wp-admin)</option>
+        <option value="home" <?php selected($selected_redirect, 'home'); ?>>Home Page</option>
+        <?php
+        $pages = get_pages();
+        foreach ($pages as $page) {
+            printf(
+                '<option value="%s" %s>%s</option>',
+                esc_attr($page->ID),
+                selected($selected_redirect, $page->ID, false),
+                esc_html($page->post_title)
+            );
+        }
+        ?>
+    </select>
+    <?php
 }
 
 // Registration page callback
