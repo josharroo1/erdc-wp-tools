@@ -70,7 +70,7 @@ function cac_check_rate_limit() {
 
 // Handle CAC authentication
 function cac_handle_authentication() {
-    $cac_fallback_action = cac_get_cached_option('cac_auth_fallback_action', 'allow');
+    $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
 
     if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
         if ($cac_fallback_action === 'block' && !current_user_can('manage_options')) {
@@ -99,7 +99,7 @@ function cac_handle_authentication() {
 
     if ($user) {
         $user_status = get_user_meta($user->ID, 'user_status', true);
-        $user_approval_required = cac_get_cached_option('cac_auth_user_approval', false);
+        $user_approval_required = get_option('cac_auth_user_approval', false);
 
         if ($user_approval_required && $user_status !== 'active') {
             $message = <<<HTML
@@ -148,7 +148,7 @@ function cac_handle_authentication() {
         wp_set_auth_cookie($user->ID);
 
         // Get the selected redirect option
-        $redirect_option = cac_get_cached_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
 
         // Determine the redirect URL
         if ($redirect_option === 'wp-admin') {
@@ -167,7 +167,7 @@ function cac_handle_authentication() {
         }
     } else {
         // Get the selected registration page ID from the plugin settings
-        $registration_page_id = cac_get_cached_option('cac_auth_registration_page');
+        $registration_page_id = get_option('cac_auth_registration_page');
 
         if ($registration_page_id && !is_page($registration_page_id)) {
             // Redirect to the selected registration page if the user is not already on it
