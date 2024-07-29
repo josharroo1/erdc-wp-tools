@@ -179,6 +179,12 @@ function cac_maybe_handle_authentication() {
         return;
     }
 
+    // Don't attempt authentication on the registration page
+    $registration_page_id = get_option('cac_auth_registration_page');
+    if ($registration_page_id && is_page($registration_page_id)) {
+        return;
+    }
+
     // Now we can safely call the authentication function
     cac_handle_authentication();
 }
