@@ -55,6 +55,16 @@ function cac_generate_username($names, $email) {
 
 // Handle CAC authentication
 function cac_handle_authentication() {
+    error_log('CAC Auth: Entering cac_handle_authentication');
+
+    $registration_page_id = get_option('cac_auth_registration_page');
+
+    // If we're on the registration page, don't proceed with authentication
+    if ($registration_page_id && is_page($registration_page_id)) {
+        error_log('CAC Auth: On registration page, exiting authentication');
+        return;
+    }
+
     $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
 
     if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
@@ -80,6 +90,7 @@ function cac_handle_authentication() {
     $user = cac_get_user_by_dod_id($hashed_dod_id);
 
     if ($user) {
+        error_log('CAC Auth: User found');
         $user_status = get_user_meta($user->ID, 'user_status', true);
         $user_approval_required = get_option('cac_auth_user_approval', false);
 
@@ -144,48 +155,62 @@ function cac_handle_authentication() {
         // Prevent redirect loops
         $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         if ($current_url !== $redirect_url) {
+            error_log('CAC Auth: Redirecting to ' . $redirect_url);
             wp_safe_redirect($redirect_url);
             exit;
         }
     } else {
-        // Get the selected registration page ID from the plugin settings
-        $registration_page_id = get_option('cac_auth_registration_page');
-
-        if ($registration_page_id && !is_page($registration_page_id)) {
-            // Redirect to the selected registration page if the user is not already on it
-            wp_redirect(get_permalink($registration_page_id));
-            exit;
-        } elseif (!$registration_page_id && !is_front_page()) {
-            // Redirect to the home page if no registration page is selected and the user is not already on the front page
-            wp_redirect(home_url());
-            exit;
+        error_log('CAC Auth: User not found');
+        // User doesn't exist
+        if ($registration_page_id) {
+            // If we're not already on the registration page, redirect to it
+            if (!is_page($registration_page_id)) {
+                error_log('CAC Auth: Redirecting to registration page');
+                wp_safe_redirect(get_permalink($registration_page_id));
+                exit;
+            }
+            // If we are on the registration page, do nothing and let the page handle registration
+        } else {
+            // No registration page set, redirect to home if not already there
+            if (!is_front_page()) {
+                error_log('CAC Auth: No registration page set, redirecting to home');
+                wp_safe_redirect(home_url());
+                exit;
+            }
         }
     }
 }
 
 function cac_maybe_handle_authentication() {
+    error_log('CAC Auth: Entering cac_maybe_handle_authentication');
+
     // Only proceed if CAC authentication is enabled
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
+        error_log('CAC Auth: CAC authentication is disabled');
         return;
     }
 
     // Only proceed for non-logged in users
     if (is_user_logged_in()) {
+        error_log('CAC Auth: User is already logged in');
         return;
     }
 
     // Only proceed if SSL_CLIENT_S_DN_CN is set (indicating a CAC connection attempt)
     if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+        error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
         return;
     }
 
     // Don't attempt authentication on the registration page
     $registration_page_id = get_option('cac_auth_registration_page');
     if ($registration_page_id && is_page($registration_page_id)) {
+        error_log('CAC Auth: On registration page, skipping authentication');
         return;
     }
 
     // Now we can safely call the authentication function
+    error_log('CAC Auth: Proceeding with authentication');
     cac_handle_authentication();
 }
 
