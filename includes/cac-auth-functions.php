@@ -53,21 +53,6 @@ function cac_generate_username($names, $email) {
     return $username;
 }
 
-// Authentication rate limiting
-function cac_check_rate_limit() {
-    $ip = $_SERVER['REMOTE_ADDR'];
-    $transient_name = 'cac_auth_attempt_' . md5($ip);
-    $attempt_count = get_transient($transient_name);
-
-    if (false === $attempt_count) {
-        set_transient($transient_name, 1, 300); // 5 minutes window
-    } elseif ($attempt_count >= 5) {
-        wp_die('Too many authentication attempts. Please try again later.', 'Rate Limit Exceeded', array('response' => 429));
-    } else {
-        set_transient($transient_name, $attempt_count + 1, 300);
-    }
-}
-
 // Handle CAC authentication
 function cac_handle_authentication() {
     $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
@@ -78,9 +63,6 @@ function cac_handle_authentication() {
         }
         return;
     }
-
-    // Check rate limit before proceeding with authentication
-    cac_check_rate_limit();
 
     $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
     $dod_id = cac_extract_dod_id($dn);
