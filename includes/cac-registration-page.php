@@ -254,12 +254,13 @@ wp_die($message, 'Account Pending Approval', array('response' => 200));
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
 
-        $redirect_page_id = get_option('cac_auth_redirect_page');
-        $redirect_url = $redirect_page_id ? get_permalink($redirect_page_id) : admin_url();
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+    $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
 
-        error_log('Redirecting new user to: ' . $redirect_url);
-        wp_redirect($redirect_url);
-        exit;
+    error_log('CAC Auth: Redirecting to ' . $redirect_url);
+    wp_redirect($redirect_url);
+    exit;
     }
 }
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
