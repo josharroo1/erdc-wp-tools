@@ -4,16 +4,13 @@
  */
 
 // Register CAC registration shortcode
-function cac_registration_shortcode() {
-    if (isset($_GET['display']) && $_GET['display'] === 'cac_register') {
-        // Display the registration form
-        ob_start();
-        cac_render_registration_form();
-        return ob_get_clean();
-    } else {
-        return 'Access Denied';
-    }
+function cac_registration_shortcode()  {
+    // Remove the check for 'action' parameter
+    ob_start();
+    cac_render_registration_form();
+    return ob_get_clean();
 }
+
 add_shortcode('cac_registration', 'cac_registration_shortcode');
 
 // Render CAC registration form

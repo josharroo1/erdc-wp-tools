@@ -139,7 +139,7 @@ function cac_generate_username($names, $email) {
         error_log('CAC Auth: User not found');
         $registration_page_id = get_option('cac_auth_registration_page');
         if ($registration_page_id) {
-            $registration_url = add_query_arg('display', 'cac_register', get_permalink($registration_page_id));
+            $registration_url = get_permalink($registration_page_id);
             error_log('CAC Auth: Redirecting to registration page: ' . $registration_url);
             wp_redirect($registration_url);
             exit;
@@ -166,9 +166,8 @@ function cac_maybe_handle_authentication() {
     $current_page_id = get_queried_object_id();
 
     // Check if we're on the registration page or if the 'action' parameter is set to 'cac_register'
-    if (($registration_page_id && $current_page_id == $registration_page_id) || 
-        (isset($_GET['display']) && $_GET['display'] === 'cac_register')) {
-        error_log('CAC Auth: On registration page or registration action, skipping authentication');
+    if ($registration_page_id && $current_page_id == $registration_page_id) {
+        error_log('CAC Auth: On registration page, displaying registration form');
         return;
     }
 
