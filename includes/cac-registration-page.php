@@ -5,7 +5,7 @@
 
 // Register CAC registration shortcode
 function cac_registration_shortcode() {
-    if (isset($_GET['action']) && $_GET['action'] === 'cac_register') {
+    if (isset($_GET['display']) && $_GET['display'] === 'cac_register') {
         // Display the registration form
         ob_start();
         cac_render_registration_form();
@@ -131,6 +131,9 @@ function cac_render_registration_form() {
 
 // Process CAC registration form submission
 function cac_process_registration() {
+    error_log('CAC registration process started');
+    error_log('POST data: ' . print_r($_POST, true));
+
     if (!isset($_POST['cac_registration_nonce']) || !wp_verify_nonce($_POST['cac_registration_nonce'], 'cac_registration')) {
         wp_die('Invalid nonce.');
     }
