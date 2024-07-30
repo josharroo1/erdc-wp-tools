@@ -53,7 +53,7 @@ function cac_generate_username($names, $email) {
     return $username;
 }
 
-// Handle CAC authentication
+// CAC Handle Authentication
 function cac_handle_authentication() {
     error_log('CAC Auth: Entering cac_handle_authentication');
 
@@ -79,14 +79,11 @@ function cac_handle_authentication() {
     $names = cac_extract_names($dn);
 
     if (!$dod_id || !$names) {
-        // Handle error if DoD ID or name extraction fails
         wp_die('Failed to verify CAC information');
     }
 
-    // Hash the DoD ID
     $hashed_dod_id = hash('sha256', $dod_id);
 
-    // Check if the user exists in WordPress based on the hashed DoD ID
     $user = cac_get_user_by_dod_id($hashed_dod_id);
 
     if ($user) {
@@ -136,14 +133,11 @@ function cac_handle_authentication() {
             wp_die($message, 'Account Pending Approval', array('response' => 200));
         }
 
-        // Log the user in
         wp_set_current_user($user->ID);
         wp_set_auth_cookie($user->ID);
 
-        // Get the selected redirect option
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
 
-        // Determine the redirect URL
         if ($redirect_option === 'wp-admin') {
             $redirect_url = admin_url();
         } elseif ($redirect_option === 'home') {
@@ -152,7 +146,6 @@ function cac_handle_authentication() {
             $redirect_url = get_permalink($redirect_option);
         }
 
-        // Prevent redirect loops
         $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         if ($current_url !== $redirect_url) {
             error_log('CAC Auth: Redirecting to ' . $redirect_url);
@@ -161,22 +154,12 @@ function cac_handle_authentication() {
         }
     } else {
         error_log('CAC Auth: User not found');
-        // User doesn't exist
         if ($registration_page_id) {
-            // If we're not already on the registration page, redirect to it
-            if (!is_page($registration_page_id)) {
-                error_log('CAC Auth: Redirecting to registration page');
-                wp_safe_redirect(get_permalink($registration_page_id));
-                exit;
-            }
-            // If we are on the registration page, do nothing and let the page handle registration
+            error_log('CAC Auth: Redirecting to registration page');
+            wp_safe_redirect(add_query_arg('action', 'cac_register', get_permalink($registration_page_id)));
+            exit;
         } else {
-            // No registration page set, redirect to home if not already there
-            if (!is_front_page()) {
-                error_log('CAC Auth: No registration page set, redirecting to home');
-                wp_safe_redirect(home_url());
-                exit;
-            }
+            wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
         }
     }
 }
@@ -184,32 +167,27 @@ function cac_handle_authentication() {
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
 
-    // Only proceed if CAC authentication is enabled
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
         return;
     }
 
-    // Only proceed for non-logged in users
     if (is_user_logged_in()) {
         error_log('CAC Auth: User is already logged in');
         return;
     }
 
-    // Only proceed if SSL_CLIENT_S_DN_CN is set (indicating a CAC connection attempt)
     if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
         error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
         return;
     }
 
-    // Don't attempt authentication on the registration page
     $registration_page_id = get_option('cac_auth_registration_page');
     if ($registration_page_id && is_page($registration_page_id)) {
         error_log('CAC Auth: On registration page, skipping authentication');
         return;
     }
 
-    // Now we can safely call the authentication function
     error_log('CAC Auth: Proceeding with authentication');
     cac_handle_authentication();
 }
