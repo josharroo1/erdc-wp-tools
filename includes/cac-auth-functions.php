@@ -54,130 +54,110 @@ function cac_generate_username($names, $email) {
 }
 
 // CAC Handle Authentication
-    function cac_handle_authentication() {
-        error_log('CAC Auth: Entering cac_handle_authentication');
-    
-        $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
-    
-        if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
-            if ($cac_fallback_action === 'block' && !current_user_can('manage_options')) {
-                wp_die('Access restricted. CAC authentication is required.');
-            }
-            return;
+  function cac_handle_authentication() {
+    $cac_enabled = get_option('cac_auth_enabled', 'yes');
+    $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
+
+    if ($cac_enabled === 'yes' && !isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+        if ($cac_fallback_action === 'block' && !current_user_can('manage_options')) {
+            wp_die('Access restricted. CAC authentication is required.');
         }
-    
+        return;
+    }
+
+    if (isset($_SERVER['SSL_CLIENT_S_DN_CN']) && !is_user_logged_in()) {
         $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
         $dod_id = cac_extract_dod_id($dn);
         $names = cac_extract_names($dn);
-    
+
         if (!$dod_id || !$names) {
+            // Handle error if DoD ID or name extraction fails
             wp_die('Failed to verify CAC information');
         }
-    
+
+        // Hash the DoD ID
         $hashed_dod_id = hash('sha256', $dod_id);
-    
-        $user = cac_get_user_by_dod_id($hashed_dod_id);
-    
-        if ($user) {
-            error_log('CAC Auth: User found');
-            $user_status = get_user_meta($user->ID, 'user_status', true);
+
+        // Check if the user exists in WordPress based on the hashed DoD ID
+        $user = get_users(array('meta_key' => 'hashed_dod_id', 'meta_value' => $hashed_dod_id));
+
+        if (!empty($user)) {
+            $user_status = get_user_meta($user[0]->ID, 'user_status', true);
             $user_approval_required = get_option('cac_auth_user_approval', false);
-    
+
             if ($user_approval_required && $user_status !== 'active') {
-            $message = <<<HTML
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-            <meta charset="UTF-8">
-            <title>Account Pending Approval</title>
-            <style>
-                html, body {
-                    margin: 0 !important;
-                    padding: 0 !important;
-                    height: 100%;
-                    background: none !important;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    text-align: center;
-                    font-family: Arial, sans-serif;
-                    border: none !important;
-                }
-                #custom-error {
-                    width: 80%;
-                    max-width: 600px;
-                    padding: 20px;
-                    background: white;
-                    color: #333;
-                    box-shadow: none;
-                }
-            </style>
-            </head>
-            <body>
-            <div id="custom-error">
-                <h1 style="font-weight: bold;">Pending Approval</h1>
-                <p>Your account is pending approval. Please be patient as no further action is required from you at this point. An administrator will review and approve your account shortly.</p>
-            </div>
-            </body>
-            </html>
-            HTML;
+                $message = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Account Pending Approval</title>
+<style>
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100%;
+        background: none !important; /* Set your desired background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        border: none !important;
+    }
+    #custom-error {
+        width: 80%;
+        max-width: 600px;
+        padding: 20px;
+        background: white; /* Remove default white background */
+        color: #333; /* Set your text color */
+        box-shadow: none; /* Removes the default box shadow */
+    }
+</style>
+</head>
+<body>
+<div id="custom-error">
+    <h1 style="font-weight: bold;">Pending Approval</h1>
+    <p>Your account is pending approval. Please be patient as no further action is required from you at this point. An administrator will review and approve your account shortly.</p>
+</div>
+</body>
+</html>
+HTML;
 
-            wp_die($message, 'Account Pending Approval', array('response' => 200));
-        }
+wp_die($message, 'Account Pending Approval', array('response' => 200));
 
-        wp_set_current_user($user->ID);
-        wp_set_auth_cookie($user->ID);
+            }
 
-        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+            // Log the user in
+            wp_set_current_user($user[0]->ID);
+            wp_set_auth_cookie($user[0]->ID);
 
-        error_log('CAC Auth: Redirecting to ' . $redirect_url);
-        wp_redirect($redirect_url);
-        exit;
-    } else {
-        error_log('CAC Auth: User not found');
-        $registration_page_id = get_option('cac_auth_registration_page');
-        if ($registration_page_id) {
-            $registration_url = get_permalink($registration_page_id);
-            error_log('CAC Auth: Redirecting to registration page: ' . $registration_url);
-            wp_redirect($registration_url);
-            exit;
+            // Get the selected redirect page ID
+            $redirect_page_id = get_option('cac_auth_redirect_page');
+
+            if ($redirect_page_id && !is_page($redirect_page_id)) {
+                // Redirect to the selected page if the user is not already on it
+                wp_redirect(get_permalink($redirect_page_id));
+                exit;
+            } elseif (!$redirect_page_id && !is_front_page()) {
+                // Redirect to the home page if no redirect page is selected and the user is not already on the front page
+                wp_redirect(home_url());
+                exit;
+            }
         } else {
-            wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
+            // Get the selected registration page ID from the plugin settings
+            $registration_page_id = get_option('cac_auth_registration_page');
+
+            if ($registration_page_id && !is_page($registration_page_id)) {
+                // Redirect to the selected registration page if the user is not already on it
+                wp_redirect(get_permalink($registration_page_id));
+                exit;
+            } elseif (!$registration_page_id && !is_front_page()) {
+                // Redirect to the home page if no registration page is selected and the user is not already on the front page
+                wp_redirect(home_url());
+                exit;
+            }
         }
     }
 }
-
-function cac_maybe_handle_authentication() {
-    error_log('CAC Auth: Entering cac_maybe_handle_authentication');
-
-    if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
-        error_log('CAC Auth: CAC authentication is disabled');
-        return;
-    }
-
-    if (is_user_logged_in()) {
-        error_log('CAC Auth: User is already logged in');
-        return;
-    }
-
-    $registration_page_id = get_option('cac_auth_registration_page');
-    $current_page_id = get_queried_object_id();
-
-    // Check if we're on the registration page or if the 'action' parameter is set to 'cac_register'
-    if ($registration_page_id && $current_page_id == $registration_page_id) {
-        error_log('CAC Auth: On registration page, displaying registration form');
-        return;
-    }
-
-    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
-        error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
-        return;
-    }
-
-    error_log('CAC Auth: Proceeding with authentication');
-    cac_handle_authentication();
-}
-// Add new action to init hook with the wrapper function
-add_action('init', 'cac_maybe_handle_authentication', 1);
+add_action('template_redirect', 'cac_handle_authentication');
