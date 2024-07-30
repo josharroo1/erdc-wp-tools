@@ -250,19 +250,17 @@ HTML;
 
 wp_die($message, 'Account Pending Approval', array('response' => 200));
 
-    }
-
-    wp_set_current_user($user_id);
-    wp_set_auth_cookie($user_id);
-
-    $redirect_page_id = get_option('cac_auth_redirect_page');
-    if ($redirect_page_id) {
-        wp_redirect(get_permalink($redirect_page_id));
     } else {
-        wp_redirect(home_url());
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
+
+        $redirect_page_id = get_option('cac_auth_redirect_page');
+        $redirect_url = $redirect_page_id ? get_permalink($redirect_page_id) : admin_url();
+
+        error_log('Redirecting new user to: ' . $redirect_url);
+        wp_redirect($redirect_url);
+        exit;
     }
-    exit;
-}
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
 add_action('admin_post_nopriv_cac_process_registration', 'cac_process_registration');
 
