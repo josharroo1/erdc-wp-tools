@@ -137,6 +137,15 @@ function cac_process_registration() {
 
     $email = sanitize_email($_POST['cac_email']);
 
+    $max_email_length = 100; // WordPress default limit
+    if (strlen($email) > $max_email_length) {
+        error_log('Email exceeds maximum length: ' . strlen($email) . ' characters');
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'email_too_long', $registration_page_url));
+        exit;
+    }
+
     if (empty($email)) {
         $registration_page_id = get_option('cac_auth_registration_page');
         $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
@@ -144,6 +153,15 @@ function cac_process_registration() {
         exit;
     }
 
+    // Check if email is valid
+    if (!is_email($email)) {
+        error_log('Invalid email format: ' . $email);
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : home_url('/cac-registration/');
+        wp_redirect(add_query_arg('registration_error', 'invalid_email', $registration_page_url));
+        exit;
+    }
+    
     // Check if email already exists
     if (email_exists($email)) {
         $registration_page_id = get_option('cac_auth_registration_page');
@@ -255,7 +273,7 @@ wp_die($message, 'Account Pending Approval', array('response' => 200));
         wp_set_auth_cookie($user_id);
 
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-    $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
                     (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
 
     error_log('CAC Auth: Redirecting to ' . $redirect_url);
@@ -273,10 +291,12 @@ function cac_display_registration_error($error_code) {
         'cac_extraction_failed' => 'Failed to extract information from CAC.',
         'user_exists' => 'An account with the provided CAC information already exists.',
         'user_creation_failed' => 'Failed to create a new user account.',
-        'email_exists' => 'An account with the provided email address already exists.', // New error message
+        'email_exists' => 'An account with the provided email address already exists.',
+        'email_too_long' => 'The provided email address is too long. Maximum length is 100 characters.',
+        'invalid_email' => 'The provided email address is not valid.',
     );
 
     if (isset($error_messages[$error_code])) {
-        echo '<div class="cac-registration-error">' . $error_messages[$error_code] . '</div>';
+        echo '<div class="cac-registration-error">' . esc_html($error_messages[$error_code]) . '</div>';
     }
 }
