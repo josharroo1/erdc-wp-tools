@@ -216,8 +216,7 @@ function cac_auth_redirect_page_callback() {
     $selected_redirect = get_option('cac_auth_redirect_page', 'wp-admin');
     ?>
     <select name="cac_auth_redirect_page">
-        <option value="wp-admin" <?php selected($selected_redirect, 'wp-admin'); ?>>WordPress Admin (wp-admin)</option>
-        <option value="home" <?php selected($selected_redirect, 'home'); ?>>Home Page</option>
+        <option value="wp-admin" <?php selected($selected_redirect, 'wp-admin'); ?>>Admin Panel</option>
         <?php
         $pages = get_pages();
         foreach ($pages as $page) {
