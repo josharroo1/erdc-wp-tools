@@ -54,7 +54,6 @@ function cac_generate_username($names, $email) {
 }
 
 // CAC Handle Authentication
-function cac_handle_authentication() {
     function cac_handle_authentication() {
         error_log('CAC Auth: Entering cac_handle_authentication');
     
