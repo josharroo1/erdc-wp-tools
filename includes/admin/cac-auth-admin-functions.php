@@ -162,43 +162,79 @@ add_action('show_user_profile', 'cac_show_additional_user_meta');
 add_action('edit_user_profile', 'cac_show_additional_user_meta');
 
 function cac_show_additional_user_meta($user) {
+    $custom_fields = get_option('cac_auth_registration_fields', array());
+    $user_meta = get_user_meta($user->ID);
+
     echo '<div class="cac-additional-info">';
     echo '<h3>Additional Information</h3>';
 
-    $user_meta = get_user_meta($user->ID);
-    foreach ($user_meta as $key => $values) {
-        if (strpos($key, 'cac_field_') === 0) {
-            // Extract the label part of the key and capitalize it
-            $label = ucwords(str_replace('_', ' ', substr($key, 10))); // Remove 'cac_field_' prefix and replace underscores with spaces
+    foreach ($custom_fields as $field_id => $field_data) {
+        $meta_key = 'cac_field_' . strtolower(str_replace(' ', '_', preg_replace('/[^A-Za-z0-9 ]/', '', $field_data['label'])));
+        $field_value = isset($user_meta[$meta_key][0]) ? maybe_unserialize($user_meta[$meta_key][0]) : '';
+        $field_label = isset($field_data['label']) ? $field_data['label'] : '';
+        $field_type = isset($field_data['type']) ? $field_data['type'] : 'text';
 
-            $value = maybe_unserialize($values[0]);
+        echo '<div class="cac-field-row">';
+        echo '<label for="' . esc_attr($meta_key) . '">' . esc_html($field_label) . '</label>';
 
-            echo '<div class="cac-field-row">';
-            echo '<label for="' . esc_attr($key) . '">' . esc_html($label) . '</label>';
-            echo '<input type="text" name="' . esc_attr($key) . '" id="' . esc_attr($key) . '" value="' . esc_attr($value) . '" class="regular-text">';
-            echo '</div>';
+        switch ($field_type) {
+            case 'text':
+            case 'number':
+                echo '<input type="' . esc_attr($field_type) . '" name="' . esc_attr($meta_key) . '" id="' . esc_attr($meta_key) . '" value="' . esc_attr($field_value) . '" class="regular-text">';
+                break;
+            case 'select':
+                echo '<select name="' . esc_attr($meta_key) . '" id="' . esc_attr($meta_key) . '">';
+                $options = array();
+                $csv_file = get_option('cac_auth_csv_file_' . $field_id, '');
+                if (!empty($csv_file)) {
+                    $upload_dir = wp_upload_dir();
+                    $csv_path = $upload_dir['basedir'] . '/cac-auth-csv-files/' . $csv_file;
+                    if (file_exists($csv_path)) {
+                        $csv_data = array_map('str_getcsv', file($csv_path));
+                        array_walk($csv_data, function(&$a) use ($csv_data) {
+                            $a = array_combine($csv_data[0], $a);
+                        });
+                        array_shift($csv_data);
+                        foreach ($csv_data as $row) {
+                            $options[$row['key']] = $row['value'];
+                        }
+                    }
+                } else {
+                    $field_options = isset($field_data['options']) ? $field_data['options'] : '';
+                    $options = array_map('trim', explode(',', $field_options));
+                    $options = array_combine($options, $options);
+                }
+                foreach ($options as $key => $value) {
+                    echo '<option value="' . esc_attr($value) . '" ' . selected($field_value, $value, false) . '>' . esc_html($key) . '</option>';
+                }
+                echo '</select>';
+                break;
+            default:
+                echo '<input type="text" name="' . esc_attr($meta_key) . '" id="' . esc_attr($meta_key) . '" value="' . esc_attr($field_value) . '" class="regular-text">';
+                break;
         }
+        echo '</div>';
     }
 
     echo '</div>'; // Close .cac-additional-info
 }
 
-
-
-// Editable Meta Section
-add_action('personal_options_update', 'cac_save_additional_user_meta');
-add_action('edit_user_profile_update', 'cac_save_additional_user_meta');
-
 function cac_save_additional_user_meta($user_id) {
     if (!current_user_can('edit_user', $user_id)) {
         return false;
     }
-    foreach ($_POST as $key => $value) {
-        if (strpos($key, 'cac_field_') === 0) {
-            update_user_meta($user_id, sanitize_text_field($key), sanitize_text_field($value));
+
+    $custom_fields = get_option('cac_auth_registration_fields', array());
+
+    foreach ($custom_fields as $field_data) {
+        $meta_key = 'cac_field_' . strtolower(str_replace(' ', '_', preg_replace('/[^A-Za-z0-9 ]/', '', $field_data['label'])));
+        if (isset($_POST[$meta_key])) {
+            update_user_meta($user_id, $meta_key, sanitize_text_field($_POST[$meta_key]));
         }
     }
 }
+add_action('personal_options_update', 'cac_save_additional_user_meta');
+add_action('edit_user_profile_update', 'cac_save_additional_user_meta');
 
 function cac_admin_styles() {
     echo '<style>
