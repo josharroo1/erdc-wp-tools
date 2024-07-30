@@ -156,7 +156,7 @@ function cac_handle_authentication() {
         error_log('CAC Auth: User not found');
         if ($registration_page_id) {
             error_log('CAC Auth: Redirecting to registration page');
-            wp_safe_redirect(add_query_arg('action', 'cac_register', get_permalink($registration_page_id)));
+            wp_redirect(add_query_arg('action', 'cac_register', get_permalink($registration_page_id)));
             exit;
         } else {
             wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
@@ -165,10 +165,6 @@ function cac_handle_authentication() {
 }
 
 function cac_maybe_handle_authentication() {
-    if (!session_id()) {
-        session_start();
-    }
-    
     $redirect_count = isset($_SESSION['cac_redirect_count']) ? $_SESSION['cac_redirect_count'] : 0;
     if ($redirect_count > 5) {
         wp_die('Too many redirects. Please contact the site administrator.');
