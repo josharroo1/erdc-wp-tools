@@ -261,6 +261,7 @@ wp_die($message, 'Account Pending Approval', array('response' => 200));
         wp_redirect($redirect_url);
         exit;
     }
+}
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
 add_action('admin_post_nopriv_cac_process_registration', 'cac_process_registration');
 
