@@ -165,6 +165,15 @@ function cac_handle_authentication() {
 }
 
 function cac_maybe_handle_authentication() {
+    if (!session_id()) {
+        session_start();
+    }
+    
+    $redirect_count = isset($_SESSION['cac_redirect_count']) ? $_SESSION['cac_redirect_count'] : 0;
+    if ($redirect_count > 5) {
+        wp_die('Too many redirects. Please contact the site administrator.');
+    }
+    $_SESSION['cac_redirect_count'] = $redirect_count + 1;
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
 
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
