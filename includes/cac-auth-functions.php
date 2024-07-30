@@ -55,43 +55,36 @@ function cac_generate_username($names, $email) {
 
 // CAC Handle Authentication
 function cac_handle_authentication() {
-    error_log('CAC Auth: Entering cac_handle_authentication');
-
-    $registration_page_id = get_option('cac_auth_registration_page');
-
-    // If we're on the registration page, don't proceed with authentication
-    if ($registration_page_id && is_page($registration_page_id)) {
-        error_log('CAC Auth: On registration page, exiting authentication');
-        return;
-    }
-
-    $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
-
-    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
-        if ($cac_fallback_action === 'block' && !current_user_can('manage_options')) {
-            wp_die('Access restricted. CAC authentication is required.');
+    function cac_handle_authentication() {
+        error_log('CAC Auth: Entering cac_handle_authentication');
+    
+        $cac_fallback_action = get_option('cac_auth_fallback_action', 'allow');
+    
+        if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+            if ($cac_fallback_action === 'block' && !current_user_can('manage_options')) {
+                wp_die('Access restricted. CAC authentication is required.');
+            }
+            return;
         }
-        return;
-    }
-
-    $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
-    $dod_id = cac_extract_dod_id($dn);
-    $names = cac_extract_names($dn);
-
-    if (!$dod_id || !$names) {
-        wp_die('Failed to verify CAC information');
-    }
-
-    $hashed_dod_id = hash('sha256', $dod_id);
-
-    $user = cac_get_user_by_dod_id($hashed_dod_id);
-
-    if ($user) {
-        error_log('CAC Auth: User found');
-        $user_status = get_user_meta($user->ID, 'user_status', true);
-        $user_approval_required = get_option('cac_auth_user_approval', false);
-
-        if ($user_approval_required && $user_status !== 'active') {
+    
+        $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+        $dod_id = cac_extract_dod_id($dn);
+        $names = cac_extract_names($dn);
+    
+        if (!$dod_id || !$names) {
+            wp_die('Failed to verify CAC information');
+        }
+    
+        $hashed_dod_id = hash('sha256', $dod_id);
+    
+        $user = cac_get_user_by_dod_id($hashed_dod_id);
+    
+        if ($user) {
+            error_log('CAC Auth: User found');
+            $user_status = get_user_meta($user->ID, 'user_status', true);
+            $user_approval_required = get_option('cac_auth_user_approval', false);
+    
+            if ($user_approval_required && $user_status !== 'active') {
             $message = <<<HTML
             <!DOCTYPE html>
             <html lang="en">
@@ -137,26 +130,19 @@ function cac_handle_authentication() {
         wp_set_auth_cookie($user->ID);
 
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
 
-        if ($redirect_option === 'wp-admin') {
-            $redirect_url = admin_url();
-        } elseif ($redirect_option === 'home') {
-            $redirect_url = home_url();
-        } else {
-            $redirect_url = get_permalink($redirect_option);
-        }
-
-        $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-        if ($current_url !== $redirect_url) {
-            error_log('CAC Auth: Redirecting to ' . $redirect_url);
-            wp_safe_redirect($redirect_url);
-            exit;
-        }
+        error_log('CAC Auth: Redirecting to ' . $redirect_url);
+        wp_redirect($redirect_url);
+        exit;
     } else {
         error_log('CAC Auth: User not found');
+        $registration_page_id = get_option('cac_auth_registration_page');
         if ($registration_page_id) {
-            error_log('CAC Auth: Redirecting to registration page');
-            wp_redirect(add_query_arg('action', 'cac_register', get_permalink($registration_page_id)));
+            $registration_url = add_query_arg('action', 'cac_register', get_permalink($registration_page_id));
+            error_log('CAC Auth: Redirecting to registration page: ' . $registration_url);
+            wp_redirect($registration_url);
             exit;
         } else {
             wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
@@ -165,11 +151,6 @@ function cac_handle_authentication() {
 }
 
 function cac_maybe_handle_authentication() {
-    $redirect_count = isset($_SESSION['cac_redirect_count']) ? $_SESSION['cac_redirect_count'] : 0;
-    if ($redirect_count > 5) {
-        wp_die('Too many redirects. Please contact the site administrator.');
-    }
-    $_SESSION['cac_redirect_count'] = $redirect_count + 1;
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
 
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
@@ -182,20 +163,23 @@ function cac_maybe_handle_authentication() {
         return;
     }
 
-    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
-        error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
+    $registration_page_id = get_option('cac_auth_registration_page');
+    $current_page_id = get_queried_object_id();
+
+    // Check if we're on the registration page or if the 'action' parameter is set to 'cac_register'
+    if (($registration_page_id && $current_page_id == $registration_page_id) || 
+        (isset($_GET['action']) && $_GET['action'] === 'cac_register')) {
+        error_log('CAC Auth: On registration page or registration action, skipping authentication');
         return;
     }
 
-    $registration_page_id = get_option('cac_auth_registration_page');
-    if ($registration_page_id && is_page($registration_page_id)) {
-        error_log('CAC Auth: On registration page, skipping authentication');
+    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+        error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
         return;
     }
 
     error_log('CAC Auth: Proceeding with authentication');
     cac_handle_authentication();
 }
-
 // Add new action to init hook with the wrapper function
 add_action('init', 'cac_maybe_handle_authentication', 1);
