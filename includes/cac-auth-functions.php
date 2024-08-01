@@ -61,6 +61,12 @@ function cac_maybe_handle_authentication() {
         return;
     }
 
+    // Early return if user is already logged in
+    if (is_user_logged_in()) {
+        error_log('CAC Auth: User is already logged in, skipping authentication');
+        return;
+    }
+
     $registration_page_id = get_option('cac_auth_registration_page');
     $current_page_id = get_queried_object_id();
 
@@ -81,20 +87,11 @@ function cac_maybe_handle_authentication() {
     $user = cac_get_user_by_dod_id($hashed_dod_id);
 
     if ($user) {
-        if (is_user_logged_in()) {
-            $current_user = wp_get_current_user();
-            if ($current_user->ID != $user->ID) {
-                // Logged in user doesn't match CAC, log them out
-                wp_logout();
-            } else {
-                // Check user status
-                $user_status = get_user_meta($user->ID, 'user_status', true);
-                $user_approval_required = get_option('cac_auth_user_approval', false);
-                if ($user_approval_required && $user_status !== 'active') {
-                    wp_die(cac_get_pending_approval_message(), 'Account Pending Approval', array('response' => 200));
-                }
-                return; // User is logged in and active, no further action needed
-            }
+        // Check user status
+        $user_status = get_user_meta($user->ID, 'user_status', true);
+        $user_approval_required = get_option('cac_auth_user_approval', false);
+        if ($user_approval_required && $user_status !== 'active') {
+            wp_die(cac_get_pending_approval_message(), 'Account Pending Approval', array('response' => 200));
         }
         // Proceed with authentication for existing user
         cac_handle_authentication($user);
@@ -166,3 +163,48 @@ function cac_get_pending_approval_message() {
 }
 
 add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
+
+/**
+ * Validate auth cookie for CAC users
+ */
+function cac_auth_cookie_valid($valid, $cookie_elements, $user, $scheme, $user_id) {
+    if ($valid || get_option('cac_auth_enabled', 'yes') !== 'yes') {
+        return $valid;
+    }
+
+    if (isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+        $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+        $dod_id = cac_extract_dod_id($dn);
+        $hashed_dod_id = hash('sha256', $dod_id);
+
+        $cac_user = cac_get_user_by_dod_id($hashed_dod_id);
+
+        if ($cac_user && $cac_user->ID === $user_id) {
+            wp_set_auth_cookie($user_id, false, is_ssl());
+            error_log("CAC Auth: Re-authenticated user {$user_id} via CAC credentials");
+            return true;
+        }
+    }
+
+    error_log("CAC Auth: Failed to re-authenticate user {$user_id} via CAC credentials");
+    return $valid;
+}
+
+// Hook into auth cookie validation
+add_filter('auth_cookie_valid', 'cac_auth_cookie_valid', 10, 5);
+
+/**
+ * Extend auth cookie expiration for CAC users
+ */
+function cac_extend_auth_cookie_expiration($expiration, $user_id, $remember) {
+    // Check if this is a CAC user
+    $hashed_dod_id = get_user_meta($user_id, 'hashed_dod_id', true);
+    if (!empty($hashed_dod_id)) {
+        // Extend the expiration for CAC users (e.g., 8 hours)
+        return 8 * HOUR_IN_SECONDS;
+    }
+    return $expiration;
+}
+
+// Extend auth cookie expiration for CAC users
+add_filter('auth_cookie_expiration', 'cac_extend_auth_cookie_expiration', 10, 3);
