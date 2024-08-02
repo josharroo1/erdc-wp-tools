@@ -200,7 +200,29 @@ function cac_start_session() {
 }
 add_action('init', 'cac_start_session', 1);
 
-function remove_remember_me() {
-    echo '<style>.forgetmenot { display: none !important; }</style>';
+function login_style_changer() {
+    echo '<style>
+    
+    .forgetmenot { display: none !important; 
+    }
+    
+    .button-primary {
+    background: black !important;
+    border: none !important;
+    margin: 0px 10px !important;
+    height: 35px !important;
+    font-family: Arial !important;
+    }
+
+    .cac-login-button {
+        line-height: 2.6em !important;
+    }
+
+    .cac-login-button-wrapper {
+    margin-right: -9px;
+    margin-top: 12px;
+    }
+    
+    </style>';
 }
-add_action('login_head', 'remove_remember_me');
+add_action('login_head', 'login_style_changer');
