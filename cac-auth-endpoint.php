@@ -20,9 +20,14 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     exit;
 }
 
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+
 if (is_user_logged_in()) {
     error_log('CAC Auth: User is already logged in, skipping authentication');
-    return;
+    wp_redirect($redirect_url);
+    exit;
 }
 // Process CAC authentication
 cac_maybe_handle_authentication();
