@@ -55,7 +55,11 @@ function cac_generate_username($names, $email) {
 
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
-
+    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+        error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
+        return;
+    }
+    
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
         return;
