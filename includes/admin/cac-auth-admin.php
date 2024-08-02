@@ -109,7 +109,7 @@ function cac_auth_register_settings() {
 
     add_settings_field(
         'cac_auth_redirect_page',
-        'User Account Page',
+        'Login Redirect Page',
         'cac_auth_redirect_page_callback',
         'cac-auth-settings',
         'cac_auth_redirect_section'

@@ -163,3 +163,29 @@ function cac_get_pending_approval_message() {
 }
 
 add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
+
+// Add "Login with CAC" button to the login form
+function cac_auth_add_login_button() {
+    $cac_enabled = get_option('cac_auth_enabled', 'yes');
+    if ($cac_enabled === 'yes') {
+        echo '<div class="cac-login-button-wrapper">';
+        echo '<a href="' . esc_url(add_query_arg('cac_login', '1', wp_login_url())) . '" class="button button-primary cac-login-button">Login with CAC</a>';
+        echo '</div>';
+    }
+}
+add_action('login_form', 'cac_auth_add_login_button');
+
+// Enqueue login page styles
+function cac_auth_enqueue_login_styles() {
+    wp_enqueue_style('cac-auth-login-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-login.css', array(), CAC_AUTH_PLUGIN_VERSION);
+}
+add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
+
+// Handle CAC login
+function cac_auth_handle_login() {
+    if (isset($_GET['cac_login']) && $_GET['cac_login'] === '1') {
+        // Trigger CAC authentication process
+        cac_handle_authentication();
+    }
+}
+add_action('login_init', 'cac_auth_handle_login');
