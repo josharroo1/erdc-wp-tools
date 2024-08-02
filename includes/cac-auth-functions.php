@@ -23,13 +23,21 @@ function cac_extract_dod_id($dn) {
 
 // Extract names from CAC
 function cac_extract_names($dn) {
+    // Split DN to get the CN part
     $attributes = explode(',', $dn);
-    $cn = substr($attributes[0], 3);
-    $cn_parts = explode('.', $cn);
-    $last_name = ucwords(strtolower($cn_parts[0]));
-    $first_name = ucwords(strtolower($cn_parts[1]));
+    $cn = $attributes[0];  // Assuming CN is the first attribute
 
+    // Split the CN by periods
+    $cn_parts = explode('.', $cn);
+
+    // The DoD ID is always the last part, and names are just before it
+    $dod_index = count($cn_parts) - 1;  // Index of the DoD ID
+    $last_name = ucwords(strtolower($cn_parts[$dod_index - 3]));
+    $first_name = ucwords(strtolower($cn_parts[$dod_index - 2]));
+
+    // Log extracted names for debugging
     error_log("Extracted names: Last Name=$last_name, First Name=$first_name");
+
     return array('first_name' => $first_name, 'last_name' => $last_name);
 }
 
