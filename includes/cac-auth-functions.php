@@ -185,7 +185,7 @@ add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
 function cac_auth_handle_login() {
     if (isset($_GET['cac_login']) && $_GET['cac_login'] === '1') {
         // Trigger CAC authentication process
-        cac_handle_authentication();
+        cac_maybe_handle_authentication();
     }
 }
 add_action('login_init', 'cac_auth_handle_login');
