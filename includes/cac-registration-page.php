@@ -130,7 +130,7 @@ function cac_render_registration_form() {
 function cac_process_registration() {
     error_log('CAC registration process started');
     error_log('POST data: ' . print_r($_POST, true));
-    error_log("All SERVER variables: " . print_r($_SERVER, true));
+    error_log("All Session variables: " . print_r($_SESSION, true));
 
 
     if (!isset($_POST['cac_registration_nonce']) || !wp_verify_nonce($_POST['cac_registration_nonce'], 'cac_registration')) {

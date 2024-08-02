@@ -82,6 +82,7 @@ function cac_maybe_handle_authentication() {
     }
 
     $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+    $_SESSION['SSL_CLIENT_S_DN_CN'] = $dn;
     $dod_id = cac_extract_dod_id($dn);
     $hashed_dod_id = hash('sha256', $dod_id);
     $user = cac_get_user_by_dod_id($hashed_dod_id);
@@ -181,3 +182,11 @@ function cac_auth_enqueue_login_styles() {
     wp_enqueue_style('cac-auth-login-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-login.css', array(), CAC_AUTH_PLUGIN_VERSION);
 }
 add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
+
+
+function cac_start_session() {
+    if (!session_id()) {
+        session_start();
+    }
+}
+add_action('init', 'cac_start_session', 1);
