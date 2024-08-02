@@ -168,16 +168,10 @@ add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
 function cac_auth_add_login_button() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes');
     if ($cac_enabled === 'yes') {
-        ?>
-        <div class="cac-login-button-wrapper">
-            <form id="cac-login-form" method="post" action="">
-                <?php wp_nonce_field('cac_auth_login', 'cac_auth_nonce'); ?>
-                <input type="hidden" name="cac_auth_login" value="1">
-                <button type="submit" class="button button-primary cac-login-button">Login with CAC</button>
-            </form>
-        </div>
-        <div class="login-separator">or</div>
-        <?php
+        $cac_auth_url = plugins_url('cac-auth-endpoint.php', __FILE__);
+        echo '<div class="cac-login-button-wrapper">';
+        echo '<a href="' . esc_url($cac_auth_url) . '" class="button button-primary cac-login-button">Login with CAC</a>';
+        echo '</div>';
     }
 }
 add_action('login_form', 'cac_auth_add_login_button');
@@ -187,12 +181,3 @@ function cac_auth_enqueue_login_styles() {
     wp_enqueue_style('cac-auth-login-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-login.css', array(), CAC_AUTH_PLUGIN_VERSION);
 }
 add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
-
-// Handle CAC login
-function cac_auth_handle_login() {
-    if (isset($_GET['cac_login']) && $_GET['cac_login'] === '1') {
-        // Trigger CAC authentication process
-        cac_maybe_handle_authentication();
-    }
-}
-add_action('login_init', 'cac_auth_handle_login');
