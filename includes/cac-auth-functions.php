@@ -55,7 +55,6 @@ function cac_generate_username($names, $email) {
 
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
-    error_log("All SERVER variables: " . print_r($_SERVER, true));
     
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
