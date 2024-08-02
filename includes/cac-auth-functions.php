@@ -168,9 +168,16 @@ add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
 function cac_auth_add_login_button() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes');
     if ($cac_enabled === 'yes') {
-        echo '<div class="cac-login-button-wrapper">';
-        echo '<a href="' . esc_url(add_query_arg('cac_login', '1', wp_login_url())) . '" class="button button-primary cac-login-button">Login with CAC</a>';
-        echo '</div>';
+        ?>
+        <div class="cac-login-button-wrapper">
+            <form id="cac-login-form" method="post" action="">
+                <?php wp_nonce_field('cac_auth_login', 'cac_auth_nonce'); ?>
+                <input type="hidden" name="cac_auth_login" value="1">
+                <button type="submit" class="button button-primary cac-login-button">Login with CAC</button>
+            </form>
+        </div>
+        <div class="login-separator">or</div>
+        <?php
     }
 }
 add_action('login_form', 'cac_auth_add_login_button');
