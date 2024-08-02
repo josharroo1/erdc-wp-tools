@@ -64,19 +64,19 @@ function cac_generate_username($names, $email) {
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
     
+    $registration_page_id = get_option('cac_auth_registration_page');
+    $current_page_id = get_queried_object_id();
+    
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
         return;
     }
 
-   // Early return if user is already logged in and not on the default login page
-    if (is_user_logged_in() && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') === false) {
+    // Early return if user is already logged in
+    if (is_user_logged_in()) {
         error_log('CAC Auth: User is already logged in, skipping authentication');
         return;
     }
-
-    $registration_page_id = get_option('cac_auth_registration_page');
-    $current_page_id = get_queried_object_id();
 
     // Check if we're on the registration page
     if ($registration_page_id && $current_page_id == $registration_page_id) {

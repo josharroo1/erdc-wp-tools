@@ -20,6 +20,10 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     exit;
 }
 
+if (is_user_logged_in()) {
+    error_log('CAC Auth: User is already logged in, skipping authentication');
+    return;
+}
 // Process CAC authentication
 cac_maybe_handle_authentication();
 
