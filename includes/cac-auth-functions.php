@@ -84,12 +84,12 @@ function cac_maybe_handle_authentication() {
         return;
     }
 
-    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
+    if (!isset($_SERVER['SSL_CLIENT_S_DN_CN']) && !isset($_SESSION['SSL_CLIENT_S_DN_CN'])) {
         error_log('CAC Auth: SSL_CLIENT_S_DN_CN is not set');
         return;
     }
 
-    $dn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+    $dn = isset($_SERVER['SSL_CLIENT_S_DN_CN']) ? $_SERVER['SSL_CLIENT_S_DN_CN'] : $_SESSION['SSL_CLIENT_S_DN_CN'];
     $_SESSION['SSL_CLIENT_S_DN_CN'] = $dn;
     $dod_id = cac_extract_dod_id($dn);
     $hashed_dod_id = hash('sha256', $dod_id);
