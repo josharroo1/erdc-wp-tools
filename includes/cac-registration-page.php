@@ -172,7 +172,7 @@ function cac_process_registration() {
         exit;
     }
 
-    $dn = $_SESSION['SSL_CLIENT_S_DN'] ?? '';
+    $dn = $_SESSION['SSL_CLIENT_S_DN_CN'] ?? '';
     $dod_id = cac_extract_dod_id($dn);
     $names = cac_extract_names($dn);
 
