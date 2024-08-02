@@ -182,6 +182,64 @@ function cac_auth_add_login_button() {
         echo '<a href="' . esc_url($cac_auth_url) . '" class="button button-primary cac-login-button">Login with CAC</a>';
         echo '</div>';
     }
+
+    // Ensure the login CSS is enqueued
+    wp_enqueue_style('login');
+
+    // Inline CSS
+    $inline_css = "
+    /* CAC Auth Login Styles */
+    .cac-login-button-wrapper {
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .cac-login-button {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #0073aa;
+        color: #ffffff;
+        text-decoration: none;
+        border-radius: 3px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .cac-login-button:hover,
+    .cac-login-button:focus {
+        background-color: #005177;
+        color: #ffffff;
+    }
+
+    /* Adjust standard WordPress login form */
+    #loginform {
+        margin-top: 20px;
+    }
+
+    /* Add a separator between CAC login and standard login */
+    .login-separator {
+        text-align: center;
+        margin: 20px 0;
+        font-size: 14px;
+        color: #777;
+    }
+
+    .login-separator::before,
+    .login-separator::after {
+        content: '';
+        display: inline-block;
+        width: 40%;
+        border-top: 1px solid #ddd;
+        vertical-align: middle;
+        margin: 0 10px;
+    }
+
+    .forgetmenot {
+        display: none !important;
+    }";
+
+    // Add inline styles to the 'login' handle
+    wp_add_inline_style('login', $inline_css);
 }
 add_action('login_form', 'cac_auth_add_login_button');
 
