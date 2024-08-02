@@ -168,7 +168,7 @@ add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
 function cac_auth_add_login_button() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes');
     if ($cac_enabled === 'yes') {
-        $cac_auth_url = plugins_url('cac-auth-endpoint.php', __FILE__);
+        $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
         echo '<div class="cac-login-button-wrapper">';
         echo '<a href="' . esc_url($cac_auth_url) . '" class="button button-primary cac-login-button">Login with CAC</a>';
         echo '</div>';
