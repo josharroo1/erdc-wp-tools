@@ -70,7 +70,7 @@ function cac_maybe_handle_authentication() {
     }
 
    // Early return if user is already logged in and not on the default login page
-    if (is_user_logged_in() && !strstr($_SERVER['REQUEST_URI'], 'wp-login.php')) {
+    if (is_user_logged_in() && strpos($_SERVER['REQUEST_URI'], 'wp-login.php') === false) {
         error_log('CAC Auth: User is already logged in, skipping authentication');
         return;
     }
