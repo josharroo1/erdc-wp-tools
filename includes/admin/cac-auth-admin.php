@@ -2,8 +2,10 @@
 /**
  * CAC Authentication Admin Settings
  */
+
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php'; 
+
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
     add_options_page(
@@ -61,7 +63,6 @@ function cac_auth_register_settings() {
         'default' => false,
     ));
 
-
     add_settings_section(
         'cac_auth_general_section',
         'General Settings',
@@ -91,7 +92,7 @@ function cac_auth_register_settings() {
         'cac_auth_approval_callback',
         'cac-auth-settings'
     );
-    
+
     add_settings_section(
         'cac_auth_redirect_section',
         'Redirection Settings',
@@ -129,14 +130,15 @@ function cac_auth_register_settings() {
         'cac-auth-settings',
         'cac_auth_registration_settings_section'
     );
+
     add_settings_section(
         'cac_auth_custom_fields_section',
         'CAC Registration Form',
         'cac_auth_render_custom_fields',
         'cac-auth-settings'
     );
-    
-     add_settings_section(
+
+    add_settings_section(
         'cac_auth_color_picker_section',
         'Color Settings',
         'cac_auth_render_color_settings',
@@ -149,7 +151,6 @@ function cac_auth_register_settings() {
         'cac_auth_security_section_callback', // Callback function
         'cac-auth-settings' // Page to add the section to
     );
-    
 }
 add_action('admin_init', 'cac_auth_register_settings');
 
@@ -176,7 +177,7 @@ function cac_auth_render_color_settings() {
 }
 add_action('cac_auth_settings_page', 'cac_auth_render_color_settings', 20);
 
-// Add color picker fields and user approval toggle to the settings page
+// Add user approval toggle to the settings page
 function cac_auth_approval_callback() {
     $user_approval = get_option('cac_auth_user_approval', false);
     ?>
@@ -193,7 +194,7 @@ function cac_auth_approval_callback() {
 }
 add_action('cac_auth_settings_page', 'cac_auth_approval_callback', 20);
 
-
+// Security section callback
 function cac_auth_security_section_callback() {
     global $securityMitigationsDescriptions;
 
@@ -204,7 +205,6 @@ function cac_auth_security_section_callback() {
     }
     echo '</ul>';
 }
-
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
@@ -269,7 +269,6 @@ function cac_auth_fallback_action_callback() {
 // General section callback
 function cac_auth_general_section_callback() {
     echo '<p>Configure the general settings for CAC authentication.</p>';
-    
 }
 
 // Registration settings section callback
@@ -290,7 +289,7 @@ function cac_auth_default_role_callback() {
     <?php
 }
 
-//Ajax to remove the current csv from a field
+// Ajax to remove the current csv from a field
 function cac_auth_remove_csv() {
     $field_id = isset($_POST['field_id']) ? sanitize_text_field($_POST['field_id']) : '';
     if (!empty($field_id)) {

@@ -5,12 +5,10 @@
 
 // Register CAC registration shortcode
 function cac_registration_shortcode()  {
-    // Remove the check for 'action' parameter
     ob_start();
     cac_render_registration_form();
     return ob_get_clean();
 }
-
 add_shortcode('cac_registration', 'cac_registration_shortcode');
 
 // Render CAC registration form
@@ -26,7 +24,6 @@ function cac_render_registration_form() {
             color: <?php echo esc_attr($link_color); ?>;
         }
     </style>
-    <!-- Rest of the form HTML -->
     <div class="cac-registration-form">
     <?php
     if (isset($_GET['registration_error'])) {
@@ -35,94 +32,97 @@ function cac_render_registration_form() {
     }
     ?>
     <div class="form-header">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z"/></svg>
-        <h2>CAC Registration</h2></div>
-        <p class="form-subtitle">We need a few more details</p>
-        <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
-            <input type="hidden" name="action" value="cac_process_registration">
-            <?php wp_nonce_field('cac_registration', 'cac_registration_nonce'); ?>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M399 384.2C376.9 345.8 335.4 320 288 320H224c-47.4 0-88.9 25.8-111 64.2c35.2 39.2 86.2 63.8 143 63.8s107.8-24.7 143-63.8zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256 16a72 72 0 1 0 0-144 72 72 0 1 0 0 144z"/></svg>
+        <h2>CAC Registration</h2>
+    </div>
+    <p class="form-subtitle">We need a few more details</p>
+    <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+        <input type="hidden" name="action" value="cac_process_registration">
+        <?php wp_nonce_field('cac_registration', 'cac_registration_nonce'); ?>
 
-            <div class="form-field">
-                <label for="cac_email">Organization Email</label>
-                <input placeholder="e.g., sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
-            </div>
+        <div class="form-field">
+            <label for="cac_email">Organization Email</label>
+            <input placeholder="e.g., sample@usace.army.mil" type="email" name="cac_email" id="cac_email" required>
+        </div>
 
-            <?php
-            // Retrieve custom registration fields from the plugin settings
-            $custom_fields = get_option('cac_auth_registration_fields', array());
+        <?php
+        // Retrieve custom registration fields from the plugin settings
+        $custom_fields = get_option('cac_auth_registration_fields', array());
 
-            // Check if $custom_fields is an array before using foreach
-            if (is_array($custom_fields)) {
-                foreach ($custom_fields as $field_id => $field_data) {
-                    $field_label = isset($field_data['label']) ? $field_data['label'] : '';
-                    $field_type = isset($field_data['type']) ? $field_data['type'] : 'text';
-                    $field_options = isset($field_data['options']) ? $field_data['options'] : '';
+        // Check if $custom_fields is an array before using foreach
+        if (is_array($custom_fields)) {
+            foreach ($custom_fields as $field_id => $field_data) {
+                $field_label = isset($field_data['label']) ? $field_data['label'] : '';
+                $field_type = isset($field_data['type']) ? $field_data['type'] : 'text';
+                $field_options = isset($field_data['options']) ? $field_data['options'] : '';
 
-                    switch ($field_type) {
-                        case 'text':
-                        case 'number':
-                            ?>
-                            <div class="form-field">
-                                <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
-                                <input type="<?php echo esc_attr($field_type); ?>" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" required>
-                            </div>
-                            <?php
-                            break;
-                        case 'select':
-                            $options = array();
-                            $csv_file = get_option('cac_auth_csv_file_' . $field_id, '');
-                            if (!empty($csv_file)) {
-                                $upload_dir = wp_upload_dir();
-                                $csv_path = $upload_dir['basedir'] . '/cac-auth-csv-files/' . $csv_file;
-                                if (file_exists($csv_path)) {
-                                    $csv_data = array_map('str_getcsv', file($csv_path));
-                                    array_walk($csv_data, function(&$a) use ($csv_data) {
-                                        $a = array_combine($csv_data[0], $a);
-                                    });
-                                    array_shift($csv_data);
-                                    foreach ($csv_data as $row) {
-                                        $options[$row['key']] = $row['value'];
-                                    }
+                switch ($field_type) {
+                    case 'text':
+                    case 'number':
+                        ?>
+                        <div class="form-field">
+                            <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                            <input type="<?php echo esc_attr($field_type); ?>" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" required>
+                        </div>
+                        <?php
+                        break;
+                    case 'select':
+                        $options = array();
+                        $csv_file = get_option('cac_auth_csv_file_' . $field_id, '');
+                        if (!empty($csv_file)) {
+                            $upload_dir = wp_upload_dir();
+                            $csv_path = $upload_dir['basedir'] . '/cac-auth-csv-files/' . $csv_file;
+                            if (file_exists($csv_path)) {
+                                $csv_data = array_map('str_getcsv', file($csv_path));
+                                array_walk($csv_data, function(&$a) use ($csv_data) {
+                                    $a = array_combine($csv_data[0], $a);
+                                });
+                                array_shift($csv_data);
+                                foreach ($csv_data as $row) {
+                                    $options[$row['key']] = $row['value'];
                                 }
-                            } else {
-                                $options = array_map('trim', explode(',', $field_options));
-                                $options = array_combine($options, $options);
                             }
-                            ?>
-                            <div class="form-field">
-                                <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
-                                <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" class="cac-select2" required>
-                                    <?php foreach ($options as $key => $value) : ?>
-                                        <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($key); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <?php
-                            break;
-                        default:
-                            ?>
-                            <div class="form-field">
-                                <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
-                                <input type="text" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
-                            </div>
-                            <?php
-                            break;
-                    }
+                        } else {
+                            $options = array_map('trim', explode(',', $field_options));
+                            $options = array_combine($options, $options);
+                        }
+                        ?>
+                        <div class="form-field">
+                            <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                            <select name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>" class="cac-select2" required>
+                                <?php foreach ($options as $key => $value) : ?>
+                                    <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($key); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php
+                        break;
+                    default:
+                        ?>
+                        <div class="form-field">
+                            <label for="cac_field_<?php echo esc_attr($field_id); ?>"><?php echo esc_html($field_label); ?></label>
+                            <input type="text" name="cac_field_<?php echo esc_attr($field_id); ?>" id="cac_field_<?php echo esc_attr($field_id); ?>">
+                        </div>
+                        <?php
+                        break;
                 }
             }
-            ?>
+        }
+        ?>
 
-            <div class="form-field">
-                <input type="submit" value="Register">
-            </div>
-            <div class="form-footer"><div>You are registering with <a href="<?php echo esc_url(get_site_url()); ?>"><?php echo esc_html(get_site_url()); ?></a></div></div>
-        </form>
+        <div class="form-field">
+            <input type="submit" value="Register">
+        </div>
+        <div class="form-footer">
+            <div>You are registering with <a href="<?php echo esc_url(get_site_url()); ?>"><?php echo esc_html(get_site_url()); ?></a></div>
+        </div>
+    </form>
     </div>
     <script>
     jQuery(document).ready(function($) {
         $('.cac-select2').select2();
     });
-</script>
+    </script>
     <?php
 }
 
@@ -132,13 +132,11 @@ function cac_process_registration() {
     error_log('POST data: ' . print_r($_POST, true));
     error_log("All Session variables: " . print_r($_SESSION, true));
 
-
     if (!isset($_POST['cac_registration_nonce']) || !wp_verify_nonce($_POST['cac_registration_nonce'], 'cac_registration')) {
         wp_die('Invalid nonce.');
     }
 
     $email = sanitize_email($_POST['cac_email']);
-
     $max_email_length = 100; // WordPress default limit
     if (strlen($email) > $max_email_length) {
         error_log('Email exceeds maximum length: ' . strlen($email) . ' characters');
@@ -241,7 +239,7 @@ function cac_process_registration() {
         margin: 0 !important;
         padding: 0 !important;
         height: 100%;
-        background: none !important; /* Set your desired background */
+        background: none !important;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -253,9 +251,9 @@ function cac_process_registration() {
         width: 80%;
         max-width: 600px;
         padding: 20px;
-        background: white; /* Remove default white background */
-        color: #333; /* Set your text color */
-        box-shadow: none; /* Removes the default box shadow */
+        background: white;
+        color: #333;
+        box-shadow: none;
     }
 </style>
 </head>
@@ -268,8 +266,7 @@ function cac_process_registration() {
 </html>
 HTML;
 
-wp_die($message, 'Account Pending Approval', array('response' => 200));
-
+        wp_die($message, 'Account Pending Approval', array('response' => 200));
     } else {
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
@@ -278,15 +275,15 @@ wp_die($message, 'Account Pending Approval', array('response' => 200));
         $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
                     (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
 
-    error_log('CAC Auth: Redirecting to ' . $redirect_url);
-    wp_redirect($redirect_url);
-    exit;
+        error_log('CAC Auth: Redirecting to ' . $redirect_url);
+        wp_redirect($redirect_url);
+        exit;
     }
 }
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
 add_action('admin_post_nopriv_cac_process_registration', 'cac_process_registration');
 
-// Update the error_messages function to include the new 'email_exists' error message
+// Display registration error messages
 function cac_display_registration_error($error_code) {
     $error_messages = array(
         'missing_email' => 'Please provide an email address.',

@@ -3,8 +3,8 @@
  * CAC Authentication Utility Functions
  */
 
- // Efficiently retrieves a user by their hashed DoD ID
- function cac_get_user_by_dod_id($hashed_dod_id) {
+// Efficiently retrieves a user by their hashed DoD ID
+function cac_get_user_by_dod_id($hashed_dod_id) {
     global $wpdb;
     $user_id = $wpdb->get_var($wpdb->prepare(
         "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = 'hashed_dod_id' AND meta_value = %s LIMIT 1",
@@ -61,12 +61,13 @@ function cac_generate_username($names, $email) {
     return $username;
 }
 
+// Handle CAC authentication if conditions are met
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
-    
+
     $registration_page_id = get_option('cac_auth_registration_page');
     $current_page_id = get_queried_object_id();
-    
+
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
         return;
@@ -116,6 +117,7 @@ function cac_maybe_handle_authentication() {
     }
 }
 
+// Handle authentication for a user
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
 
@@ -131,6 +133,7 @@ function cac_handle_authentication($user) {
     exit;
 }
 
+// Get pending approval message
 function cac_get_pending_approval_message() {
     return <<<HTML
     <!DOCTYPE html>
@@ -171,8 +174,6 @@ function cac_get_pending_approval_message() {
     HTML;
 }
 
-add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
-
 // Add "Login with CAC" button to the login form
 function cac_auth_add_login_button() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes');
@@ -183,7 +184,6 @@ function cac_auth_add_login_button() {
         echo '</div>';
     }
 }
-
 add_action('login_form', 'cac_auth_add_login_button');
 
 // Enqueue login page styles
@@ -192,7 +192,7 @@ function cac_auth_enqueue_login_styles() {
 }
 add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
 
-
+// Start session if not already started
 function cac_start_session() {
     if (!session_id()) {
         session_start();
@@ -200,29 +200,24 @@ function cac_start_session() {
 }
 add_action('init', 'cac_start_session', 1);
 
+// Custom login page styles
 function login_style_changer() {
     echo '<style>
-    
-    .forgetmenot { display: none !important; 
-    }
-    
+    .forgetmenot { display: none !important; }
     .button-primary {
-    background: black !important;
-    border: none !important;
-    margin: 0px 10px !important;
-    height: 35px !important;
-    font-family: Arial !important;
+        background: black !important;
+        border: none !important;
+        margin: 0px 10px !important;
+        height: 35px !important;
+        font-family: Arial !important;
     }
-
     .cac-login-button {
         line-height: 2.6em !important;
     }
-
     .cac-login-button-wrapper {
-    margin-right: -9px;
-    margin-top: 12px;
+        margin-right: -9px;
+        margin-top: 12px;
     }
-    
     </style>';
 }
 add_action('login_head', 'login_style_changer');

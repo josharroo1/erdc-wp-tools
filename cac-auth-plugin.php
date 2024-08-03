@@ -10,7 +10,7 @@
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  */
 
-// If this file is called directly, abort.
+// Abort if this file is called directly
 if (!defined('WPINC')) {
     die;
 }
@@ -59,9 +59,15 @@ function cac_auth_plugin_enqueue_scripts() {
     wp_enqueue_script('cac-auth-scripts', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-scripts.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
 }
 
-// Add filter to inject custom settings link for your plugin
-add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'cac_auth_add_settings_link');
+// Enqueue Select2 library
+add_action('wp_enqueue_scripts', 'cac_enqueue_select2');
+function cac_enqueue_select2() {
+    wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
+    wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
+}
 
+// Add custom settings link to the plugin
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'cac_auth_add_settings_link');
 function cac_auth_add_settings_link($links) {
     // Construct the settings link
     $settings_link = '<a href="' . admin_url('options-general.php?page=cac-auth-settings') . '">Settings</a>';
@@ -71,9 +77,3 @@ function cac_auth_add_settings_link($links) {
     
     return $links;
 }
-
-function cac_enqueue_select2() {
-    wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
-    wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
-}
-add_action('wp_enqueue_scripts', 'cac_enqueue_select2');

@@ -14,11 +14,10 @@ function cac_auth_render_custom_fields() {
     if (!is_array($custom_fields)) {
         $custom_fields = array();
     }
-
     ?>
     <div class="form-information">To display the CAC registration form on a page or post, use the following shortcode: <code>[cac_registration]</code></div>
     <div class="form-information">Users will fill out the form, including any custom fields you have defined below, and register using their CAC credentials.</div>
-    <div class="form-information"><strong>An orginzation email is always required</strong></div>
+    <div class="form-information"><strong>An organization email is always required</strong></div>
     <div class="csv-information">For select fields, add options as a comma-separated list, or a CSV file upload with "key" & "value" columns.</div>
     <table class="cac-auth-custom-fields">
         <thead>
@@ -130,7 +129,6 @@ function cac_auth_save_custom_fields($options) {
     error_log('Leaving cac_auth_save_custom_fields function');
     return $options;
 }
-
 add_filter('cac_auth_settings_sanitize', 'cac_auth_save_custom_fields');
 
 // Enqueue admin scripts
@@ -153,11 +151,10 @@ function cac_auth_admin_enqueue_scripts($hook) {
     
     wp_enqueue_style('cac-auth-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-admin-style.css', array(), CAC_AUTH_PLUGIN_VERSION);
     wp_enqueue_script('cac-auth-admin', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-admin.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
-    
 }
 add_action('admin_enqueue_scripts', 'cac_auth_admin_enqueue_scripts');
 
-// User Meta from CAC Registration
+// Display additional user meta from CAC registration
 add_action('show_user_profile', 'cac_show_additional_user_meta');
 add_action('edit_user_profile', 'cac_show_additional_user_meta');
 
@@ -219,6 +216,7 @@ function cac_show_additional_user_meta($user) {
     echo '</div>'; // Close .cac-additional-info
 }
 
+// Save additional user meta from CAC registration
 function cac_save_additional_user_meta($user_id) {
     if (!current_user_can('edit_user', $user_id)) {
         return false;
@@ -236,6 +234,7 @@ function cac_save_additional_user_meta($user_id) {
 add_action('personal_options_update', 'cac_save_additional_user_meta');
 add_action('edit_user_profile_update', 'cac_save_additional_user_meta');
 
+// Custom admin styles
 function cac_admin_styles() {
     echo '<style>
         .cac-additional-info {
@@ -261,12 +260,9 @@ function cac_admin_styles() {
             border: 1px solid #ccd0d4;
             box-sizing: border-box;
         }
-
         .cac-additional-info h3 {
             text-transform: uppercase;
         }
-    
     </style>';
 }
-
 add_action('admin_head', 'cac_admin_styles');

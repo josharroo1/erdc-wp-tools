@@ -12,9 +12,6 @@ $securityMitigationsDescriptions = [
  * Disable Autocomplete on Login Password
  * @SecurityMitigation
  */
-
- add_action('login_enqueue_scripts', 'disable_password_autocomplete');
-
 function disable_password_autocomplete() {
     echo '<script>
         window.addEventListener("load", function(){
@@ -25,14 +22,12 @@ function disable_password_autocomplete() {
         });
     </script>';
 }
+add_action('login_enqueue_scripts', 'disable_password_autocomplete');
 
 /**
  * Add HTTPOnly or Secure to Cookies Dynamically
  * @SecurityMitigation
  */
-
-add_action('init', 'set_dynamic_httponly_cookies');
-
 function set_dynamic_httponly_cookies() {
     // Define a list of cookies to set with their names and values
     $cookies_to_set = array(
@@ -48,16 +43,29 @@ function set_dynamic_httponly_cookies() {
         }
     }
 }
+add_action('init', 'set_dynamic_httponly_cookies');
 
 /**
  * Remove jQuery Version Information
  * @SecurityMitigation
  */
-
- function remove_script_version( $src ) {
-    return $src ? esc_url( remove_query_arg( 'ver', $src ) ) : false;
+function remove_script_version($src) {
+    return $src ? esc_url(remove_query_arg('ver', $src)) : false;
 }
-add_filter( 'script_loader_src', 'remove_script_version', PHP_INT_MAX );
-add_filter( 'style_loader_src', 'remove_script_version', PHP_INT_MAX );
+add_filter('script_loader_src', 'remove_script_version', PHP_INT_MAX);
+add_filter('style_loader_src', 'remove_script_version', PHP_INT_MAX);
 
-
+/**
+ * Future Security Mitigations
+ * 
+ * This section is reserved for future security mitigation functions.
+ * Follow the pattern below to add new security features:
+ * 
+ * // Description of the new mitigation
+ * function new_security_mitigation() {
+ *     // Implementation of the mitigation
+ * }
+ * add_action('appropriate_hook', 'new_security_mitigation');
+ * 
+ * Add a description in the $securityMitigationsDescriptions array at the top.
+ */
