@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: WP CAC Sync (DoD)
+ * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
- * Description: A WordPress plugin for CAC authentication and user synchronization for the DoD.
- * Version: 3.7.2
+ * Description: A suite of tools for managing WordPress within USACE ERDC.
+ * Version: 3.7.3
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '3.7.2');
+define('CAC_AUTH_PLUGIN_VERSION', '3.7.3');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
