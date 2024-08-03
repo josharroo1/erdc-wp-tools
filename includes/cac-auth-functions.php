@@ -124,7 +124,8 @@ function cac_handle_authentication($user) {
     $cookies_to_clear = [
         'wordpress_logged_in_' . COOKIEHASH,
         'wordpress_sec_' . COOKIEHASH,
-        'wordpress_test_cookie'
+        'wordpress_test_cookie',
+        'wfwaf-authcookie-' . COOKIEHASH
     ];
 
     foreach ($cookies_to_clear as $cookie) {
