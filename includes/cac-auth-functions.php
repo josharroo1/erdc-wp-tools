@@ -121,6 +121,19 @@ function cac_maybe_handle_authentication() {
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
 
+    $cookies_to_clear = [
+        'wordpress_logged_in_' . COOKIEHASH,
+        'wordpress_sec_' . COOKIEHASH,
+        'wordpress_test_cookie'
+    ];
+
+    foreach ($cookies_to_clear as $cookie) {
+        if (isset($_COOKIE[$cookie])) {
+            unset($_COOKIE[$cookie]);
+            setcookie($cookie, '', time() - 3600, '/', '', is_ssl(), true);
+        }
+    }
+
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
@@ -201,7 +214,7 @@ function cac_start_session() {
             'domain' => $_SERVER['HTTP_HOST'], // dynamically set the domain
             'secure' => isset($_SERVER['HTTPS']), // ensures the cookie is secure only if HTTPS is used
             'httponly' => true,
-            'samesite' => 'Lax' // Or 'Strict' depending on your requirement
+            'samesite' => 'Strict' // Or 'Strict' depending on your requirement
         ]);
         session_start();
     }

@@ -37,13 +37,13 @@ function set_dynamic_httponly_cookies() {
 
     foreach ($cookies_to_set as $name => $value) {
         // Check if the cookie is not already set to avoid unnecessary duplication
-        if (!isset($_COOKIE[$name])) {
-            // Set the cookie with HTTPOnly flag
+        if (isset($_COOKIE[$name])) {
+            // Reset the cookie with HTTPOnly and Secure flags
             setcookie($name, $value, time() + 3600, '/', '', is_ssl(), true);
         }
     }
 }
-add_action('init', 'set_dynamic_httponly_cookies');
+add_action('init', 'set_dynamic_httponly_cookies', 1);
 
 /**
  * Remove jQuery Version Information
