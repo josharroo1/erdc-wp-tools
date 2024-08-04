@@ -208,16 +208,29 @@ add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
 
 // Start session if not already started
 function cac_start_session() {
+    $cookie_params = [
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => $_SERVER['HTTP_HOST'], // dynamically set the domain
+        'secure' => isset($_SERVER['HTTPS']), // ensures the cookie is secure only if HTTPS is used
+        'httponly' => true,
+        'samesite' => 'Strict' // Or 'Lax' depending on your requirement
+    ];
+
     if (!session_id()) {
-        session_set_cookie_params([
-            'lifetime' => 0,
-            'path' => '/',
-            'domain' => $_SERVER['HTTP_HOST'], // dynamically set the domain
-            'secure' => isset($_SERVER['HTTPS']), // ensures the cookie is secure only if HTTPS is used
-            'httponly' => true,
-            'samesite' => 'Strict' // Or 'Strict' depending on your requirement
-        ]);
+        // Start the session with the specified cookie parameters
+        session_set_cookie_params($cookie_params);
         session_start();
+    } else {
+        // Modify the existing session cookie to match the new parameters
+        setcookie(session_name(), session_id(), [
+            'expires' => 0,
+            'path' => '/',
+            'domain' => $_SERVER['HTTP_HOST'],
+            'secure' => isset($_SERVER['HTTPS']),
+            'httponly' => true,
+            'samesite' => 'Strict'
+        ]);
     }
 }
 add_action('init', 'cac_start_session', 1);
