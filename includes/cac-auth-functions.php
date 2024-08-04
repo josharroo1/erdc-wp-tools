@@ -151,6 +151,15 @@ function cac_capture_intended_url() {
 }
 add_action('init', 'cac_capture_intended_url');
 
+// Intercept login redirect to ensure correct redirection
+function cac_intercept_login_redirect($redirect_to, $requested_redirect_to, $user) {
+    if (isset($_SESSION['cac_intended_url'])) {
+        $redirect_to = $_SESSION['cac_intended_url'];
+        unset($_SESSION['cac_intended_url']);
+    }
+    return $redirect_to;
+}
+add_filter('login_redirect', 'cac_intercept_login_redirect', 10, 3);
 
 // Get pending approval message
 function cac_get_pending_approval_message() {
