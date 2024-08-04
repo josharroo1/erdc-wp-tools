@@ -126,9 +126,15 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-    $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+
+    if (empty($redirect_to)) {
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+    } else {
+        $redirect_url = $redirect_to;
+    }
 
     error_log('CAC Auth: Redirecting to ' . $redirect_url);
     wp_redirect($redirect_url);
