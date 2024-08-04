@@ -66,29 +66,72 @@ jQuery(document).ready(function($) {
     });
 });
 
-//Superficially disable the form if CAC auth turned off
+// //Superficially disable the form if CAC auth turned off
+// document.addEventListener('DOMContentLoaded', function() {
+//     var cacAuthEnabledSelect = document.querySelector('select[name="cac_auth_enabled"]');
+
+//     cacAuthEnabledSelect.addEventListener('change', function() {
+//         var isDisabled = this.value === 'no';
+//         var form = this.form;
+//         var formElements = form.elements;
+
+//         for (var i = 0; i < formElements.length; i++) {
+//             var element = formElements[i];
+//             if (element !== cacAuthEnabledSelect && element.type !== 'submit') {
+//                 // Add or remove the 'disabled-style' class
+//                 if (isDisabled) {
+//                     element.classList.add('disabled-style');
+//                 } else {
+//                     element.classList.remove('disabled-style');
+//                 }
+//             }
+//         }
+//     });
+
+//     // Trigger the change event on page load
+//     var event = new Event('change');
+//     cacAuthEnabledSelect.dispatchEvent(event);
+// });
+
+//Remove CAC related settings from the DOM
 document.addEventListener('DOMContentLoaded', function() {
     var cacAuthEnabledSelect = document.querySelector('select[name="cac_auth_enabled"]');
+    var sectionsToToggle = [
+        { title: 'Account Approval', fields: ['cac_auth_user_approval'] },
+        { title: 'CAC Registration Settings', fields: ['cac_auth_registration_page', 'cac_auth_redirect_page', 'cac_auth_default_role'] },
+        { title: 'CAC Registration Form', fields: [] },
+        { title: 'Color Settings', fields: ['cac_auth_svg_fill_color', 'cac_auth_link_color'] }
+    ];
 
-    cacAuthEnabledSelect.addEventListener('change', function() {
-        var isDisabled = this.value === 'no';
-        var form = this.form;
-        var formElements = form.elements;
+    function toggleSections() {
+        var isEnabled = cacAuthEnabledSelect.value === 'yes';
+        sectionsToToggle.forEach(function(section) {
+            var sectionElement = findSectionByTitle(section.title);
+            if (sectionElement) {
+                sectionElement.style.display = isEnabled ? 'block' : 'none';
+                // Toggle fields within the section
+                section.fields.forEach(function(fieldName) {
+                    var field = document.querySelector('[name="' + fieldName + '"]');
+                    if (field) {
+                        field.closest('tr').style.display = isEnabled ? 'table-row' : 'none';
+                    }
+                });
+            }
+        });
+    }
 
-        for (var i = 0; i < formElements.length; i++) {
-            var element = formElements[i];
-            if (element !== cacAuthEnabledSelect && element.type !== 'submit') {
-                // Add or remove the 'disabled-style' class
-                if (isDisabled) {
-                    element.classList.add('disabled-style');
-                } else {
-                    element.classList.remove('disabled-style');
-                }
+    function findSectionByTitle(title) {
+        var headers = document.querySelectorAll('h2');
+        for (var i = 0; i < headers.length; i++) {
+            if (headers[i].textContent.trim() === title) {
+                return headers[i];
             }
         }
-    });
+        return null;
+    }
 
-    // Trigger the change event on page load
-    var event = new Event('change');
-    cacAuthEnabledSelect.dispatchEvent(event);
+    cacAuthEnabledSelect.addEventListener('change', toggleSections);
+
+    // Initial toggle on page load
+    toggleSections();
 });
