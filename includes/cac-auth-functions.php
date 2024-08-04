@@ -149,7 +149,7 @@ function cac_capture_intended_url() {
         $_SESSION['cac_intended_url'] = $intended_url;
     }
 }
-add_action('wp', 'cac_capture_intended_url');
+add_action('template_redirect', 'cac_capture_intended_url');
 
 
 // Get pending approval message
