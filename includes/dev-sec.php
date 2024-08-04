@@ -6,7 +6,6 @@ $securityMitigationsDescriptions = [
     'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
     'remove_script_version' => 'Remove jQuery Version Information',
-    'force_https' => 'Force the site to use HTTPS',
 ];
 
 /**
@@ -55,20 +54,3 @@ function remove_script_version($src) {
 }
 add_filter('script_loader_src', 'remove_script_version', PHP_INT_MAX);
 add_filter('style_loader_src', 'remove_script_version', PHP_INT_MAX);
-
-/**
- * Force HTTPS
- * @SecurityMitigation
- */
-function force_https() {
-    if (!is_ssl()) {
-        if (0 === strpos($_SERVER['REQUEST_URI'], 'http')) {
-            wp_safe_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']), 301);
-            exit();
-        } else {
-            wp_safe_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], 301);
-            exit();
-        }
-    }
-}
-add_action('init', 'force_https', 1);
