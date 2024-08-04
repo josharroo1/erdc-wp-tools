@@ -78,14 +78,6 @@ function cac_auth_register_settings() {
         'cac_auth_general_section'
     );
 
-    add_settings_field(
-        'cac_auth_fallback_action',
-        'Non-CAC Fallback',
-        'cac_auth_fallback_action_callback',
-        'cac-auth-settings',
-        'cac_auth_general_section'
-    );
-
     add_settings_section(
         'cac_auth_approval_section',
         'Account Approval',
@@ -115,13 +107,6 @@ function cac_auth_register_settings() {
         'cac-auth-settings',
         'cac_auth_redirect_section'
     );
-
-    // add_settings_section(
-    //     'cac_auth_registration_settings_section',
-    //     'Registration Settings',
-    //     'cac_auth_registration_settings_section_callback',
-    //     'cac-auth-settings'
-    // );
 
     add_settings_field(
         'cac_auth_default_role',
@@ -256,26 +241,10 @@ function cac_auth_enabled_callback() {
     <?php
 }
 
-// Fallback Action callback
-function cac_auth_fallback_action_callback() {
-    $fallback_action = get_option('cac_auth_fallback_action', 'allow');
-    ?>
-    <select name="cac_auth_fallback_action">
-        <option value="allow" <?php selected($fallback_action, 'allow'); ?>>Allow access</option>
-        <option value="block" <?php selected($fallback_action, 'block'); ?>>Block access for non-admins</option>
-    </select>
-    <?php
-}
-
 // General section callback
 function cac_auth_general_section_callback() {
     echo '<p>Enable syncing a CAC authentication with a WordPress user account.</p>';
 }
-
-// // Registration settings section callback
-// function cac_auth_registration_settings_section_callback() {
-//     echo '<p>Configure the registration settings for CAC authentication.</p>';
-// }
 
 // Default user role callback
 function cac_auth_default_role_callback() {
