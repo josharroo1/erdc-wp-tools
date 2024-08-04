@@ -19,10 +19,15 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     header('WWW-Authenticate: Negotiate');
     exit;
 }
+    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
 
+    if (empty($redirect_to)) {
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
         $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+    } else {
+        $redirect_url = $redirect_to;
+    }
 
 if (is_user_logged_in()) {
     error_log('CAC Auth: User is already logged in, skipping authentication');
