@@ -97,37 +97,45 @@ jQuery(document).ready(function($) {
 document.addEventListener('DOMContentLoaded', function() {
     var cacAuthEnabledSelect = document.querySelector('select[name="cac_auth_enabled"]');
     var sectionsToToggle = [
-        { title: 'Account Approval', fields: ['cac_auth_user_approval'] },
-        { title: 'CAC Registration Settings', fields: ['cac_auth_registration_page', 'cac_auth_redirect_page', 'cac_auth_default_role'] },
-        { title: 'CAC Registration Form', fields: [] },
-        { title: 'Color Settings', fields: ['cac_auth_svg_fill_color', 'cac_auth_link_color'] }
+        'Account Approval',
+        'CAC Registration Settings',
+        'CAC Registration Form',
+        'Color Settings'
     ];
 
     function toggleSections() {
         var isEnabled = cacAuthEnabledSelect.value === 'yes';
-        sectionsToToggle.forEach(function(section) {
-            var sectionElement = findSectionByTitle(section.title);
-            if (sectionElement) {
-                sectionElement.style.display = isEnabled ? 'block' : 'none';
-                // Toggle fields within the section
-                section.fields.forEach(function(fieldName) {
-                    var field = document.querySelector('[name="' + fieldName + '"]');
-                    if (field) {
-                        field.closest('tr').style.display = isEnabled ? 'table-row' : 'none';
-                    }
-                });
+        var h2Elements = document.querySelectorAll('h2');
+        var currentSection = null;
+        var hideNext = false;
+
+        h2Elements.forEach(function(h2, index) {
+            if (sectionsToToggle.includes(h2.textContent.trim())) {
+                if (currentSection) {
+                    setVisibility(currentSection, h2, isEnabled);
+                }
+                currentSection = h2;
+                hideNext = true;
+            } else if (hideNext && !sectionsToToggle.includes(h2.textContent.trim())) {
+                setVisibility(currentSection, h2, isEnabled);
+                hideNext = false;
+            }
+
+            // Handle the last section
+            if (index === h2Elements.length - 1 && hideNext) {
+                setVisibility(currentSection, null, isEnabled);
             }
         });
     }
 
-    function findSectionByTitle(title) {
-        var headers = document.querySelectorAll('h2');
-        for (var i = 0; i < headers.length; i++) {
-            if (headers[i].textContent.trim() === title) {
-                return headers[i];
+    function setVisibility(startElement, endElement, isVisible) {
+        var current = startElement;
+        while (current && current !== endElement) {
+            if (current.style) {
+                current.style.display = isVisible ? '' : 'none';
             }
+            current = current.nextElementSibling;
         }
-        return null;
     }
 
     cacAuthEnabledSelect.addEventListener('change', toggleSections);
