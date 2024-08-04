@@ -129,9 +129,17 @@ function cac_handle_authentication($user) {
     $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
 
     if (empty($redirect_to)) {
-        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+        // Get the current URL
+        $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
+        // Check if the current URL is the root URL
+        if (trailingslashit(home_url()) === trailingslashit($current_url)) {
+            $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+            $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                            (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+        } else {
+            $redirect_url = $current_url; // Redirect to the requested URL
+        }
     } else {
         $redirect_url = $redirect_to;
     }
