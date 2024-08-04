@@ -126,8 +126,7 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    $redirect_to = isset($_SESSION['cac_intended_url']) ? $_SESSION['cac_intended_url'] : '';
-    unset($_SESSION['cac_intended_url']);
+    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
 
     if (empty($redirect_to)) {
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
@@ -141,15 +140,6 @@ function cac_handle_authentication($user) {
     wp_redirect($redirect_url);
     exit;
 }
-
-// Capture the intended URL and store it in a session before redirecting to login
-function cac_capture_intended_url() {
-    if (!is_user_logged_in() && !isset($_SESSION['cac_intended_url'])) {
-        $intended_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $_SESSION['cac_intended_url'] = $intended_url;
-    }
-}
-add_action('init', 'cac_capture_intended_url');
 
 // Get pending approval message
 function cac_get_pending_approval_message() {
