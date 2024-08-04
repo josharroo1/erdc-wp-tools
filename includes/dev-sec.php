@@ -71,4 +71,4 @@ function force_https() {
         }
     }
 }
-add_action('template_redirect', 'force_https');
+add_action('init', 'force_https', 1);
