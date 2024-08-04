@@ -117,6 +117,8 @@ function cac_maybe_handle_authentication() {
     }
 }
 
+add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
+
 // Handle authentication for a user
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
