@@ -264,4 +264,4 @@ function auto_redirect_logged_in_users() {
         }
     }
 }
-add_action('init', 'auto_redirect_logged_in_users');
+add_action('template_redirect', 'auto_redirect_logged_in_users');
