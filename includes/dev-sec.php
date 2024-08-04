@@ -6,6 +6,7 @@ $securityMitigationsDescriptions = [
     'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
     'remove_script_version' => 'Remove jQuery Version Information',
+    'force_https' => 'Force the site to use HTTPS',
 ];
 
 /**
@@ -56,16 +57,18 @@ add_filter('script_loader_src', 'remove_script_version', PHP_INT_MAX);
 add_filter('style_loader_src', 'remove_script_version', PHP_INT_MAX);
 
 /**
- * Future Security Mitigations
- * 
- * This section is reserved for future security mitigation functions.
- * Follow the pattern below to add new security features:
- * 
- * // Description of the new mitigation
- * function new_security_mitigation() {
- *     // Implementation of the mitigation
- * }
- * add_action('appropriate_hook', 'new_security_mitigation');
- * 
- * Add a description in the $securityMitigationsDescriptions array at the top.
+ * Force HTTPS
+ * @SecurityMitigation
  */
+function force_https() {
+    if (!is_ssl()) {
+        if (0 === strpos($_SERVER['REQUEST_URI'], 'http')) {
+            wp_safe_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']), 301);
+            exit();
+        } else {
+            wp_safe_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], 301);
+            exit();
+        }
+    }
+}
+add_action('template_redirect', 'force_https');
