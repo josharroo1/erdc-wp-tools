@@ -245,23 +245,28 @@ function login_style_changer() {
 add_action('login_head', 'login_style_changer');
 
 //Auto forward logged in users to pages requiring login
-function auto_redirect_logged_in_users() {
-    // Check if we're on the login page
-    if (in_array($GLOBALS['pagenow'], array('wp-login.php'))) {
-        // Check if the user is already logged in
-        if (is_user_logged_in()) {
-            // Get the redirect_to parameter if it exists
-            $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
-            
-            // If no redirect_to is specified, default to the admin dashboard
-            if (empty($redirect_to)) {
-                $redirect_to = admin_url();
-            }
-            
-            // Perform the redirect
-            wp_safe_redirect($redirect_to);
-            exit();
+function redirect_logged_in_users() {
+    // Check if the user is already logged in
+    if (is_user_logged_in()) {
+        // Get the redirect_to parameter if it exists
+        $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+        
+        // If no redirect_to is specified, default to the admin dashboard
+        if (empty($redirect_to)) {
+            $redirect_to = admin_url();
         }
+        
+        // Perform the redirect
+        wp_safe_redirect($redirect_to);
+        exit();
     }
 }
-add_action('template_redirect', 'auto_redirect_logged_in_users');
+
+// Hook into login_init for the login page
+add_action('login_init', 'redirect_logged_in_users');
+
+// Hook into wp for other pages that might redirect to the login page
+add_action('wp', 'redirect_logged_in_users');
+
+// Optionally, you can also use the template_redirect hook as a fallback
+add_action('template_redirect', 'redirect_logged_in_users');
