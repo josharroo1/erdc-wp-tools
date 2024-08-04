@@ -243,3 +243,25 @@ function login_style_changer() {
     </style>';
 }
 add_action('login_head', 'login_style_changer');
+
+//Auto forward logged in users to pages requiring login
+function auto_redirect_logged_in_users() {
+    // Check if we're on the login page
+    if (in_array($GLOBALS['pagenow'], array('wp-login.php'))) {
+        // Check if the user is already logged in
+        if (is_user_logged_in()) {
+            // Get the redirect_to parameter if it exists
+            $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+            
+            // If no redirect_to is specified, default to the admin dashboard
+            if (empty($redirect_to)) {
+                $redirect_to = admin_url();
+            }
+            
+            // Perform the redirect
+            wp_safe_redirect($redirect_to);
+            exit();
+        }
+    }
+}
+add_action('init', 'auto_redirect_logged_in_users');
