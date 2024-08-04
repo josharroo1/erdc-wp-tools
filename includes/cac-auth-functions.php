@@ -121,20 +121,6 @@ function cac_maybe_handle_authentication() {
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
     
-    // Clear relevant WordPress and Wordfence authentication cookies
-    $cookies_to_clear = [
-        'wordpress_logged_in_' . COOKIEHASH,
-        'wordpress_sec_' . COOKIEHASH,
-        'wordpress_test_cookie',
-        'wfwaf-authcookie-' . COOKIEHASH
-    ];
-
-    foreach ($cookies_to_clear as $cookie) {
-        if (isset($_COOKIE[$cookie])) {
-            unset($_COOKIE[$cookie]);
-            setcookie($cookie, '', time() - 3600, '/', '', is_ssl(), true);
-        }
-    }
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
