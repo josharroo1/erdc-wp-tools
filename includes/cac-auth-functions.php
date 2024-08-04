@@ -121,36 +121,15 @@ function cac_maybe_handle_authentication() {
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
 
-    $cookies_to_clear = [
-        'wordpress_logged_in_' . COOKIEHASH,
-        'wordpress_sec_' . COOKIEHASH,
-        'wordpress_test_cookie',
-        'wfwaf-authcookie-' . COOKIEHASH
-    ];
-
-    foreach ($cookies_to_clear as $cookie) {
-        if (isset($_COOKIE[$cookie])) {
-            unset($_COOKIE[$cookie]);
-            setcookie($cookie, '', time() - 3600, '/', '', is_ssl(), true);
-        }
-    }
-
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    // Check for redirect_to parameter
-    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
-
-    if (empty($redirect_to)) {
-        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
-    } else {
-        $redirect_url = $redirect_to;
-    }
+    $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+    $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
 
     error_log('CAC Auth: Redirecting to ' . $redirect_url);
-    wp_safe_redirect($redirect_url);
+    wp_redirect($redirect_url);
     exit;
 }
 
