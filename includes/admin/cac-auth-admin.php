@@ -9,8 +9,8 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
 // Add CAC Authentication settings page
 function cac_auth_add_settings_page() {
     add_options_page(
-        'WP CAC Sync Settings',
-        'WP CAC Sync',
+        'ERDC WP Tools Settings',
+        'ERDC WP Tools',
         'manage_options',
         'cac-auth-settings',
         'cac_auth_render_settings_page'
@@ -65,7 +65,7 @@ function cac_auth_register_settings() {
 
     add_settings_section(
         'cac_auth_general_section',
-        'General Settings',
+        'CAC Sync Settings',
         'cac_auth_general_section_callback',
         'cac-auth-settings'
     );
@@ -95,7 +95,7 @@ function cac_auth_register_settings() {
 
     add_settings_section(
         'cac_auth_redirect_section',
-        'Redirection Settings',
+        'CAC Registration Settings',
         'cac_auth_redirect_section_callback',
         'cac-auth-settings'
     );
@@ -116,19 +116,19 @@ function cac_auth_register_settings() {
         'cac_auth_redirect_section'
     );
 
-    add_settings_section(
-        'cac_auth_registration_settings_section',
-        'Registration Settings',
-        'cac_auth_registration_settings_section_callback',
-        'cac-auth-settings'
-    );
+    // add_settings_section(
+    //     'cac_auth_registration_settings_section',
+    //     'Registration Settings',
+    //     'cac_auth_registration_settings_section_callback',
+    //     'cac-auth-settings'
+    // );
 
     add_settings_field(
         'cac_auth_default_role',
         'Default User Role',
         'cac_auth_default_role_callback',
         'cac-auth-settings',
-        'cac_auth_registration_settings_section'
+        'cac_auth_redirect_section'
     );
 
     add_settings_section(
@@ -208,7 +208,8 @@ function cac_auth_security_section_callback() {
 
 // Redirect section callback
 function cac_auth_redirect_section_callback() {
-    echo '<p>Select the pages to redirect users to after successful CAC authentication.</p><p>The <em><strong>registration page</strong></em> will be shown to non-synced/unregistered users who have authenticated via CAC.</p><p> The <strong><em>account page</em></strong> will be shown to synced/registered users who have authenticated via CAC.</p>';
+    echo '<p>The <strong><em>Registration Page</em></strong> is shown to users authenticated via CAC but not yet registered or synced with WordPress.</p>
+<p>The <strong><em>Login Redirect Page</em></strong> is the destination for registered and synced users after successful CAC authentication.</p>';
 }
 
 // Redirect page callback
@@ -268,13 +269,13 @@ function cac_auth_fallback_action_callback() {
 
 // General section callback
 function cac_auth_general_section_callback() {
-    echo '<p>Configure the general settings for CAC authentication.</p>';
+    echo '<p>Enable syncing a CAC authentication with a WordPress user account.</p>';
 }
 
-// Registration settings section callback
-function cac_auth_registration_settings_section_callback() {
-    echo '<p>Configure the registration settings for CAC authentication.</p>';
-}
+// // Registration settings section callback
+// function cac_auth_registration_settings_section_callback() {
+//     echo '<p>Configure the registration settings for CAC authentication.</p>';
+// }
 
 // Default user role callback
 function cac_auth_default_role_callback() {

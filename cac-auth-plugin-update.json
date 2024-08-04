@@ -1,8 +1,8 @@
 {
-    "name": "WP CAC Sync (DoD)",
-    "version": "3.7.3",
+    "name": "ERDC WP Tools",
+    "version": "3.7.4",
     "download_url": "https://github.com/josharroo1/erdc-wp-tools/archive/main.zip",
     "sections": {
-      "description": "A WordPress plugin for CAC authentication and user synchronization."
+      "description": "A suite of tools for managing WordPress within USACE ERDC."
     }
   }
