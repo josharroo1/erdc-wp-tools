@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 3.8.3
+ * Version: 3.8.4
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+

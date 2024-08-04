@@ -138,12 +138,19 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-    $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+    // Check for redirect_to parameter
+    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+
+    if (empty($redirect_to)) {
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+    } else {
+        $redirect_url = $redirect_to;
+    }
 
     error_log('CAC Auth: Redirecting to ' . $redirect_url);
-    wp_redirect($redirect_url);
+    wp_safe_redirect($redirect_url);
     exit;
 }
 
@@ -243,30 +250,3 @@ function login_style_changer() {
     </style>';
 }
 add_action('login_head', 'login_style_changer');
-
-//Auto forward logged in users to pages requiring login
-function redirect_logged_in_users() {
-    // Check if the user is already logged in
-    if (is_user_logged_in()) {
-        // Get the redirect_to parameter if it exists
-        $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
-        
-        // If no redirect_to is specified, default to the admin dashboard
-        if (empty($redirect_to)) {
-            $redirect_to = admin_url();
-        }
-        
-        // Perform the redirect
-        wp_safe_redirect($redirect_to);
-        exit();
-    }
-}
-
-// Hook into login_init for the login page
-add_action('login_init', 'redirect_logged_in_users');
-
-// Hook into wp for other pages that might redirect to the login page
-add_action('wp', 'redirect_logged_in_users');
-
-// Optionally, you can also use the template_redirect hook as a fallback
-add_action('template_redirect', 'redirect_logged_in_users');
