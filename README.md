@@ -1,45 +1,71 @@
-CAC Authentication Plugin
-A WordPress plugin for CAC (Common Access Card) authentication and user synchronization.
+# ERDC WP Tools
 
-Description
-The CAC Authentication Plugin enables secure authentication and user synchronization for WordPress websites using Common Access Cards (CAC) issued by the Department of Defense (DoD). This plugin seamlessly integrates CAC authentication into your WordPress site, allowing users to log in using their CAC credentials and automatically synchronizing user information.
+## Description
 
-Features
-CAC-based authentication: Users can log in to your WordPress site using their CAC credentials.
-User synchronization: User information is automatically synchronized based on the CAC data.
-Customizable registration form: Easily customize the registration form fields to capture additional user information.
-Admin settings: Configure plugin settings, including redirect pages and custom registration fields, through the WordPress admin dashboard.
-Shortcode integration: Display the CAC registration form anywhere on your site using a simple shortcode.
-Automatic updates: Keep your plugin up to date with automatic updates from the GitHub repository.
-Installation
-Download the plugin ZIP file from the GitHub repository.
-Upload the plugin ZIP file to your WordPress site through the WordPress admin dashboard or extract the ZIP file and upload the plugin folder to the wp-content/plugins directory.
-Activate the plugin through the 'Plugins' menu in WordPress.
-Configure the plugin settings in the WordPress admin dashboard under 'Settings' > 'CAC Authentication'.
-Usage
-Place the [cac_registration] shortcode on the desired page or post to display the CAC registration form.
-Users can log in to your WordPress site using their CAC credentials.
-User information will be automatically synchronized based on the CAC data.
-Customize the registration form fields and plugin settings through the WordPress admin dashboard.
-Configuration
-The plugin provides the following configuration options in the WordPress admin dashboard:
+ERDC WP Tools is a comprehensive WordPress plugin designed to enhance security and user management for Department of Defense (DoD) websites. It provides seamless integration with Common Access Card (CAC) authentication, custom user registration capabilities, and additional security features.
 
-Redirect Page: Select the page to redirect users to after successful CAC authentication.
-Registration Page: Select the page to redirect non-registered users to for CAC registration.
-Custom Registration Fields: Add custom fields to the CAC registration form to capture additional user information.
-Automatic Updates
-The plugin supports automatic updates from the GitHub repository. Whenever a new version is released, WordPress will notify you of the available update, and you can update the plugin with a single click.
+## Key Features
 
-To ensure automatic updates work correctly, make sure the cac-auth-plugin-update.json file in the GitHub repository is up to date with the latest version information.
+- CAC Authentication integration
+- Customizable user registration process
+- User approval system
+- Enhanced security measures
+- Flexible user redirection options
+- Role management for CAC-authenticated users
+- Advanced user list management in admin panel
 
-Contributing
-Contributions to the CAC Authentication Plugin are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository.
+## Installation
 
-License
-This plugin is licensed under the GPL-2.0+ License.
+1. Download the plugin files and upload them to your `/wp-content/plugins/erdc-wp-tools` directory, or install the plugin through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Use the 'ERDC WP Tools' menu item in the Settings to configure the plugin.
 
-Credits
-The CAC Authentication Plugin was developed by Joshua Arruda.
+## Usage
 
-Support
-For support and questions, please open an issue on the GitHub repository or contact the plugin author.
+### Basic Configuration
+
+1. Navigate to 'Settings' > 'ERDC WP Tools' in your WordPress admin panel.
+2. Enable CAC Authentication and configure your preferred settings.
+
+### Setting Up the Registration Form
+
+1. In the plugin settings, find the 'CAC Registration Form' section.
+2. Add and customize fields for your registration process.
+
+### Implementing the Registration Form
+
+Use the following shortcode to display the CAC registration form on any page or post:
+
+```
+[cac_registration]
+```
+
+### Managing Users
+
+1. Go to the 'Users' page in your WordPress admin panel.
+2. Use the enhanced user management features, including status viewing and bulk actions.
+
+## Security Features
+
+ERDC WP Tools implements various security mitigations to protect your WordPress site. These features are regularly updated to address emerging security concerns.
+
+## Customization
+
+- Use the plugin settings to adjust the appearance of forms and other user-facing elements.
+- For advanced customization, refer to the plugin's CSS files.
+
+## Ongoing Development
+
+ERDC WP Tools is actively maintained and regularly updated. New features, tools, and security enhancements are continually added to improve the plugin's functionality and security posture. We recommend keeping the plugin updated to benefit from the latest improvements.
+
+## Support
+
+For support, feature requests, or bug reports, please [open an issue](https://github.com/your-repo-link/issues) on our GitHub repository.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the GPL-2.0+ License - see the [LICENSE](LICENSE) file for details.
