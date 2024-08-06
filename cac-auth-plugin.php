@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 3.9.9
+ * Version: 4.0.0
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '3.9.9');
+define('CAC_AUTH_PLUGIN_VERSION', '4.0.0');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -27,6 +27,8 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-user-list.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/post-columns.php';
+
 
 // Plugin update checker
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';

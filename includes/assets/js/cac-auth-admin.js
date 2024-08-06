@@ -143,3 +143,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initial toggle on page load
     toggleSections();
 });
+
+jQuery(document).ready(function($) {
+    function toggleCustomColumnsPosition() {
+        var enabled = $('#cac_auth_enable_custom_columns').is(':checked');
+        $('#cac_auth_custom_columns_position').closest('tr').toggle(enabled);
+    }
+
+    $('#cac_auth_enable_custom_columns').on('change', toggleCustomColumnsPosition);
+    toggleCustomColumnsPosition(); // Initial state
+});

@@ -63,6 +63,18 @@ function cac_auth_register_settings() {
         'default' => false,
     ));
 
+    register_setting('cac_auth_settings', 'cac_auth_enable_custom_columns', array(
+        'type' => 'boolean',
+        'default' => true,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ));
+
+    register_setting('cac_auth_settings', 'cac_auth_custom_columns_position', array(
+        'type' => 'string',
+        'default' => 'after_title',
+        'sanitize_callback' => 'sanitize_text_field',
+    ));
+
     add_settings_section(
         'cac_auth_general_section',
         'CAC Sync Settings',
@@ -128,6 +140,29 @@ function cac_auth_register_settings() {
         'Color Settings',
         'cac_auth_render_color_settings',
         'cac-auth-settings'
+    );
+
+    add_settings_section(
+        'cac_auth_custom_columns_section',
+        'Custom Post Columns',
+        'cac_auth_custom_columns_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_enable_custom_columns',
+        'Enable Custom Columns',
+        'cac_auth_enable_custom_columns_callback',
+        'cac-auth-settings',
+        'cac_auth_custom_columns_section'
+    );
+
+    add_settings_field(
+        'cac_auth_custom_columns_position',
+        'Custom Columns Position',
+        'cac_auth_custom_columns_position_callback',
+        'cac-auth-settings',
+        'cac_auth_custom_columns_section'
     );
 
     add_settings_section(
@@ -270,3 +305,28 @@ function cac_auth_remove_csv() {
     }
 }
 add_action('wp_ajax_cac_auth_remove_csv', 'cac_auth_remove_csv');
+
+
+function cac_auth_custom_columns_section_callback() {
+    echo '<p>Configure settings for custom columns in post lists.</p>';
+}
+
+function cac_auth_enable_custom_columns_callback() {
+    $enabled = get_option('cac_auth_enable_custom_columns', true);
+    ?>
+    <input type="checkbox" id="cac_auth_enable_custom_columns" name="cac_auth_enable_custom_columns" value="1" <?php checked($enabled, true); ?>>
+    <label for="cac_auth_enable_custom_columns">Show custom columns (Date Created, Last Revision, Date Published) in post lists</label>
+    <?php
+}
+
+function cac_auth_custom_columns_position_callback() {
+    $position = get_option('cac_auth_custom_columns_position', 'after_title');
+    ?>
+    <select name="cac_auth_custom_columns_position" id="cac_auth_custom_columns_position">
+        <option value="after_title" <?php selected($position, 'after_title'); ?>>After Title</option>
+        <option value="before_date" <?php selected($position, 'before_date'); ?>>Before Date</option>
+        <option value="end" <?php selected($position, 'end'); ?>>At the End</option>
+    </select>
+    <p class="description">Choose where to display the custom columns in the post list.</p>
+    <?php
+}
