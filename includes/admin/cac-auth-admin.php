@@ -65,7 +65,7 @@ function cac_auth_register_settings() {
 
     register_setting('cac_auth_settings', 'cac_auth_enable_custom_columns', array(
         'type' => 'boolean',
-        'default' => true,
+        'default' => false,
         'sanitize_callback' => 'rest_sanitize_boolean',
     ));
 
@@ -144,7 +144,7 @@ function cac_auth_register_settings() {
 
     add_settings_section(
         'cac_auth_custom_columns_section',
-        'Custom Post Columns',
+        'Custom Post Date Columns',
         'cac_auth_custom_columns_section_callback',
         'cac-auth-settings'
     );
@@ -312,10 +312,11 @@ function cac_auth_custom_columns_section_callback() {
 }
 
 function cac_auth_enable_custom_columns_callback() {
-    $enabled = get_option('cac_auth_enable_custom_columns', true);
+    $enabled = get_option('cac_auth_enable_custom_columns', false);  // Changed default to false
     ?>
     <input type="checkbox" id="cac_auth_enable_custom_columns" name="cac_auth_enable_custom_columns" value="1" <?php checked($enabled, true); ?>>
-    <label for="cac_auth_enable_custom_columns">Show custom columns (Date Created, Last Revision, Date Published) in post lists</label>
+    <label for="cac_auth_enable_custom_columns">Show custom date columns in post lists</label>
+    <p class="description">This will replace the default Date column with Date Created, Last Revision, and Date Published columns. This includes the user email that executed actions for better logging.</p>
     <?php
 }
 
@@ -323,10 +324,9 @@ function cac_auth_custom_columns_position_callback() {
     $position = get_option('cac_auth_custom_columns_position', 'after_title');
     ?>
     <select name="cac_auth_custom_columns_position" id="cac_auth_custom_columns_position">
-        <option value="after_title" <?php selected($position, 'after_title'); ?>>After Title</option>
-        <option value="before_date" <?php selected($position, 'before_date'); ?>>Before Date</option>
+        <option value="after_title" <?php selected($position, 'after_title'); ?>>After The Title</option>
         <option value="end" <?php selected($position, 'end'); ?>>At the End</option>
     </select>
-    <p class="description">Choose where to display the custom columns in the post list.</p>
+    <p class="description">Choose where to display the custom date columns in the post list.</p>
     <?php
 }

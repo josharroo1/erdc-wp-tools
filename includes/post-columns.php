@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
  * Add custom columns to all public post types
  */
 function cac_auth_add_custom_columns_to_all_post_types() {
-    if (get_option('cac_auth_enable_custom_columns', true)) {
+    if (get_option('cac_auth_enable_custom_columns', false)) {  // Changed default to false
         $post_types = get_post_types(['public' => true], 'names');
         foreach ($post_types as $post_type) {
             add_filter("manage_{$post_type}_posts_columns", 'cac_auth_add_custom_columns');
@@ -35,17 +35,19 @@ function cac_auth_add_custom_columns($columns) {
         'date_published' => 'Date Published'
     );
 
-    if ($position === 'end') {
-        $new_columns = $columns + $custom_columns;
-    } else {
-        foreach ($columns as $key => $value) {
+    foreach ($columns as $key => $value) {
+        if ($key !== 'date') { // Skip the default 'date' column
             $new_columns[$key] = $value;
             
-            if (($position === 'after_title' && $key === 'title') ||
-                ($position === 'before_date' && $key === 'date')) {
+            if ($position === 'after_title' && $key === 'title') {
                 $new_columns = array_merge($new_columns, $custom_columns);
             }
         }
+    }
+
+    // If position is 'end' or 'before_date', add custom columns at the end
+    if ($position === 'end' || $position === 'before_date') {
+        $new_columns = array_merge($new_columns, $custom_columns);
     }
 
     return $new_columns;
