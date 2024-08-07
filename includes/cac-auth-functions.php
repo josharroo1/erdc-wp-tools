@@ -126,6 +126,9 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
+    // Update user's last login
+    update_user_meta($user->ID, 'last_login', time());
+
     $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
 
     if (empty($redirect_to)) {
