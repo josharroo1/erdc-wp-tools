@@ -126,8 +126,14 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    // Update user's last login
+    // Update standard WordPress last login
     update_user_meta($user->ID, 'last_login', time());
+
+    // Check if Wordfence last login meta exists and update it
+    $wf_last_login = get_user_meta($user->ID, 'wfls-last-login', true);
+    if ($wf_last_login !== '') {
+        update_user_meta($user->ID, 'wfls-last-login', time());
+    }
 
     $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
 
