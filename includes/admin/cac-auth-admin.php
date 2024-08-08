@@ -75,6 +75,12 @@ function cac_auth_register_settings() {
         'sanitize_callback' => 'sanitize_text_field',
     ));
 
+    register_setting('cac_auth_settings', 'cac_auth_disable_comments', array(
+        'type' => 'boolean',
+        'sanitize_callback' => 'absint',
+        'default' => false,
+    ));
+
     add_settings_section(
         'cac_auth_general_section',
         'CAC Sync Settings',
@@ -163,6 +169,21 @@ function cac_auth_register_settings() {
         'cac_auth_custom_columns_position_callback',
         'cac-auth-settings',
         'cac_auth_custom_columns_section'
+    );
+
+    add_settings_section(
+        'cac_auth_comment_section',
+        'Comment Settings',
+        'cac_auth_comment_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_disable_comments',
+        'Disable Comments',
+        'cac_auth_disable_comments_callback',
+        'cac-auth-settings',
+        'cac_auth_comment_section'
     );
 
     add_settings_section(
@@ -328,5 +349,17 @@ function cac_auth_custom_columns_position_callback() {
         <option value="end" <?php selected($position, 'end'); ?>>At the End</option>
     </select>
     <p class="description">Choose where to display the custom date columns in the post list.</p>
+    <?php
+}
+
+function cac_auth_comment_section_callback() {
+    echo '<p>Manage comment functionality for your WordPress site.</p>';
+}
+
+function cac_auth_disable_comments_callback() {
+    $disable_comments = get_option('cac_auth_disable_comments', false);
+    ?>
+    <input type="checkbox" name="cac_auth_disable_comments" id="cac_auth_disable_comments" value="1" <?php checked($disable_comments, true); ?>>
+    <label for="cac_auth_disable_comments">Disable all comment functionality</label>
     <?php
 }
