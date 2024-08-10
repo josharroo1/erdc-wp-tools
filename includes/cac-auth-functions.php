@@ -248,9 +248,19 @@ add_action('login_head', 'login_style_changer');
 
 //BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
+    // Only proceed if the user is logged in and there's a reason to redirect
+    if (!is_user_logged_in()) {
+        return;
+    }
+
     $intended_destination = $_SESSION['cac_auth_intended_destination'] ?? '';
     $pending_download = $_SESSION['cac_auth_intended_download'] ?? '';
     $referring_page = $_SESSION['cac_auth_referring_page'] ?? '';
+
+    // Only redirect if we have a reason to (intended destination, pending download, etc.)
+    if (!$intended_destination && !$pending_download) {
+        return;
+    }
 
     // Clear all redirection-related session variables
     unset($_SESSION['cac_auth_intended_destination']);
@@ -272,7 +282,6 @@ function cac_auth_handle_redirection() {
         exit;
     }
 }
-add_action('template_redirect', 'cac_auth_handle_redirection', 1);
 
 function cac_auth_redirect_to_cac_login() {
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
