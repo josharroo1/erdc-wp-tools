@@ -29,11 +29,12 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
         $redirect_url = $redirect_to;
     }
 
-if (is_user_logged_in()) {
-    error_log('CAC Auth: User is already logged in, skipping authentication');
-    wp_redirect($redirect_url);
-    exit;
-}
+    if (is_user_logged_in()) {
+        error_log('CAC Auth: User is already logged in, skipping authentication');
+        $redirect_to = isset($_GET['redirect_to']) ? $_GET['redirect_to'] : $redirect_url;
+        wp_safe_redirect($redirect_to);
+        exit;
+    }
 // Process CAC authentication
 cac_maybe_handle_authentication();
 

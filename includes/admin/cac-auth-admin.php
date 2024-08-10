@@ -81,6 +81,18 @@ function cac_auth_register_settings() {
         'default' => false,
     ));
 
+    register_setting('cac_auth_settings', 'cac_auth_site_wide_restriction', array(
+        'type' => 'boolean',
+        'default' => false,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ));
+
+    register_setting('cac_auth_settings', 'cac_auth_enable_post_restriction', array(
+        'type' => 'boolean',
+        'default' => false,
+        'sanitize_callback' => 'rest_sanitize_boolean',
+    ));
+
     add_settings_section(
         'cac_auth_general_section',
         'CAC Sync Settings',
@@ -101,6 +113,29 @@ function cac_auth_register_settings() {
         'Account Approval',
         'cac_auth_approval_callback',
         'cac-auth-settings'
+    );
+
+    add_settings_section(
+        'cac_auth_restriction_section',
+        'Access Restriction Settings',
+        'cac_auth_restriction_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_site_wide_restriction',
+        'Enable Site-wide CAC Authentication',
+        'cac_auth_site_wide_restriction_callback',
+        'cac-auth-settings',
+        'cac_auth_restriction_section'
+    );
+
+    add_settings_field(
+        'cac_auth_enable_post_restriction',
+        'Enable Post-specific CAC Authentication',
+        'cac_auth_enable_post_restriction_callback',
+        'cac-auth-settings',
+        'cac_auth_restriction_section'
     );
 
     add_settings_section(
@@ -361,5 +396,25 @@ function cac_auth_disable_comments_callback() {
     ?>
     <input type="checkbox" name="cac_auth_disable_comments" id="cac_auth_disable_comments" value="1" <?php checked($disable_comments, true); ?>>
     <label for="cac_auth_disable_comments">Disable all comment functionality</label>
+    <?php
+}
+
+function cac_auth_restriction_section_callback() {
+    echo '<p>Configure CAC authentication restrictions for your site.</p>';
+}
+
+function cac_auth_site_wide_restriction_callback() {
+    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
+    ?>
+    <input type="checkbox" id="cac_auth_site_wide_restriction" name="cac_auth_site_wide_restriction" value="1" <?php checked($site_wide_restriction, true); ?>>
+    <label for="cac_auth_site_wide_restriction">Require CAC authentication for the entire site</label>
+    <?php
+}
+
+function cac_auth_enable_post_restriction_callback() {
+    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
+    ?>
+    <input type="checkbox" id="cac_auth_enable_post_restriction" name="cac_auth_enable_post_restriction" value="1" <?php checked($enable_post_restriction, true); ?>>
+    <label for="cac_auth_enable_post_restriction">Allow post-specific CAC authentication restrictions</label>
     <?php
 }
