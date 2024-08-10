@@ -64,20 +64,12 @@ function cac_generate_username($names, $email) {
 // Handle CAC authentication if conditions are met
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
-    error_log('SERVER variables: ' . print_r($_SERVER, true));
-    error_log('SESSION variables: ' . print_r($_SESSION, true));
 
     $registration_page_id = get_option('cac_auth_registration_page');
     $current_page_id = get_queried_object_id();
 
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
         error_log('CAC Auth: CAC authentication is disabled');
-        return;
-    }
-
-    // Early return if user is already logged in
-    if (is_user_logged_in()) {
-        error_log('CAC Auth: User is already logged in, skipping authentication');
         return;
     }
 
@@ -107,6 +99,7 @@ function cac_maybe_handle_authentication() {
         }
         // Proceed with authentication for existing user
         cac_handle_authentication($user);
+        return true; // Indicate successful authentication
     } else {
         // User not found, redirect to registration
         error_log('CAC Auth: User not found, redirecting to registration');
@@ -117,6 +110,8 @@ function cac_maybe_handle_authentication() {
             wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
         }
     }
+
+    return false; // Indicate failed authentication
 }
 
 add_action('template_redirect', 'cac_maybe_handle_authentication', 1);
@@ -134,8 +129,6 @@ function cac_handle_authentication($user) {
     if ($wf_last_login !== '') {
         update_user_meta($user->ID, 'wfls-last-login', time());
     }
-
-    cac_auth_handle_redirection();
 }
 
 // Get pending approval message

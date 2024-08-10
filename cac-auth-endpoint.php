@@ -22,11 +22,14 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
 
 $_SESSION['SSL_CLIENT_S_DN_CN'] = $_SERVER['SSL_CLIENT_S_DN_CN'];
 
-    if (is_user_logged_in()) {
-        cac_auth_handle_redirection();
-    }
-// Process CAC authentication
 cac_maybe_handle_authentication();
+
+// If we reach here and the user is logged in, redirect to the appropriate page
+if (is_user_logged_in()) {
+    error_log('CAC Auth Endpoint: User successfully authenticated');
+    cac_auth_handle_redirection();
+    exit;
+}
 
 // If we reach here, authentication failed
 wp_die('CAC authentication failed. Please try again or contact the site administrator.');
