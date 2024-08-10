@@ -256,11 +256,6 @@ function cac_auth_handle_redirection() {
     $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
     $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
-    // Store the current URL for later redirection
-    if (!isset($_SESSION['cac_auth_intended_destination'])) {
-        $_SESSION['cac_auth_intended_destination'] = $current_url;
-    }
-
     // Check if user is already logged in
     if (is_user_logged_in()) {
         // If on login page or CAC endpoint, redirect to intended destination or default redirect
@@ -295,10 +290,14 @@ add_action('template_redirect', 'cac_auth_handle_redirection', 1);
 
 function cac_auth_redirect_to_cac_login() {
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
+    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    
+    // Set the intended destination in the session
+    $_SESSION['cac_auth_intended_destination'] = $current_url;
+    
     wp_redirect($cac_auth_url);
     exit;
 }
-
 function cac_auth_redirect_authenticated_user() {
     $intended_destination = isset($_SESSION['cac_auth_intended_destination']) ? $_SESSION['cac_auth_intended_destination'] : '';
     unset($_SESSION['cac_auth_intended_destination']); // Clear the stored destination
