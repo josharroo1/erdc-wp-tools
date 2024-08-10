@@ -179,7 +179,6 @@ add_action('wp_login', 'cac_auth_redirect_after_login');
 function cac_auth_protected_download_shortcode($atts) {
     $atts = shortcode_atts(array(
         'id' => 0,
-        'text' => 'Download File',
     ), $atts, 'cac_protected_download');
 
     $attachment_id = intval($atts['id']);
@@ -188,6 +187,6 @@ function cac_auth_protected_download_shortcode($atts) {
     }
 
     $download_url = cac_auth_get_protected_download_url($attachment_id);
-    return '<a href="' . esc_url($download_url) . '" class="cac-protected-download">' . esc_html($atts['text']) . '</a>';
+    return esc_url($download_url);
 }
 add_shortcode('cac_protected_download', 'cac_auth_protected_download_shortcode');
