@@ -6,6 +6,7 @@ $securityMitigationsDescriptions = [
     'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
     'remove_script_version' => 'Remove jQuery Version Information',
+    'protect_media_folder' => 'Restrict Direct Access to Media For Non-Logged In Users',
 ];
 
 /**
