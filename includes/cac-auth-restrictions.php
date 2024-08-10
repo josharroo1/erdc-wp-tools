@@ -233,31 +233,3 @@ function cac_auth_check_restrictions() {
 
 // Add this function to the 'template_redirect' hook to check restrictions on every page load
 add_action('template_redirect', 'cac_auth_check_restrictions', 1);
-
-function cac_auth_handle_protected_media() {
-    if (isset($_GET['cac_protected_media']) && $_GET['cac_protected_media'] == 1) {
-        $request_uri = $_SERVER['REQUEST_URI'];
-        $file_path = ABSPATH . ltrim($request_uri, '/');
-
-        // Check if file exists
-        if (!file_exists($file_path)) {
-            status_header(404);
-            die('404 - File not found');
-        }
-
-        // Check if user is logged in and has access
-        if (!is_user_logged_in() || !current_user_can('read')) {
-            // Redirect to CAC login
-            cac_auth_redirect_to_cac_login();
-            exit;
-        }
-
-        // User is logged in and has access, serve the file
-        $mime = wp_check_filetype($file_path);
-        header('Content-Type: ' . $mime['type']);
-        header('Content-Length: ' . filesize($file_path));
-        readfile($file_path);
-        exit;
-    }
-}
-add_action('init', 'cac_auth_handle_protected_media', 1);
