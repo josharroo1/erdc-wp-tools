@@ -268,10 +268,30 @@ HTML;
 
         wp_die($message, 'Account Pending Approval', array('response' => 200));
     } else {
+        // NEW CODE STARTS HERE
+    if ($user_id && !is_wp_error($user_id)) {
+        // Set user as logged in
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
 
-        cac_auth_redirect_authenticated_user();
+        // Check if there's a pending download
+        $pending_download = isset($_SESSION['cac_auth_intended_download']) ? $_SESSION['cac_auth_intended_download'] : '';
+        $referring_page = isset($_SESSION['cac_auth_referring_page']) ? $_SESSION['cac_auth_referring_page'] : '';
+
+        // Clear the session variables
+        unset($_SESSION['cac_auth_intended_download']);
+        unset($_SESSION['cac_auth_referring_page']);
+
+        if ($pending_download && $referring_page) {
+            // Redirect to the referring page with the download token
+            $redirect_url = add_query_arg(array('cac_download' => $pending_download), $referring_page);
+            wp_redirect($redirect_url);
+            exit;
+        } else {
+            // If no pending download, redirect to the default page after registration
+            cac_auth_redirect_authenticated_user();
+        }
+    }
 
     }
 }

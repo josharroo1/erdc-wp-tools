@@ -112,7 +112,6 @@ function cac_auth_decode_token($token) {
     return false;
 }
 
-// Handle protected downloads
 function cac_auth_handle_protected_download() {
     if (!isset($_GET['cac_download'])) {
         return;
@@ -138,8 +137,9 @@ function cac_auth_handle_protected_download() {
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
     if ($is_protected && !is_user_logged_in()) {
-        // Store the token in a cookie for later use
-        setcookie('cac_auth_intended_download', $token, time() + 30 * MINUTE_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+        // Store the token and referring page URL in the session
+        $_SESSION['cac_auth_intended_download'] = $token;
+        $_SESSION['cac_auth_referring_page'] = wp_get_referer();
         cac_auth_redirect_to_cac_login();
         exit;
     }
@@ -172,16 +172,16 @@ add_action('init', 'cac_auth_handle_protected_download');
 
 // Redirect to intended download after successful authentication
 function cac_auth_redirect_after_login() {
-    if (isset($_COOKIE['cac_auth_intended_download'])) {
-        $token = sanitize_text_field($_COOKIE['cac_auth_intended_download']);
-        $attachment_id = get_transient('cac_download_' . $token);
+    if (isset($_SESSION['cac_auth_intended_download']) && isset($_SESSION['cac_auth_referring_page'])) {
+        $token = $_SESSION['cac_auth_intended_download'];
+        $referring_page = $_SESSION['cac_auth_referring_page'];
         
-        if ($attachment_id) {
-            $download_url = add_query_arg(array('cac_download' => $token), home_url());
-            setcookie('cac_auth_intended_download', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true); // Clear the cookie
-            wp_redirect($download_url);
-            exit;
-        }
+        unset($_SESSION['cac_auth_intended_download']);
+        unset($_SESSION['cac_auth_referring_page']);
+        
+        $redirect_url = add_query_arg(array('cac_download' => $token), $referring_page);
+        wp_redirect($redirect_url);
+        exit;
     }
 }
 add_action('wp_login', 'cac_auth_redirect_after_login');
