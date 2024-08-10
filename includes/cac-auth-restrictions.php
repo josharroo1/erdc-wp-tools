@@ -54,7 +54,6 @@ function cac_auth_save_post_meta($post_id) {
 }
 add_action('save_post', 'cac_auth_save_post_meta');
 
-<?php
 // Add the checkbox to Quick Edit
 function cac_auth_add_quick_edit_fields($column_name, $post_type) {
     if ($column_name !== 'title' || !get_option('cac_auth_enable_post_restriction', false)) {
