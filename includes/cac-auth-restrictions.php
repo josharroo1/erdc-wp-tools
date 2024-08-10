@@ -64,6 +64,16 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'value' => $is_protected,
         'helps' => 'Check this to require CAC authentication for downloading this file.',
     );
+
+    // Add shortcode example
+    $shortcode_example = '[cac_protected_download id="' . $post->ID . '"]';
+    $form_fields['cac_shortcode_example'] = array(
+        'label' => 'Shortcode Example',
+        'input' => 'html',
+        'html' => '<input type="text" value="' . esc_attr($shortcode_example) . '" readonly onclick="this.select();" style="width: 100%;" />',
+        'helps' => 'Copy this shortcode to add a protected download link to your content.',
+    );
+
     return $form_fields;
 }
 add_filter('attachment_fields_to_edit', 'cac_auth_add_media_protection_field', 10, 2);
