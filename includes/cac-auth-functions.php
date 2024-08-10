@@ -243,19 +243,32 @@ add_action('login_head', 'login_style_changer');
 
 //BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
-    // Only proceed if the user is logged in and there's a reason to redirect
+    $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
+    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
+    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
+    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
+    // Check if user is already logged in
     if (!is_user_logged_in()) {
-        return;
+        // User is not logged in, check if we need to redirect to CAC login
+        if ($cac_enabled) {
+            if ($site_wide_restriction) {
+                cac_auth_redirect_to_cac_login();
+            } elseif ($enable_post_restriction && is_singular()) {
+                $post_id = get_the_ID();
+                $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
+                if ($requires_cac) {
+                    cac_auth_redirect_to_cac_login();
+                }
+            }
+        }
+        return; // Exit if not logged in and no redirection occurred
     }
 
+    // User is logged in, handle redirection
     $intended_destination = $_SESSION['cac_auth_intended_destination'] ?? '';
     $pending_download = $_SESSION['cac_auth_intended_download'] ?? '';
     $referring_page = $_SESSION['cac_auth_referring_page'] ?? '';
-
-    // Only redirect if we have a reason to (intended destination, pending download, etc.)
-    if (!$intended_destination && !$pending_download) {
-        return;
-    }
 
     // Clear all redirection-related session variables
     unset($_SESSION['cac_auth_intended_destination']);
