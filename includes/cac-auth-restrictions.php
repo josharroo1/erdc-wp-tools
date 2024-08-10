@@ -53,3 +53,113 @@ function cac_auth_save_post_meta($post_id) {
     update_post_meta($post_id, '_requires_cac_auth', $requires_cac);
 }
 add_action('save_post', 'cac_auth_save_post_meta');
+
+// Add CAC protection field to media uploader
+function cac_auth_add_media_protection_field($form_fields, $post) {
+    $is_protected = get_post_meta($post->ID, '_cac_protected', true);
+    $form_fields['cac_protected'] = array(
+        'label' => 'Require CAC Authentication',
+        'input' => 'html',
+        'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][cac_protected]" id="attachments-' . $post->ID . '-cac_protected" value="1"' . ($is_protected ? ' checked="checked"' : '') . ' />',
+        'value' => $is_protected,
+        'helps' => 'Check this to require CAC authentication for downloading this file.',
+    );
+    return $form_fields;
+}
+add_filter('attachment_fields_to_edit', 'cac_auth_add_media_protection_field', 10, 2);
+
+// Save CAC protection for media items
+function cac_auth_save_media_protection($post, $attachment) {
+    if (isset($attachment['cac_protected'])) {
+        update_post_meta($post['ID'], '_cac_protected', '1');
+    } else {
+        delete_post_meta($post['ID'], '_cac_protected');
+    }
+    return $post;
+}
+add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2);
+
+// Generate custom download URL
+function cac_auth_get_protected_download_url($attachment_id) {
+    return add_query_arg(array(
+        'cac_download' => $attachment_id,
+        'nonce' => wp_create_nonce('cac_download_' . $attachment_id)
+    ), home_url());
+}
+
+// Handle protected downloads
+function cac_auth_handle_protected_download() {
+    if (!isset($_GET['cac_download'])) {
+        return;
+    }
+
+    $attachment_id = intval($_GET['cac_download']);
+    if (!wp_verify_nonce($_GET['nonce'], 'cac_download_' . $attachment_id)) {
+        wp_die('Invalid download request');
+    }
+
+    $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
+    if ($is_protected && !is_user_logged_in()) {
+        // Store the download URL in the session
+        if (!session_id()) {
+            session_start();
+        }
+        $_SESSION['cac_auth_intended_download'] = cac_auth_get_protected_download_url($attachment_id);
+        
+        // Redirect to CAC authentication
+        cac_auth_redirect_to_cac_login();
+        exit;
+    }
+
+    // Serve the file
+    $file_path = get_attached_file($attachment_id);
+    if (!$file_path) {
+        wp_die('File not found');
+    }
+
+    // Clear any output buffering
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+
+    // Set headers for download
+    header('Content-Type: ' . get_post_mime_type($attachment_id));
+    header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
+    header('Content-Length: ' . filesize($file_path));
+    header('Pragma: public');
+
+    // Output file
+    readfile($file_path);
+    exit;
+}
+add_action('init', 'cac_auth_handle_protected_download');
+
+// Redirect to intended download after successful authentication
+function cac_auth_redirect_after_login() {
+    if (!session_id()) {
+        session_start();
+    }
+    if (isset($_SESSION['cac_auth_intended_download'])) {
+        $download_url = $_SESSION['cac_auth_intended_download'];
+        unset($_SESSION['cac_auth_intended_download']);
+        wp_redirect($download_url);
+        exit;
+    }
+}
+add_action('wp_login', 'cac_auth_redirect_after_login');
+
+function cac_auth_protected_download_shortcode($atts) {
+    $atts = shortcode_atts(array(
+        'id' => 0,
+        'text' => 'Download File',
+    ), $atts, 'cac_protected_download');
+
+    $attachment_id = intval($atts['id']);
+    if (!$attachment_id) {
+        return 'Invalid attachment ID';
+    }
+
+    $download_url = cac_auth_get_protected_download_url($attachment_id);
+    return '<a href="' . esc_url($download_url) . '" class="cac-protected-download">' . esc_html($atts['text']) . '</a>';
+}
+add_shortcode('cac_protected_download', 'cac_auth_protected_download_shortcode');
