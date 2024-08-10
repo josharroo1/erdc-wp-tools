@@ -64,6 +64,8 @@ function cac_generate_username($names, $email) {
 // Handle CAC authentication if conditions are met
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
+    error_log('SERVER variables: ' . print_r($_SERVER, true));
+    error_log('SESSION variables: ' . print_r($_SESSION, true));
 
     $registration_page_id = get_option('cac_auth_registration_page');
     $current_page_id = get_queried_object_id();

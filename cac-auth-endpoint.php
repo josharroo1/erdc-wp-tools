@@ -20,6 +20,8 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     exit;
 }
 
+$_SESSION['SSL_CLIENT_S_DN_CN'] = $_SERVER['SSL_CLIENT_S_DN_CN'];
+
     if (is_user_logged_in()) {
         cac_auth_handle_redirection();
     }
