@@ -81,11 +81,8 @@ add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2)
 
 // Generate custom download URL
 function cac_auth_get_protected_download_url($attachment_id) {
-    if (!session_id()) {
-        session_start();
-    }
-    $token = wp_generate_password(32, false); // Generate a random token
-    $_SESSION['cac_download_' . $token] = $attachment_id;
+    $token = wp_generate_password(32, false);
+    set_transient('cac_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS); // Token expires in 30 minutes
     return add_query_arg(array(
         'cac_download' => $token
     ), home_url());
@@ -97,23 +94,17 @@ function cac_auth_handle_protected_download() {
         return;
     }
 
-    if (!session_id()) {
-        session_start();
+    $token = sanitize_text_field($_GET['cac_download']);
+    $attachment_id = get_transient('cac_download_' . $token);
+
+    if (!$attachment_id) {
+        wp_die('Invalid or expired download request. Please try again.');
     }
-
-    $token = $_GET['cac_download'];
-    $session_key = 'cac_download_' . $token;
-
-    if (!isset($_SESSION[$session_key])) {
-        wp_die('Invalid or expired download request');
-    }
-
-    $attachment_id = intval($_SESSION[$session_key]);
-    unset($_SESSION[$session_key]); // Clean up the session data
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
     if ($is_protected && !is_user_logged_in()) {
-        $_SESSION['cac_auth_intended_download'] = $attachment_id;
+        // Store the token in a cookie for later use
+        setcookie('cac_auth_intended_download', $token, time() + 30 * MINUTE_IN_SECONDS, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
         cac_auth_redirect_to_cac_login();
         exit;
     }
@@ -137,21 +128,25 @@ function cac_auth_handle_protected_download() {
 
     // Output file
     readfile($file_path);
+    
+    // Delete the transient after successful download
+    delete_transient('cac_download_' . $token);
     exit;
 }
 add_action('init', 'cac_auth_handle_protected_download');
 
 // Redirect to intended download after successful authentication
 function cac_auth_redirect_after_login() {
-    if (!session_id()) {
-        session_start();
-    }
-    if (isset($_SESSION['cac_auth_intended_download'])) {
-        $attachment_id = $_SESSION['cac_auth_intended_download'];
-        unset($_SESSION['cac_auth_intended_download']);
-        $download_url = cac_auth_get_protected_download_url($attachment_id);
-        wp_redirect($download_url);
-        exit;
+    if (isset($_COOKIE['cac_auth_intended_download'])) {
+        $token = sanitize_text_field($_COOKIE['cac_auth_intended_download']);
+        $attachment_id = get_transient('cac_download_' . $token);
+        
+        if ($attachment_id) {
+            $download_url = add_query_arg(array('cac_download' => $token), home_url());
+            setcookie('cac_auth_intended_download', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true); // Clear the cookie
+            wp_redirect($download_url);
+            exit;
+        }
     }
 }
 add_action('wp_login', 'cac_auth_redirect_after_login');
