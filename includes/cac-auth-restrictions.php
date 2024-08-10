@@ -3,42 +3,6 @@
  * CAC Authentication Restrictions
  */
 
-// Check if site-wide restriction is enabled and user is not authenticated
-function cac_auth_check_site_wide_restriction() {
-    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
-    $cac_auth_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
-
-    if ($site_wide_restriction && $cac_auth_enabled && !is_user_logged_in()) {
-        cac_auth_redirect_to_login();
-    }
-}
-add_action('template_redirect', 'cac_auth_check_site_wide_restriction', 1);
-
-// Check if post-specific restriction is enabled and user is not authenticated
-function cac_auth_check_post_restriction() {
-    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
-    $cac_auth_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
-
-    if ($enable_post_restriction && $cac_auth_enabled && is_singular() && !is_user_logged_in()) {
-        $post_id = get_the_ID();
-        $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
-
-        if ($requires_cac) {
-            cac_auth_redirect_to_login();
-        }
-    }
-}
-add_action('template_redirect', 'cac_auth_check_post_restriction', 2);
-
-// Redirect user to CAC authentication endpoint
-function cac_auth_redirect_to_login() {
-    $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
-    $current_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    $redirect_url = add_query_arg('redirect_to', urlencode($current_url), $cac_auth_url);
-    wp_redirect($redirect_url);
-    exit;
-}
-
 // Add meta box for post-specific CAC authentication requirement
 function cac_auth_add_post_meta_box() {
     $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);

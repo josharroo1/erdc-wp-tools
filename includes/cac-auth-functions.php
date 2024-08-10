@@ -135,27 +135,8 @@ function cac_handle_authentication($user) {
         update_user_meta($user->ID, 'wfls-last-login', time());
     }
 
-    $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : '';
+    cac_auth_redirect_authenticated_user();
 
-    if (empty($redirect_to)) {
-        // Get the current URL
-        $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-
-        // Check if the current URL is the root URL
-        if (trailingslashit(home_url()) === trailingslashit($current_url)) {
-            $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-            $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                            (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
-        } else {
-            $redirect_url = $current_url; // Redirect to the requested URL
-        }
-    } else {
-        $redirect_url = $redirect_to;
-    }
-
-    error_log('CAC Auth: Redirecting to ' . $redirect_url);
-    wp_redirect($redirect_url);
-    exit;
 }
 
 // Get pending approval message
@@ -267,3 +248,68 @@ function login_style_changer() {
     </style>';
 }
 add_action('login_head', 'login_style_changer');
+
+//BEGIN NEW CAC REDIRECTION LOGIC
+function cac_auth_handle_redirection() {
+    $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
+    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
+    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
+    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
+    // Store the current URL for later redirection
+    if (!isset($_SESSION['cac_auth_intended_destination'])) {
+        $_SESSION['cac_auth_intended_destination'] = $current_url;
+    }
+
+    // Check if user is already logged in
+    if (is_user_logged_in()) {
+        // If on login page or CAC endpoint, redirect to intended destination or default redirect
+        if (in_array($GLOBALS['pagenow'], array('wp-login.php')) || strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint.php') !== false) {
+            cac_auth_redirect_authenticated_user();
+        }
+        return; // Logged in users can access all pages
+    }
+
+    // Exclude the CAC endpoint and registration page from restriction
+    $registration_page_id = get_option('cac_auth_registration_page');
+    $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : '';
+    if (strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint.php') !== false || $current_url === $registration_page_url) {
+        return;
+    }
+
+    // Handle site-wide restriction
+    if ($cac_enabled && $site_wide_restriction) {
+        cac_auth_redirect_to_cac_login();
+    }
+
+    // Handle post-specific restriction
+    if ($cac_enabled && $enable_post_restriction && is_singular()) {
+        $post_id = get_the_ID();
+        $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
+        if ($requires_cac) {
+            cac_auth_redirect_to_cac_login();
+        }
+    }
+}
+add_action('template_redirect', 'cac_auth_handle_redirection', 1);
+
+function cac_auth_redirect_to_cac_login() {
+    $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
+    wp_redirect($cac_auth_url);
+    exit;
+}
+
+function cac_auth_redirect_authenticated_user() {
+    $intended_destination = isset($_SESSION['cac_auth_intended_destination']) ? $_SESSION['cac_auth_intended_destination'] : '';
+    unset($_SESSION['cac_auth_intended_destination']); // Clear the stored destination
+
+    if (!empty($intended_destination)) {
+        wp_redirect($intended_destination);
+    } else {
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+        wp_redirect($redirect_url);
+    }
+    exit;
+}

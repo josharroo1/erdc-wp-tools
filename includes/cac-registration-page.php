@@ -271,13 +271,8 @@ HTML;
         wp_set_current_user($user_id);
         wp_set_auth_cookie($user_id);
 
-        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                    (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+        cac_auth_redirect_authenticated_user();
 
-        error_log('CAC Auth: Redirecting to ' . $redirect_url);
-        wp_redirect($redirect_url);
-        exit;
     }
 }
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
