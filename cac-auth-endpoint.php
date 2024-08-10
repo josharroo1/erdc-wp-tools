@@ -13,14 +13,6 @@ if (!is_ssl()) {
     exit();
 }
 
-// Log all SSL client variables
-error_log("CAC Auth: Logging SSL client variables");
-foreach ($_SERVER as $key => $value) {
-    if (strpos($key, 'SSL_CLIENT_') === 0) {
-        error_log("CAC Auth: $key = $value");
-    }
-}
-
 // Trigger CAC authentication
 if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     header('HTTP/1.1 401 Unauthorized');

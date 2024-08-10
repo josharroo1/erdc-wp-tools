@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.0.5
+ * Version: 4.0.6
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.0.5');
+define('CAC_AUTH_PLUGIN_VERSION', '4.0.6');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -47,12 +47,67 @@ register_deactivation_hook(__FILE__, 'cac_auth_plugin_deactivate');
 
 // Plugin activation callback
 function cac_auth_plugin_activate() {
-    // Perform any necessary actions upon plugin activation
+    // Modify .htaccess file
+    cac_auth_modify_htaccess();
 }
 
 // Plugin deactivation callback
 function cac_auth_plugin_deactivate() {
-    // Perform any necessary cleanup upon plugin deactivation
+    // Remove our rules from .htaccess file
+    cac_auth_cleanup_htaccess();
+}
+
+// Function to modify .htaccess on plugin activation
+function cac_auth_modify_htaccess() {
+    $htaccess_rules = "
+# Protect the CAC auth endpoint
+<Files \"cac-auth-endpoint.php\">
+    SSLOptions +StdEnvVars
+    SSLVerifyClient require
+    SSLVerifyDepth 2
+    SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
+</Files>
+";
+
+    $htaccess_file = ABSPATH . '.htaccess';
+    $htaccess_content = '';
+    if (file_exists($htaccess_file)) {
+        $htaccess_content = file_get_contents($htaccess_file);
+    }
+
+    if (strpos($htaccess_content, $htaccess_rules) === false) {
+        $htaccess_content .= $htaccess_rules;
+        if (file_put_contents($htaccess_file, $htaccess_content) === false) {
+            error_log('CAC Auth: Failed to modify .htaccess file');
+        } else {
+            error_log('CAC Auth: Successfully modified .htaccess file');
+        }
+    } else {
+        error_log('CAC Auth: .htaccess rules already present');
+    }
+}
+
+// Function to remove our rules from .htaccess on plugin deactivation
+function cac_auth_cleanup_htaccess() {
+    $htaccess_file = ABSPATH . '.htaccess';
+    if (file_exists($htaccess_file)) {
+        $htaccess_content = file_get_contents($htaccess_file);
+        $htaccess_rules = "
+# Protect the CAC auth endpoint
+<Files \"cac-auth-endpoint.php\">
+    SSLOptions +StdEnvVars
+    SSLVerifyClient require
+    SSLVerifyDepth 2
+    SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
+</Files>
+";
+        $htaccess_content = str_replace($htaccess_rules, '', $htaccess_content);
+        if (file_put_contents($htaccess_file, $htaccess_content) === false) {
+            error_log('CAC Auth: Failed to remove rules from .htaccess file on deactivation');
+        } else {
+            error_log('CAC Auth: Successfully removed rules from .htaccess file on deactivation');
+        }
+    }
 }
 
 // Enqueue plugin styles and scripts
