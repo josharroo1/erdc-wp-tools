@@ -201,3 +201,35 @@ function cac_auth_protected_download_shortcode($atts) {
     return esc_url($download_url);
 }
 add_shortcode('cac_protected_download', 'cac_auth_protected_download_shortcode');
+
+function cac_auth_check_restrictions() {
+    $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
+    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
+    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
+    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+
+    // Check if user is already logged in
+    if (!is_user_logged_in()) {
+        // Exclude the CAC endpoint and registration page from restriction
+        $registration_page_id = get_option('cac_auth_registration_page');
+        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : '';
+        if (strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint') !== false || $current_url === $registration_page_url) {
+            return;
+        }
+
+        if ($cac_enabled) {
+            if ($site_wide_restriction) {
+                cac_auth_redirect_to_cac_login();
+            } elseif ($enable_post_restriction && is_singular()) {
+                $post_id = get_the_ID();
+                $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
+                if ($requires_cac) {
+                    cac_auth_redirect_to_cac_login();
+                }
+            }
+        }
+    }
+}
+
+// Add this function to the 'template_redirect' hook to check restrictions on every page load
+add_action('template_redirect', 'cac_auth_check_restrictions', 1);

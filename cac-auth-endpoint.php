@@ -13,6 +13,12 @@ if (!is_ssl()) {
     exit();
 }
 
+
+// Start session if not already started
+if (!session_id()) {
+    session_start();
+}
+
 // Trigger CAC authentication
 if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     header('HTTP/1.1 401 Unauthorized');
