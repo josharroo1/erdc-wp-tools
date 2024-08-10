@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.3.3
+ * Version: 4.3.4
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.3.3');
+define('CAC_AUTH_PLUGIN_VERSION', '4.3.4');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -60,6 +60,7 @@ function cac_auth_plugin_deactivate() {
 // Function to modify .htaccess on plugin activation
 function cac_auth_modify_htaccess() {
     $htaccess_rules = "
+# BEGIN CAC Auth Rules
 # Protect the CAC auth endpoint
 <Files \"cac-auth-endpoint.php\">
     SSLOptions +StdEnvVars
@@ -67,6 +68,15 @@ function cac_auth_modify_htaccess() {
     SSLVerifyDepth 2
     SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
 </Files>
+
+# Protect uploads directory
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteCond %{REQUEST_URI} ^/wp-content/uploads/
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule . - [F,L]
+</IfModule>
+# END CAC Auth Rules
 ";
 
     $htaccess_file = ABSPATH . '.htaccess';
@@ -75,8 +85,8 @@ function cac_auth_modify_htaccess() {
         $htaccess_content = file_get_contents($htaccess_file);
     }
 
-    if (strpos($htaccess_content, $htaccess_rules) === false) {
-        $htaccess_content .= $htaccess_rules;
+    if (strpos($htaccess_content, '# BEGIN CAC Auth Rules') === false) {
+        $htaccess_content = $htaccess_rules . $htaccess_content;
         if (file_put_contents($htaccess_file, $htaccess_content) === false) {
             error_log('CAC Auth: Failed to modify .htaccess file');
         } else {
@@ -92,16 +102,7 @@ function cac_auth_cleanup_htaccess() {
     $htaccess_file = ABSPATH . '.htaccess';
     if (file_exists($htaccess_file)) {
         $htaccess_content = file_get_contents($htaccess_file);
-        $htaccess_rules = "
-# Protect the CAC auth endpoint
-<Files \"cac-auth-endpoint.php\">
-    SSLOptions +StdEnvVars
-    SSLVerifyClient require
-    SSLVerifyDepth 2
-    SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
-</Files>
-";
-        $htaccess_content = str_replace($htaccess_rules, '', $htaccess_content);
+        $htaccess_content = preg_replace('/# BEGIN CAC Auth Rules.*# END CAC Auth Rules/s', '', $htaccess_content);
         if (file_put_contents($htaccess_file, $htaccess_content) === false) {
             error_log('CAC Auth: Failed to remove rules from .htaccess file on deactivation');
         } else {
