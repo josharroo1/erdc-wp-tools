@@ -21,7 +21,7 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
 }
 
     if (is_user_logged_in()) {
-        cac_auth_redirect_authenticated_user();
+        cac_auth_handle_redirection();
     }
 // Process CAC authentication
 cac_maybe_handle_authentication();

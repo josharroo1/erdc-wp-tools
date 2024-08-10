@@ -248,14 +248,6 @@ add_action('login_head', 'login_style_changer');
 
 //BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
-
-    if (isset($_SESSION['cac_download_completed']) && $_SESSION['cac_download_completed']) {
-        $referring_page = $_SESSION['cac_auth_referring_page'] ?? home_url();
-        unset($_SESSION['cac_download_completed']);
-        unset($_SESSION['cac_auth_referring_page']);
-        wp_redirect($referring_page);
-        exit;
-    }
     // Only proceed if the user is logged in and there's a reason to redirect
     if (!is_user_logged_in()) {
         return;
@@ -273,16 +265,17 @@ function cac_auth_handle_redirection() {
     // Clear all redirection-related session variables
     unset($_SESSION['cac_auth_intended_destination']);
     unset($_SESSION['cac_auth_intended_download']);
-    unset($_SESSION['cac_auth_referring_page']);
 
     if ($pending_download && $referring_page) {
         $redirect_url = add_query_arg(array('cac_download' => $pending_download), $referring_page);
         wp_redirect($redirect_url);
         exit;
     } elseif ($intended_destination) {
+        unset($_SESSION['cac_auth_referring_page']);
         wp_redirect($intended_destination);
         exit;
     } else {
+        unset($_SESSION['cac_auth_referring_page']);
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
         $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
                         (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));

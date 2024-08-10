@@ -165,9 +165,8 @@ function cac_auth_handle_protected_download() {
     
     // Delete the transient after successful download
     delete_transient('cac_download_' . $token);
-
-    $_SESSION['cac_download_completed'] = true;
-
+    wp_redirect($_SESSION['cac_auth_referring_page']);
+    unset($_SESSION['cac_auth_referring_page']);
     exit;
 }
 add_action('init', 'cac_auth_handle_protected_download');
