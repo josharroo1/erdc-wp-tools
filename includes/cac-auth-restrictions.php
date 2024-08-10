@@ -81,11 +81,25 @@ add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2)
 
 // Generate custom download URL
 function cac_auth_get_protected_download_url($attachment_id) {
-    $token = wp_generate_password(32, false);
-    set_transient('cac_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS); // Token expires in 30 minutes
+    $token = cac_auth_generate_token($attachment_id);
+    set_transient('cac_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS);
     return add_query_arg(array(
         'cac_download' => $token
     ), home_url());
+}
+
+// Generate a token that includes the attachment ID
+function cac_auth_generate_token($attachment_id) {
+    return wp_generate_password(16, false) . '_' . $attachment_id;
+}
+
+// Decode the token to extract the attachment ID
+function cac_auth_decode_token($token) {
+    $parts = explode('_', $token);
+    if (count($parts) === 2 && is_numeric($parts[1])) {
+        return intval($parts[1]);
+    }
+    return false;
 }
 
 // Handle protected downloads
@@ -97,8 +111,19 @@ function cac_auth_handle_protected_download() {
     $token = sanitize_text_field($_GET['cac_download']);
     $attachment_id = get_transient('cac_download_' . $token);
 
+    // If token is expired or invalid, but user is authenticated, generate a new token
+    if (!$attachment_id && is_user_logged_in()) {
+        $attachment_id = cac_auth_decode_token($token);
+        if ($attachment_id) {
+            $new_token = cac_auth_generate_token($attachment_id);
+            set_transient('cac_download_' . $new_token, $attachment_id, 30 * MINUTE_IN_SECONDS);
+            wp_redirect(add_query_arg(array('cac_download' => $new_token), home_url()));
+            exit;
+        }
+    }
+
     if (!$attachment_id) {
-        wp_die('Invalid or expired download request. Please try again.');
+        wp_die('Download link has expired. Please return to the original page and try again.');
     }
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
