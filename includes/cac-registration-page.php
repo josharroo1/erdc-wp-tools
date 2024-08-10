@@ -268,36 +268,16 @@ HTML;
 
         wp_die($message, 'Account Pending Approval', array('response' => 200));
     } else {
-        // NEW CODE STARTS HERE
-        if ($user_id && !is_wp_error($user_id)) {
-            // Set user as logged in
-            wp_set_current_user($user_id);
-            wp_set_auth_cookie($user_id);
-    
-            // Check if there's a pending download or intended destination
-            $pending_download = isset($_SESSION['cac_auth_intended_download']) ? $_SESSION['cac_auth_intended_download'] : '';
-            $intended_destination = isset($_SESSION['cac_auth_intended_destination']) ? $_SESSION['cac_auth_intended_destination'] : '';
-    
-            // Clear the session variables
-            unset($_SESSION['cac_auth_intended_download']);
-            unset($_SESSION['cac_auth_intended_destination']);
-    
-            if ($pending_download && $intended_destination) {
-                // Redirect to the intended destination with the download token
-                $redirect_url = add_query_arg(array('cac_download' => $pending_download), $intended_destination);
-                wp_redirect($redirect_url);
-                exit;
-            } elseif ($intended_destination) {
-                // If there's an intended destination but no pending download
-                wp_redirect($intended_destination);
-                exit;
-            } else {
-                // If no intended destination, redirect to the default page after registration
-                cac_auth_redirect_authenticated_user();
-            }
-        }
+        error_log('User approved. Proceeding with login and redirection.');
+        
+        wp_set_current_user($user_id);
+        wp_set_auth_cookie($user_id);
 
+        cac_auth_handle_redirection();
     }
+
+    error_log('End of cac_process_registration function reached unexpectedly.');
+
 }
 add_action('admin_post_cac_process_registration', 'cac_process_registration');
 add_action('admin_post_nopriv_cac_process_registration', 'cac_process_registration');

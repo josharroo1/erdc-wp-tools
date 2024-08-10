@@ -126,17 +126,14 @@ function cac_handle_authentication($user) {
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    // Update standard WordPress last login
     update_user_meta($user->ID, 'last_login', time());
 
-    // Check if Wordfence last login meta exists and update it
     $wf_last_login = get_user_meta($user->ID, 'wfls-last-login', true);
     if ($wf_last_login !== '') {
         update_user_meta($user->ID, 'wfls-last-login', time());
     }
 
-    cac_auth_redirect_authenticated_user();
-
+    cac_auth_handle_redirection();
 }
 
 // Get pending approval message
@@ -251,33 +248,28 @@ add_action('login_head', 'login_style_changer');
 
 //BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
-    $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
-    $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
-    $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
-    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $intended_destination = $_SESSION['cac_auth_intended_destination'] ?? '';
+    $pending_download = $_SESSION['cac_auth_intended_download'] ?? '';
+    $referring_page = $_SESSION['cac_auth_referring_page'] ?? '';
 
-    // Check if user is already logged in
-    if (is_user_logged_in()) {
-        return; // Logged in users can access all pages
-    }
+    // Clear all redirection-related session variables
+    unset($_SESSION['cac_auth_intended_destination']);
+    unset($_SESSION['cac_auth_intended_download']);
+    unset($_SESSION['cac_auth_referring_page']);
 
-    // Exclude the CAC endpoint and registration page from restriction
-    $registration_page_id = get_option('cac_auth_registration_page');
-    $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : '';
-    if (strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint.php') !== false || $current_url === $registration_page_url) {
-        return;
-    }
-
-    if ($cac_enabled) {
-        if ($site_wide_restriction) {
-            cac_auth_redirect_to_cac_login();
-        } elseif ($enable_post_restriction && is_singular()) {
-            $post_id = get_the_ID();
-            $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
-            if ($requires_cac) {
-                cac_auth_redirect_to_cac_login();
-            }
-        }
+    if ($pending_download && $referring_page) {
+        $redirect_url = add_query_arg(array('cac_download' => $pending_download), $referring_page);
+        wp_redirect($redirect_url);
+        exit;
+    } elseif ($intended_destination) {
+        wp_redirect($intended_destination);
+        exit;
+    } else {
+        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
+        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
+                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
+        wp_redirect($redirect_url);
+        exit;
     }
 }
 add_action('template_redirect', 'cac_auth_handle_redirection', 1);
@@ -290,19 +282,5 @@ function cac_auth_redirect_to_cac_login() {
     $_SESSION['cac_auth_intended_destination'] = $current_url;
     
     wp_redirect($cac_auth_url);
-    exit;
-}
-function cac_auth_redirect_authenticated_user() {
-    $intended_destination = isset($_SESSION['cac_auth_intended_destination']) ? $_SESSION['cac_auth_intended_destination'] : '';
-    unset($_SESSION['cac_auth_intended_destination']); // Clear the stored destination
-
-    if (!empty($intended_destination)) {
-        wp_redirect($intended_destination);
-    } else {
-        $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
-        $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
-        wp_redirect($redirect_url);
-    }
     exit;
 }

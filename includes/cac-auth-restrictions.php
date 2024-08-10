@@ -120,7 +120,6 @@ function cac_auth_handle_protected_download() {
     $token = sanitize_text_field($_GET['cac_download']);
     $attachment_id = get_transient('cac_download_' . $token);
 
-    // If token is expired or invalid, but user is authenticated, generate a new token
     if (!$attachment_id && is_user_logged_in()) {
         $attachment_id = cac_auth_decode_token($token);
         if ($attachment_id) {
@@ -137,9 +136,9 @@ function cac_auth_handle_protected_download() {
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
     if ($is_protected && !is_user_logged_in()) {
-        // Store the token and referring page URL in the session
         $_SESSION['cac_auth_intended_download'] = $token;
         $_SESSION['cac_auth_referring_page'] = wp_get_referer();
+        $_SESSION['cac_auth_intended_destination'] = add_query_arg(array('cac_download' => $token), home_url());
         cac_auth_redirect_to_cac_login();
         exit;
     }
