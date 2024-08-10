@@ -30,7 +30,7 @@ function cac_auth_render_post_meta_box($post) {
     ?>
     <label for="cac_auth_requires_cac">
         <input type="checkbox" id="cac_auth_requires_cac" name="cac_auth_requires_cac" value="1" <?php checked($requires_cac, '1'); ?>>
-        Require CAC Authentication
+        CAC Restricted
     </label>
     <?php
 }
@@ -62,7 +62,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'input' => 'html',
         'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][cac_protected]" id="attachments-' . $post->ID . '-cac_protected" value="1"' . ($is_protected ? ' checked="checked"' : '') . ' />',
         'value' => $is_protected,
-        'helps' => 'Check this to require CAC authentication for downloading this file.',
+        'helps' => 'Check this to require CAC authentication to download this file.',
     );
 
     // Add shortcode example
@@ -71,7 +71,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'label' => 'Shortcode Example',
         'input' => 'html',
         'html' => '<input type="text" value="' . esc_attr($shortcode_example) . '" readonly onclick="this.select();" style="width: 100%;" />',
-        'helps' => 'Copy this shortcode to add a protected download link to your content.',
+        'helps' => 'Use this shortcode to add the CAC protected download link to your content.',
     );
 
     return $form_fields;
