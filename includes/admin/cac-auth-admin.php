@@ -155,7 +155,7 @@ function cac_auth_register_settings() {
 
     add_settings_field(
         'cac_auth_redirect_page',
-        'Login Redirect Page',
+        'Default Login Redirect',
         'cac_auth_redirect_page_callback',
         'cac-auth-settings',
         'cac_auth_redirect_section'
@@ -401,6 +401,21 @@ function cac_auth_disable_comments_callback() {
 
 function cac_auth_restriction_section_callback() {
     echo '<p>Configure CAC authentication restrictions for your site.</p>';
+    ?>
+    <script>
+    jQuery(document).ready(function($) {
+        function toggleRestrictionOptions() {
+            var siteWide = $('#cac_auth_site_wide_restriction').is(':checked');
+            $('#cac_auth_enable_post_restriction').prop('disabled', siteWide);
+            if (siteWide) {
+                $('#cac_auth_enable_post_restriction').prop('checked', false);
+            }
+        }
+        $('#cac_auth_site_wide_restriction').on('change', toggleRestrictionOptions);
+        toggleRestrictionOptions(); // Initial state
+    });
+    </script>
+    <?php
 }
 
 function cac_auth_site_wide_restriction_callback() {
@@ -408,6 +423,7 @@ function cac_auth_site_wide_restriction_callback() {
     ?>
     <input type="checkbox" id="cac_auth_site_wide_restriction" name="cac_auth_site_wide_restriction" value="1" <?php checked($site_wide_restriction, true); ?>>
     <label for="cac_auth_site_wide_restriction">Require CAC authentication for the entire site</label>
+    <p class="description">If enabled, all pages will require CAC authentication.</p>
     <?php
 }
 
@@ -416,5 +432,6 @@ function cac_auth_enable_post_restriction_callback() {
     ?>
     <input type="checkbox" id="cac_auth_enable_post_restriction" name="cac_auth_enable_post_restriction" value="1" <?php checked($enable_post_restriction, true); ?>>
     <label for="cac_auth_enable_post_restriction">Allow post-specific CAC authentication restrictions</label>
+    <p class="description">If enabled, you can set CAC authentication requirements for individual posts/pages.</p>
     <?php
 }

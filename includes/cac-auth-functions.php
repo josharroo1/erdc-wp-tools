@@ -258,10 +258,6 @@ function cac_auth_handle_redirection() {
 
     // Check if user is already logged in
     if (is_user_logged_in()) {
-        // If on login page or CAC endpoint, redirect to intended destination or default redirect
-        if (in_array($GLOBALS['pagenow'], array('wp-login.php')) || strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint.php') !== false) {
-            cac_auth_redirect_authenticated_user();
-        }
         return; // Logged in users can access all pages
     }
 
@@ -272,17 +268,15 @@ function cac_auth_handle_redirection() {
         return;
     }
 
-    // Handle site-wide restriction
-    if ($cac_enabled && $site_wide_restriction) {
-        cac_auth_redirect_to_cac_login();
-    }
-
-    // Handle post-specific restriction
-    if ($cac_enabled && $enable_post_restriction && is_singular()) {
-        $post_id = get_the_ID();
-        $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
-        if ($requires_cac) {
+    if ($cac_enabled) {
+        if ($site_wide_restriction) {
             cac_auth_redirect_to_cac_login();
+        } elseif ($enable_post_restriction && is_singular()) {
+            $post_id = get_the_ID();
+            $requires_cac = get_post_meta($post_id, '_requires_cac_auth', true);
+            if ($requires_cac) {
+                cac_auth_redirect_to_cac_login();
+            }
         }
     }
 }
