@@ -81,9 +81,13 @@ add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2)
 
 // Generate custom download URL
 function cac_auth_get_protected_download_url($attachment_id) {
+    if (!session_id()) {
+        session_start();
+    }
+    $token = wp_generate_password(32, false); // Generate a random token
+    $_SESSION['cac_download_' . $token] = $attachment_id;
     return add_query_arg(array(
-        'cac_download' => $attachment_id,
-        'nonce' => wp_create_nonce('cac_download_' . $attachment_id)
+        'cac_download' => $token
     ), home_url());
 }
 
@@ -93,20 +97,23 @@ function cac_auth_handle_protected_download() {
         return;
     }
 
-    $attachment_id = intval($_GET['cac_download']);
-    if (!wp_verify_nonce($_GET['nonce'], 'cac_download_' . $attachment_id)) {
-        wp_die('Invalid download request');
+    if (!session_id()) {
+        session_start();
     }
+
+    $token = $_GET['cac_download'];
+    $session_key = 'cac_download_' . $token;
+
+    if (!isset($_SESSION[$session_key])) {
+        wp_die('Invalid or expired download request');
+    }
+
+    $attachment_id = intval($_SESSION[$session_key]);
+    unset($_SESSION[$session_key]); // Clean up the session data
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
     if ($is_protected && !is_user_logged_in()) {
-        // Store the download URL in the session
-        if (!session_id()) {
-            session_start();
-        }
-        $_SESSION['cac_auth_intended_download'] = cac_auth_get_protected_download_url($attachment_id);
-        
-        // Redirect to CAC authentication
+        $_SESSION['cac_auth_intended_download'] = $attachment_id;
         cac_auth_redirect_to_cac_login();
         exit;
     }
@@ -140,8 +147,9 @@ function cac_auth_redirect_after_login() {
         session_start();
     }
     if (isset($_SESSION['cac_auth_intended_download'])) {
-        $download_url = $_SESSION['cac_auth_intended_download'];
+        $attachment_id = $_SESSION['cac_auth_intended_download'];
         unset($_SESSION['cac_auth_intended_download']);
+        $download_url = cac_auth_get_protected_download_url($attachment_id);
         wp_redirect($download_url);
         exit;
     }
