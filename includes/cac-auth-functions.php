@@ -248,6 +248,14 @@ add_action('login_head', 'login_style_changer');
 
 //BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
+
+    if (isset($_SESSION['cac_download_completed']) && $_SESSION['cac_download_completed']) {
+        $referring_page = $_SESSION['cac_auth_referring_page'] ?? home_url();
+        unset($_SESSION['cac_download_completed']);
+        unset($_SESSION['cac_auth_referring_page']);
+        wp_redirect($referring_page);
+        exit;
+    }
     // Only proceed if the user is logged in and there's a reason to redirect
     if (!is_user_logged_in()) {
         return;
