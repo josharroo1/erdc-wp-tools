@@ -276,7 +276,7 @@ function cac_auth_handle_redirection() {
         $redirect_url = add_query_arg(array('cac_download' => $pending_download), $referring_page);
         wp_redirect($redirect_url);
         exit;
-    } elseif ($intended_destination) {
+    } elseif ($intended_destination && !$site_wide_restriction) {
         unset($_SESSION['cac_auth_referring_page']);
         wp_redirect($intended_destination);
         exit;
