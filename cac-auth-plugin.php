@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.4.0
+ * Version: 4.4.1
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.4.0');
+define('CAC_AUTH_PLUGIN_VERSION', '4.4.1');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -68,11 +68,6 @@ function cac_auth_modify_htaccess() {
     SSLVerifyDepth 2
     SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
 </Files>
-
-# Rewrite Media URLS
-RewriteEngine On
-RewriteBase /
-RewriteRule ^wp-content/uploads/(.*)$ /protected-uploads/$1 [QSA,L]
 # END CAC Auth Rules
 ";
 
