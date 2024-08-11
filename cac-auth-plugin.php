@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.4.6
+ * Version: 4.4.7
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -16,7 +16,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.4.6');
+define('CAC_AUTH_PLUGIN_VERSION', '4.4.7');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -67,10 +67,9 @@ function cac_auth_modify_htaccess() {
     SSLVerifyDepth 2
     SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
 </Files>
-
+# Block direct access to specific file types in uploads directory
 <IfModule mod_rewrite.c>
 RewriteEngine On
-# Block direct access to specific file types in uploads directory
 RewriteCond %{REQUEST_URI} ^/wp-content/uploads/
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx)$ [NC]
@@ -109,10 +108,9 @@ function cac_auth_cleanup_htaccess() {
     SSLVerifyDepth 2
     SSLRequire %{SSL_CLIENT_VERIFY} eq \"SUCCESS\"
 </Files>
-
+# Block direct access to specific file types in uploads directory
 <IfModule mod_rewrite.c>
 RewriteEngine On
-# Block direct access to specific file types in uploads directory
 RewriteCond %{REQUEST_URI} ^/wp-content/uploads/
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx)$ [NC]
