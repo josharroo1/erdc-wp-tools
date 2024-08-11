@@ -56,6 +56,7 @@ add_action('save_post', 'cac_auth_save_post_meta');
 
 // Add CAC protection field to media uploader
 function cac_auth_add_media_protection_field($form_fields, $post) {
+    // Existing field for CAC protection
     $is_protected = get_post_meta($post->ID, '_cac_protected', true);
     $form_fields['cac_protected'] = array(
         'label' => 'CAC Restrict',
@@ -65,7 +66,17 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'helps' => 'Check this to require CAC authentication to download this file.',
     );
 
-    // Add shortcode example
+    // New field for login requirement
+    $requires_login = get_post_meta($post->ID, '_requires_login', true);
+    $form_fields['requires_login'] = array(
+        'label' => 'Require Login',
+        'input' => 'html',
+        'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][requires_login]" id="attachments-' . $post->ID . '-requires_login" value="1"' . ($requires_login ? ' checked="checked"' : '') . ' />',
+        'value' => $requires_login,
+        'helps' => 'Check this to require users to be logged in to access this file.',
+    );
+
+    // Shortcode example (optional)
     $shortcode_example = '[cac_protected_download id="' . $post->ID . '"]';
     $form_fields['cac_shortcode_example'] = array(
         'label' => 'Download Link Shortcode',
@@ -78,6 +89,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
 }
 add_filter('attachment_fields_to_edit', 'cac_auth_add_media_protection_field', 10, 2);
 
+
 // Save CAC protection for media items
 function cac_auth_save_media_protection($post, $attachment) {
     if (isset($attachment['cac_protected'])) {
@@ -85,18 +97,31 @@ function cac_auth_save_media_protection($post, $attachment) {
     } else {
         delete_post_meta($post['ID'], '_cac_protected');
     }
+
+    if (isset($attachment['requires_login'])) {
+        update_post_meta($post['ID'], '_requires_login', '1');
+    } else {
+        delete_post_meta($post['ID'], '_requires_login');
+    }
     return $post;
 }
 add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2);
 
 // Generate custom download URL
 function cac_auth_get_protected_download_url($attachment_id) {
-    $token = cac_auth_generate_token($attachment_id);
-    set_transient('cac_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS);
-    return add_query_arg(array(
-        'cac_download' => $token
-    ), home_url());
+    $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
+    $requires_login = get_post_meta($attachment_id, '_requires_login', true);
+    
+    if ($is_protected || $requires_login) {
+        $token = cac_auth_generate_token($attachment_id);
+        set_transient('cac_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS);
+        return add_query_arg(array('cac_download' => $token), home_url('/protected-download'));
+    } else {
+        // If not protected, just return the normal URL
+        return wp_get_attachment_url($attachment_id);
+    }
 }
+
 
 // Generate a token that includes the attachment ID
 function cac_auth_generate_token($attachment_id) {
@@ -141,6 +166,16 @@ function cac_auth_handle_protected_download() {
         $_SESSION['cac_auth_intended_destination'] = add_query_arg(array('cac_download' => $token), home_url());
         cac_auth_redirect_to_cac_login();
         exit;
+    }
+
+    $requires_login = get_post_meta($attachment_id, '_requires_login', true);
+    if ($requires_login && !is_user_logged_in()) {
+        $_SESSION['cac_auth_referring_page'] = wp_get_referer();
+        $_SESSION['cac_auth_intended_destination'] = add_query_arg(array('cac_download' => $token), home_url());
+        $_SESSION['cac_auth_intended_download'] = $token;
+        $login_url = wp_login_url(home_url($_SERVER['REQUEST_URI']));
+            wp_redirect($login_url);
+            exit;
     }
 
     // Serve the file
