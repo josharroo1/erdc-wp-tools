@@ -56,6 +56,7 @@ add_action('save_post', 'cac_auth_save_post_meta');
 
 // Add CAC protection field to media uploader
 function cac_auth_add_media_protection_field($form_fields, $post) {
+    // Existing field for CAC protection
     $is_protected = get_post_meta($post->ID, '_cac_protected', true);
     $form_fields['cac_protected'] = array(
         'label' => 'CAC Restrict',
@@ -65,7 +66,17 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'helps' => 'Check this to require CAC authentication to download this file.',
     );
 
-    // Add shortcode example
+    // New field for login requirement
+    $requires_login = get_post_meta($post->ID, '_requires_login', true);
+    $form_fields['requires_login'] = array(
+        'label' => 'Require Login',
+        'input' => 'html',
+        'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][requires_login]" id="attachments-' . $post->ID . '-requires_login" value="1"' . ($requires_login ? ' checked="checked"' : '') . ' />',
+        'value' => $requires_login,
+        'helps' => 'Check this to require users to be logged in to access this file.',
+    );
+
+    // Shortcode example (optional)
     $shortcode_example = '[cac_protected_download id="' . $post->ID . '"]';
     $form_fields['cac_shortcode_example'] = array(
         'label' => 'Download Link Shortcode',
@@ -78,12 +89,19 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
 }
 add_filter('attachment_fields_to_edit', 'cac_auth_add_media_protection_field', 10, 2);
 
+
 // Save CAC protection for media items
 function cac_auth_save_media_protection($post, $attachment) {
     if (isset($attachment['cac_protected'])) {
         update_post_meta($post['ID'], '_cac_protected', '1');
     } else {
         delete_post_meta($post['ID'], '_cac_protected');
+    }
+
+    if (isset($attachment['requires_login'])) {
+        update_post_meta($post['ID'], '_requires_login', '1');
+    } else {
+        delete_post_meta($post['ID'], '_requires_login');
     }
     return $post;
 }
@@ -233,3 +251,58 @@ function cac_auth_check_restrictions() {
 
 // Add this function to the 'template_redirect' hook to check restrictions on every page load
 add_action('template_redirect', 'cac_auth_check_restrictions', 1);
+
+
+//ATTEMPT RESTRICT DIRECT ACCESS
+function cac_auth_protected_media_rewrite_rule() {
+    add_rewrite_rule(
+        '^protected-uploads/(.*)$',
+        'index.php?protected_media=1&media_path=$matches[1]',
+        'top'
+    );
+}
+add_action('init', 'cac_auth_protected_media_rewrite_rule');
+
+function cac_auth_query_vars($vars) {
+    $vars[] = 'protected_media';
+    $vars[] = 'media_path';
+    return $vars;
+}
+add_filter('query_vars', 'cac_auth_query_vars');
+
+function cac_auth_protected_media_template_redirect() {
+    if (get_query_var('protected_media')) {
+        $media_path = get_query_var('media_path');
+        $file_path = ABSPATH . 'wp-content/uploads/' . $media_path;
+        $attachment_id = attachment_url_to_postid(home_url('/wp-content/uploads/' . $media_path));
+
+        if ($attachment_id && file_exists($file_path)) {
+            $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
+            $requires_login = get_post_meta($attachment_id, '_requires_login', true);
+
+            if (($is_protected || $requires_login) && !is_user_logged_in()) {
+                $_SESSION['cac_auth_intended_download'] = 'protected-uploads/' . $media_path;
+                cac_auth_redirect_to_cac_login();
+                exit;
+            }
+
+            // Serve the file if allowed
+            header('Content-Type: ' . get_post_mime_type($attachment_id));
+            header('Content-Disposition: attachment; filename="' . basename($file_path) . '"');
+            header('Content-Length: ' . filesize($file_path));
+            header('Pragma: public');
+
+            // Clear output buffering
+            while (ob_get_level()) {
+                ob_end_clean();
+            }
+
+            // Serve the file
+            readfile($file_path);
+            exit;
+        } else {
+            wp_die('File not found or no access');
+        }
+    }
+}
+add_action('template_redirect', 'cac_auth_protected_media_template_redirect');
