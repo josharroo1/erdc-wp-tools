@@ -6,34 +6,53 @@
 // Efficiently retrieves a user by their hashed DoD ID
 function cac_get_user_by_dod_id($hashed_dod_id) {
     global $wpdb;
+    if (!is_string($hashed_dod_id)) {
+        return null;
+    }
+
     $user_id = $wpdb->get_var($wpdb->prepare(
         "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = 'hashed_dod_id' AND meta_value = %s LIMIT 1",
         $hashed_dod_id
     ));
+
     return $user_id ? get_user_by('ID', $user_id) : null;
 }
 
 // Extract DoD ID from CAC
 function cac_extract_dod_id($dn) {
-    $attributes = explode(',', $dn);
-    $cn_parts = explode('.', $attributes[0]);
-    $dod_id = end($cn_parts);
-    return $dod_id;
+    if (!is_string($dn)) {
+        return null;
+    }
+
+    $attributes = explode(',', sanitize_text_field($dn));
+    if (isset($attributes[0])) {
+        $cn_parts = explode('.', sanitize_text_field($attributes[0]));
+        return end($cn_parts);
+    }
+    return null;
 }
 
 // Extract names from CAC
 function cac_extract_names($dn) {
+    if (!is_string($dn)) {
+        return array('first_name' => '', 'last_name' => '');
+    }
+
     // Split DN to get the CN part
-    $attributes = explode(',', $dn);
-    $cn = $attributes[0];  // Assuming CN is the first attribute
+    $attributes = explode(',', sanitize_text_field($dn));
+    $cn = sanitize_text_field($attributes[0]);  // Assuming CN is the first attribute
 
     // Split the CN by periods
     $cn_parts = explode('.', $cn);
 
-    // The DoD ID is always the last part, and names are just before it
+    // Ensure we have enough parts to extract names
+    if (count($cn_parts) < 4) {
+        return array('first_name' => '', 'last_name' => '');
+    }
+
     $dod_index = count($cn_parts) - 1;  // Index of the DoD ID
-    $last_name = ucwords(strtolower($cn_parts[$dod_index - 3]));
-    $first_name = ucwords(strtolower($cn_parts[$dod_index - 2]));
+    $last_name = ucwords(strtolower(sanitize_text_field($cn_parts[$dod_index - 3])));
+    $first_name = ucwords(strtolower(sanitize_text_field($cn_parts[$dod_index - 2])));
 
     // Log extracted names for debugging
     error_log("Extracted names: Last Name=$last_name, First Name=$first_name");
@@ -43,13 +62,15 @@ function cac_extract_names($dn) {
 
 // Generate a username based on names or email
 function cac_generate_username($names, $email) {
-    if ($names) {
-        $username = strtolower($names['first_name'] . '_' . $names['last_name']);
-    } else {
+    $username = '';
+
+    if (!empty($names['first_name']) && !empty($names['last_name'])) {
+        $username = strtolower(sanitize_user($names['first_name'] . '_' . $names['last_name'], true));
+    } elseif (!empty($email)) {
         // Fallback to generating username from email
-        $username = strstr($email, '@', true);
+        $username = sanitize_user(strstr($email, '@', true), true);
     }
-    $username = sanitize_user($username, true);
+
     $username = str_replace('.', '_', $username);
 
     // Ensure username is unique
@@ -58,6 +79,7 @@ function cac_generate_username($names, $email) {
     while (username_exists($username)) {
         $username = $base_username . $suffix++;
     }
+
     return $username;
 }
 
@@ -65,7 +87,7 @@ function cac_generate_username($names, $email) {
 function cac_maybe_handle_authentication() {
     error_log('CAC Auth: Entering cac_maybe_handle_authentication');
 
-    $registration_page_id = get_option('cac_auth_registration_page');
+    $registration_page_id = intval(get_option('cac_auth_registration_page'));
     $current_page_id = get_queried_object_id();
 
     if (get_option('cac_auth_enabled', 'yes') !== 'yes') {
@@ -84,9 +106,15 @@ function cac_maybe_handle_authentication() {
         return;
     }
 
-    $dn = isset($_SERVER['SSL_CLIENT_S_DN_CN']) ? $_SERVER['SSL_CLIENT_S_DN_CN'] : $_SESSION['SSL_CLIENT_S_DN_CN'];
+    $dn = isset($_SERVER['SSL_CLIENT_S_DN_CN']) ? sanitize_text_field($_SERVER['SSL_CLIENT_S_DN_CN']) : sanitize_text_field($_SESSION['SSL_CLIENT_S_DN_CN']);
     $_SESSION['SSL_CLIENT_S_DN_CN'] = $dn;
     $dod_id = cac_extract_dod_id($dn);
+
+    if (!$dod_id) {
+        error_log('CAC Auth: DoD ID extraction failed');
+        return;
+    }
+
     $hashed_dod_id = hash('sha256', $dod_id);
     $user = cac_get_user_by_dod_id($hashed_dod_id);
 
@@ -104,7 +132,7 @@ function cac_maybe_handle_authentication() {
         // User not found, redirect to registration
         error_log('CAC Auth: User not found, redirecting to registration');
         if ($registration_page_id) {
-            wp_redirect(get_permalink($registration_page_id));
+            wp_safe_redirect(get_permalink($registration_page_id));
             exit;
         } else {
             wp_die('CAC authentication failed. No registration page is set. Please contact the site administrator.');
@@ -117,16 +145,13 @@ function cac_maybe_handle_authentication() {
 // Handle authentication for a user
 function cac_handle_authentication($user) {
     error_log('CAC Auth: Entering cac_handle_authentication');
-    
+
     wp_set_current_user($user->ID);
     wp_set_auth_cookie($user->ID);
 
-    update_user_meta($user->ID, 'last_login', time());
-
-    $wf_last_login = get_user_meta($user->ID, 'wfls-last-login', true);
-    if ($wf_last_login !== '') {
-        update_user_meta($user->ID, 'wfls-last-login', time());
-    }
+    $current_time = time();
+    update_user_meta($user->ID, 'last_login', $current_time);
+    update_user_meta($user->ID, 'wfls-last-login', $current_time);
 }
 
 // Get pending approval message
@@ -184,7 +209,7 @@ add_action('login_form', 'cac_auth_add_login_button');
 
 // Enqueue login page styles
 function cac_auth_enqueue_login_styles() {
-    wp_enqueue_style('cac-auth-login-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-login.css', array(), CAC_AUTH_PLUGIN_VERSION);
+    wp_enqueue_style('cac-auth-login-styles', plugins_url('includes/assets/css/cac-auth-login.css', __FILE__), array(), '1.0.0');
 }
 add_action('login_enqueue_scripts', 'cac_auth_enqueue_login_styles');
 
@@ -194,7 +219,7 @@ function cac_start_session() {
         'lifetime' => 0,
         'path' => '/',
         'domain' => $_SERVER['HTTP_HOST'], // dynamically set the domain
-        'secure' => isset($_SERVER['HTTPS']), // ensures the cookie is secure only if HTTPS is used
+        'secure' => is_ssl(), // ensures the cookie is secure only if HTTPS is used
         'httponly' => true,
         'samesite' => 'Strict' // Or 'Lax' depending on your requirement
     ];
@@ -209,7 +234,7 @@ function cac_start_session() {
             'expires' => 0,
             'path' => '/',
             'domain' => $_SERVER['HTTP_HOST'],
-            'secure' => isset($_SERVER['HTTPS']),
+            'secure' => is_ssl(),
             'httponly' => true,
             'samesite' => 'Strict'
         ]);
@@ -239,12 +264,12 @@ function login_style_changer() {
 }
 add_action('login_head', 'login_style_changer');
 
-//BEGIN NEW CAC REDIRECTION LOGIC
+// BEGIN NEW CAC REDIRECTION LOGIC
 function cac_auth_handle_redirection() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
     $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
     $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
-    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $current_url = esc_url_raw((is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 
     // Check if user is already logged in
     if (!is_user_logged_in()) {
@@ -264,39 +289,36 @@ function cac_auth_handle_redirection() {
     }
 
     // User is logged in, handle redirection
-    $intended_destination = $_SESSION['cac_auth_intended_destination'] ?? '';
-    $pending_download = $_SESSION['cac_auth_intended_download'] ?? '';
-    $referring_page = $_SESSION['cac_auth_referring_page'] ?? '';
+    $intended_destination = isset($_SESSION['cac_auth_intended_destination']) ? esc_url_raw($_SESSION['cac_auth_intended_destination']) : '';
+    $pending_download = isset($_SESSION['cac_auth_intended_download']) ? sanitize_file_name($_SESSION['cac_auth_intended_download']) : '';
+    $referring_page = isset($_SESSION['cac_auth_referring_page']) ? esc_url_raw($_SESSION['cac_auth_referring_page']) : '';
 
     // Clear all redirection-related session variables
-    unset($_SESSION['cac_auth_intended_destination']);
-    unset($_SESSION['cac_auth_intended_download']);
+    unset($_SESSION['cac_auth_intended_destination'], $_SESSION['cac_auth_intended_download'], $_SESSION['cac_auth_referring_page']);
 
     if ($pending_download && $referring_page) {
-        $redirect_url = add_query_arg(array('cac_download' => $pending_download), $referring_page);
-        wp_redirect($redirect_url);
+        $redirect_url = add_query_arg(array('file_download' => $pending_download), $referring_page);
+        wp_safe_redirect($redirect_url);
         exit;
     } elseif ($intended_destination && !$site_wide_restriction) {
-        unset($_SESSION['cac_auth_referring_page']);
-        wp_redirect($intended_destination);
+        wp_safe_redirect($intended_destination);
         exit;
     } else {
-        unset($_SESSION['cac_auth_referring_page']);
         $redirect_option = get_option('cac_auth_redirect_page', 'wp-admin');
         $redirect_url = ($redirect_option === 'wp-admin') ? admin_url() : 
-                        (($redirect_option === 'home') ? home_url() : get_permalink($redirect_option));
-        wp_redirect($redirect_url);
+                        (($redirect_option === 'home') ? home_url() : get_permalink(intval($redirect_option)));
+        wp_safe_redirect($redirect_url);
         exit;
     }
 }
 
 function cac_auth_redirect_to_cac_login() {
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
-    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-    
+    $current_url = esc_url_raw((is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+
     // Set the intended destination in the session
     $_SESSION['cac_auth_intended_destination'] = $current_url;
-    
-    wp_redirect($cac_auth_url);
+
+    wp_safe_redirect($cac_auth_url);
     exit;
 }

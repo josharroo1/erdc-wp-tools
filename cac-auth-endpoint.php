@@ -9,14 +9,19 @@ if (!defined('ABSPATH')) {
 
 // Force SSL
 if (!is_ssl()) {
-    wp_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], 301);
+    wp_safe_redirect('https://' . sanitize_text_field($_SERVER['HTTP_HOST']) . sanitize_text_field($_SERVER['REQUEST_URI']), 301);
     exit();
 }
 
-
 // Start session if not already started
 if (!session_id()) {
-    session_start();
+    session_start([
+        'cookie_lifetime' => 0,
+        'read_and_close'  => false,
+        'cookie_secure'   => true,
+        'cookie_httponly' => true,
+        'cookie_samesite' => 'Strict',
+    ]);
 }
 
 // Trigger CAC authentication
@@ -26,7 +31,8 @@ if (!isset($_SERVER['SSL_CLIENT_S_DN_CN'])) {
     exit;
 }
 
-$_SESSION['SSL_CLIENT_S_DN_CN'] = $_SERVER['SSL_CLIENT_S_DN_CN'];
+// Sanitize and store the DN string in session
+$_SESSION['SSL_CLIENT_S_DN_CN'] = sanitize_text_field($_SERVER['SSL_CLIENT_S_DN_CN']);
 
 // Trigger CAC authentication
 if (cac_maybe_handle_authentication()) {
@@ -34,5 +40,5 @@ if (cac_maybe_handle_authentication()) {
     cac_auth_handle_redirection();
 } else {
     // Authentication failed
-    wp_die('CAC authentication failed. Please try again or contact the site administrator.');
+    wp_die(esc_html__('CAC authentication failed. Please try again or contact the site administrator.', 'your-text-domain'));
 }

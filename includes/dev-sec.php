@@ -6,7 +6,7 @@ $securityMitigationsDescriptions = [
     'disable_password_autocomplete' => 'Disable Autocomplete on Login Password',
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
     'remove_script_version' => 'Remove jQuery Version Information',
-    'restrict_direct_access' => 'Restricting Direct Access to Filetypes: zip|pdf|doc|docx|xls|xlsx',
+    'restrict_direct_access' => 'Restricting Direct Access to Filetypes: zip|pdf|doc|docx|xls|xlsx|exe|msi',
 ];
 
 /**

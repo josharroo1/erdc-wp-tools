@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.4.9
+ * Version: 4.5.0
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
@@ -20,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.4.9');
+define('CAC_AUTH_PLUGIN_VERSION', '4.5.0');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -83,6 +83,7 @@ RewriteRule . - [R=403,L]
 
     $htaccess_file = ABSPATH . '.htaccess';
     $htaccess_content = '';
+
     if (file_exists($htaccess_file)) {
         $htaccess_content = file_get_contents($htaccess_file);
     }
@@ -133,22 +134,22 @@ RewriteRule . - [R=403,L]
 // Enqueue plugin styles and scripts
 add_action('wp_enqueue_scripts', 'cac_auth_plugin_enqueue_scripts');
 function cac_auth_plugin_enqueue_scripts() {
-    wp_enqueue_style('cac-auth-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-style.css', array(), CAC_AUTH_PLUGIN_VERSION);
-    wp_enqueue_script('cac-auth-scripts', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-scripts.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
+    wp_enqueue_style('cac-auth-styles', esc_url(CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-auth-style.css'), array(), CAC_AUTH_PLUGIN_VERSION);
+    wp_enqueue_script('cac-auth-scripts', esc_url(CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-scripts.js'), array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
 }
 
 // Enqueue Select2 library
 add_action('wp_enqueue_scripts', 'cac_enqueue_select2');
 function cac_enqueue_select2() {
-    wp_enqueue_style('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css');
-    wp_enqueue_script('select2', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js', array('jquery'), '4.0.13', true);
+    wp_enqueue_style('select2', esc_url('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css'));
+    wp_enqueue_script('select2', esc_url('https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js'), array('jquery'), '4.0.13', true);
 }
 
 // Add custom settings link to the plugin
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'cac_auth_add_settings_link');
 function cac_auth_add_settings_link($links) {
     // Construct the settings link
-    $settings_link = '<a href="' . admin_url('options-general.php?page=cac-auth-settings') . '">Settings</a>';
+    $settings_link = '<a href="' . esc_url(admin_url('options-general.php?page=cac-auth-settings')) . '">' . esc_html__('Settings', 'your-text-domain') . '</a>';
     
     // Add the settings link to the beginning of the links array
     array_unshift($links, $settings_link);

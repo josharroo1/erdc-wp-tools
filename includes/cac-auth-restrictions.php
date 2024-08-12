@@ -37,9 +37,9 @@ function cac_auth_render_post_meta_box($post) {
 
 // Save post meta
 function cac_auth_save_post_meta($post_id) {
-    if (!isset($_POST['cac_auth_post_meta_box_nonce']) || !wp_verify_nonce($_POST['cac_auth_post_meta_box_nonce'], 'cac_auth_post_meta_box')) {
-        return;
-    }
+if (!isset($_POST['cac_auth_post_meta_box_nonce']) || !wp_verify_nonce($_POST['cac_auth_post_meta_box_nonce'], 'cac_auth_post_meta_box')) {
+    return;
+}
 
     if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
         return;
@@ -50,7 +50,7 @@ function cac_auth_save_post_meta($post_id) {
     }
 
     $requires_cac = isset($_POST['cac_auth_requires_cac']) ? '1' : '0';
-    update_post_meta($post_id, '_requires_cac_auth', $requires_cac);
+    update_post_meta($post_id, '_requires_cac_auth', sanitize_text_field($requires_cac));
 }
 add_action('save_post', 'cac_auth_save_post_meta');
 
@@ -61,7 +61,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
     $form_fields['cac_protected'] = array(
         'label' => 'CAC Restrict',
         'input' => 'html',
-        'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][cac_protected]" id="attachments-' . $post->ID . '-cac_protected" value="1"' . ($is_protected ? ' checked="checked"' : '') . ' />',
+        'html' => '<input type="checkbox" name="attachments[' . esc_attr($post->ID) . '][cac_protected]" id="attachments-' . esc_attr($post->ID) . '-cac_protected" value="1"' . checked($is_protected, '1', false) . ' />',
         'value' => $is_protected,
         'helps' => 'Check this to require CAC authentication to download this file.',
     );
@@ -71,13 +71,13 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
     $form_fields['requires_login'] = array(
         'label' => 'Require Login',
         'input' => 'html',
-        'html' => '<input type="checkbox" name="attachments[' . $post->ID . '][requires_login]" id="attachments-' . $post->ID . '-requires_login" value="1"' . ($requires_login ? ' checked="checked"' : '') . ' />',
+        'html' => '<input type="checkbox" name="attachments[' . esc_attr($post->ID) . '][requires_login]" id="attachments-' . esc_attr($post->ID) . '-requires_login" value="1"' . checked($requires_login, '1', false) . ' />',
         'value' => $requires_login,
         'helps' => 'Check this to require users to be logged in to access this file.',
     );
 
     // Shortcode example (optional)
-    $shortcode_example = '[protected_download id="' . $post->ID . '"]';
+    $shortcode_example = '[protected_download id="' . esc_attr($post->ID) . '"]';
     $form_fields['cac_shortcode_example'] = array(
         'label' => 'Download Link Shortcode',
         'input' => 'html',
@@ -89,19 +89,20 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
 }
 add_filter('attachment_fields_to_edit', 'cac_auth_add_media_protection_field', 10, 2);
 
-
 // Save CAC protection for media items
 function cac_auth_save_media_protection($post, $attachment) {
+    $post_id = intval($post['ID']);
+    
     if (isset($attachment['cac_protected'])) {
-        update_post_meta($post['ID'], '_cac_protected', '1');
+        update_post_meta($post_id, '_cac_protected', '1');
     } else {
-        delete_post_meta($post['ID'], '_cac_protected');
+        delete_post_meta($post_id, '_cac_protected');
     }
 
     if (isset($attachment['requires_login'])) {
-        update_post_meta($post['ID'], '_requires_login', '1');
+        update_post_meta($post_id, '_requires_login', '1');
     } else {
-        delete_post_meta($post['ID'], '_requires_login');
+        delete_post_meta($post_id, '_requires_login');
     }
     return $post;
 }
@@ -109,21 +110,19 @@ add_filter('attachment_fields_to_save', 'cac_auth_save_media_protection', 10, 2)
 
 // Generate custom download URL
 function cac_auth_get_protected_download_url($attachment_id) {
-   
-        $token = cac_auth_generate_token($attachment_id);
-        set_transient('file_download_' . $token, $attachment_id, 30 * MINUTE_IN_SECONDS);
-        return add_query_arg(array('file_download' => $token), home_url('/protected-download'));
+    $token = cac_auth_generate_token($attachment_id);
+    set_transient('file_download_' . sanitize_key($token), $attachment_id, 30 * MINUTE_IN_SECONDS);
+    return esc_url(add_query_arg(array('file_download' => $token), home_url('/protected-download')));
 }
-
 
 // Generate a token that includes the attachment ID
 function cac_auth_generate_token($attachment_id) {
-    return wp_generate_password(16, false) . '_' . $attachment_id;
+    return wp_generate_password(16, false) . '_' . intval($attachment_id);
 }
 
 // Decode the token to extract the attachment ID
 function cac_auth_decode_token($token) {
-    $parts = explode('_', $token);
+    $parts = explode('_', sanitize_text_field($token));
     if (count($parts) === 2 && is_numeric($parts[1])) {
         return intval($parts[1]);
     }
@@ -136,14 +135,14 @@ function cac_auth_handle_protected_download() {
     }
 
     $token = sanitize_text_field($_GET['file_download']);
-    $attachment_id = get_transient('file_download_' . $token);
+    $attachment_id = get_transient('file_download_' . sanitize_key($token));
 
     if (!$attachment_id && is_user_logged_in()) {
         $attachment_id = cac_auth_decode_token($token);
         if ($attachment_id) {
             $new_token = cac_auth_generate_token($attachment_id);
-            set_transient('file_download_' . $new_token, $attachment_id, 30 * MINUTE_IN_SECONDS);
-            wp_redirect(add_query_arg(array('file_download' => $new_token), home_url()));
+            set_transient('file_download_' . sanitize_key($new_token), $attachment_id, 30 * MINUTE_IN_SECONDS);
+            wp_safe_redirect(add_query_arg(array('file_download' => $new_token), home_url()));
             exit;
         }
     }
@@ -156,7 +155,7 @@ function cac_auth_handle_protected_download() {
     if ($is_protected && !is_user_logged_in()) {
         $_SESSION['cac_auth_intended_download'] = $token;
         $_SESSION['cac_auth_referring_page'] = wp_get_referer();
-        $_SESSION['cac_auth_intended_destination'] = add_query_arg(array('file_download' => $token), home_url());
+        $_SESSION['cac_auth_intended_destination'] = esc_url(add_query_arg(array('file_download' => $token), home_url()));
         cac_auth_redirect_to_cac_login();
         exit;
     }
@@ -164,11 +163,11 @@ function cac_auth_handle_protected_download() {
     $requires_login = get_post_meta($attachment_id, '_requires_login', true);
     if ($requires_login && !is_user_logged_in()) {
         $_SESSION['cac_auth_referring_page'] = wp_get_referer();
-        $_SESSION['cac_auth_intended_destination'] = add_query_arg(array('file_download' => $token), home_url());
+        $_SESSION['cac_auth_intended_destination'] = esc_url(add_query_arg(array('file_download' => $token), home_url()));
         $_SESSION['cac_auth_intended_download'] = $token;
-        $login_url = wp_login_url(home_url($_SERVER['REQUEST_URI']));
-            wp_redirect($login_url);
-            exit;
+        $login_url = wp_login_url(esc_url(home_url($_SERVER['REQUEST_URI'])));
+        wp_safe_redirect($login_url);
+        exit;
     }
 
     // Serve the file
@@ -192,8 +191,8 @@ function cac_auth_handle_protected_download() {
     readfile($file_path);
     
     // Delete the transient after successful download
-    delete_transient('file_download_' . $token);
-    wp_redirect($_SESSION['cac_auth_referring_page']);
+    delete_transient('file_download_' . sanitize_key($token));
+    wp_safe_redirect($_SESSION['cac_auth_referring_page']);
     unset($_SESSION['cac_auth_referring_page']);
     exit;
 }
@@ -202,14 +201,14 @@ add_action('init', 'cac_auth_handle_protected_download');
 // Redirect to intended download after successful authentication
 function cac_auth_redirect_after_login() {
     if (isset($_SESSION['cac_auth_intended_download']) && isset($_SESSION['cac_auth_referring_page'])) {
-        $token = $_SESSION['cac_auth_intended_download'];
-        $referring_page = $_SESSION['cac_auth_referring_page'];
+        $token = sanitize_text_field($_SESSION['cac_auth_intended_download']);
+        $referring_page = esc_url_raw($_SESSION['cac_auth_referring_page']);
         
         unset($_SESSION['cac_auth_intended_download']);
         unset($_SESSION['cac_auth_referring_page']);
         
-        $redirect_url = add_query_arg(array('file_download' => $token), $referring_page);
-        wp_redirect($redirect_url);
+        $redirect_url = add_query_arg(array('file_download' => sanitize_text_field($token)), $referring_page);
+        wp_safe_redirect($redirect_url);
         exit;
     }
 }
@@ -222,7 +221,7 @@ function cac_auth_protected_download_shortcode($atts) {
 
     $attachment_id = intval($atts['id']);
     if (!$attachment_id) {
-        return 'Invalid attachment ID';
+        return esc_html__('Invalid attachment ID', 'your-text-domain');
     }
 
     $download_url = cac_auth_get_protected_download_url($attachment_id);
@@ -234,13 +233,13 @@ function cac_auth_check_restrictions() {
     $cac_enabled = get_option('cac_auth_enabled', 'yes') === 'yes';
     $site_wide_restriction = get_option('cac_auth_site_wide_restriction', false);
     $enable_post_restriction = get_option('cac_auth_enable_post_restriction', false);
-    $current_url = (is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $current_url = esc_url_raw((is_ssl() ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 
     // Check if user is already logged in
     if (!is_user_logged_in()) {
         // Exclude the CAC endpoint and registration page from restriction
         $registration_page_id = get_option('cac_auth_registration_page');
-        $registration_page_url = $registration_page_id ? get_permalink($registration_page_id) : '';
+        $registration_page_url = $registration_page_id ? esc_url_raw(get_permalink($registration_page_id)) : '';
         if (strpos($_SERVER['REQUEST_URI'], 'cac-auth-endpoint') !== false || $current_url === $registration_page_url) {
             return;
         }
