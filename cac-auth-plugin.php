@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: ERDC WP Tools
- * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
+ * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
  * Version: 4.5.0
  * Author: Josh Arruda
- * Author URI: https://github.com/josharroo1/wpcac-sync-dod
+ * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
  * 
@@ -40,7 +40,7 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $updateChecker = PucFactory::buildUpdateChecker(
-    'https://raw.githubusercontent.com/josharroo1/wpcac-sync-dod/main/cac-auth-plugin-update.json',
+    'https://raw.githubusercontent.com/josharroo1/erdc-wp-tools/main/cac-auth-plugin-update.json',
     __FILE__,
     'cac-auth-plugin'
 );
