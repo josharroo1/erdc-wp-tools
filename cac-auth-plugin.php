@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.5.1
+ * Version: 4.5.2
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+

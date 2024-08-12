@@ -216,6 +216,7 @@ function cac_process_registration() {
     }
 
     if ($user_approval_required && $user_status !== 'active') {
+        update_user_meta($user_id, 'user_status', 'pending');
         // User is not approved, log them out and display an error message
         wp_logout();
         $message = <<<HTML
