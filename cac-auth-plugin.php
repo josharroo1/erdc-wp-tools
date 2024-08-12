@@ -3,11 +3,15 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/WP-DoD-CAC-User
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.4.8
+ * Version: 4.4.9
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/wpcac-sync-dod
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
+ * 
+ * TODO: General plugin-wide todos can be listed here in the main plugin file header.
+ * - Handle general user login redirection (non-CAC)
+ * - Handle lack of redirection after an authenticated file download
  */
 
 // Abort if this file is called directly
@@ -16,7 +20,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.4.8');
+define('CAC_AUTH_PLUGIN_VERSION', '4.4.9');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -72,7 +76,7 @@ function cac_auth_modify_htaccess() {
 RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/wp-content/uploads/
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx)$ [NC]
+RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx|exe|msi)$ [NC]
 RewriteRule . - [R=403,L]
 </IfModule>
 ";
@@ -113,7 +117,7 @@ function cac_auth_cleanup_htaccess() {
 RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/wp-content/uploads/
 RewriteCond %{REQUEST_FILENAME} -f
-RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx)$ [NC]
+RewriteCond %{REQUEST_URI} \.(zip|pdf|doc|docx|xls|xlsx|exe|msi)$ [NC]
 RewriteRule . - [R=403,L]
 </IfModule>
 ";
