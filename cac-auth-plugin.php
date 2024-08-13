@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.5.2
+ * Version: 4.5.3
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -12,6 +12,8 @@
  * TODO: General plugin-wide todos can be listed here in the main plugin file header.
  * - Handle general user login redirection (non-CAC)
  * - Handle lack of redirection after an authenticated file download
+ * - Implement single session authentication
+ * - Handle normal regsitration approvals
  */
 
 // Abort if this file is called directly
@@ -20,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.5.1');
+define('CAC_AUTH_PLUGIN_VERSION', '4.5.3');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 

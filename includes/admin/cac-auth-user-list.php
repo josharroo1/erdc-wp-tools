@@ -5,30 +5,41 @@
 
 // Add user approval status column to the Users list table
 function cac_auth_add_user_status_column($columns) {
-    $columns['user_status'] = 'Status';
-    $columns['user_approve_action'] = 'Approve/Reject';
-    return $columns;
+    $user_approval_required = (bool) get_option('cac_auth_user_approval', false);
+
+    if ($user_approval_required) {
+        $columns['user_status'] = 'Status';
+        $columns['user_approve_action'] = 'Approve/Reject';
+    }
+
+    return $columns; // Always return the columns array
 }
+
 add_filter('manage_users_columns', 'cac_auth_add_user_status_column');
 
 // Display user approval status and action in the Users list table
 function cac_auth_display_user_status_column($value, $column_name, $user_id) {
-    if ('user_status' === $column_name) {
-        $user_status = get_user_meta($user_id, 'user_status', true);
-        if ('pending' === $user_status) {
-            return '<span class="user-status pending">Pending Approval</span>';
-        } elseif ('active' === $user_status) {
-            return '<span class="user-status active">Active</span>';
-        }
-    } elseif ('user_approve_action' === $column_name) {
-        $user_status = get_user_meta($user_id, 'user_status', true);
-        if ('pending' === $user_status) {
-            $approve_url = add_query_arg(['user_id' => $user_id, 'action' => 'approve'], admin_url('users.php'));
-            $reject_url = add_query_arg(['user_id' => $user_id, 'action' => 'reject'], admin_url('users.php'));
-            return '<a href="' . esc_url($approve_url) . '">Approve</a> | <a href="' . esc_url($reject_url) . '">Reject</a>';
+    $user_approval_required = (bool) get_option('cac_auth_user_approval', false);
+
+    if ($user_approval_required) {
+        if ('user_status' === $column_name) {
+            $user_status = get_user_meta($user_id, 'user_status', true);
+            if ('pending' === $user_status) {
+                return '<span class="user-status pending">Pending Approval</span>';
+            } elseif ('active' === $user_status) {
+                return '<span class="user-status active">Active</span>';
+            }
+        } elseif ('user_approve_action' === $column_name) {
+            $user_status = get_user_meta($user_id, 'user_status', true);
+            if ('pending' === $user_status) {
+                $approve_url = add_query_arg(['user_id' => $user_id, 'action' => 'approve'], admin_url('users.php'));
+                $reject_url = add_query_arg(['user_id' => $user_id, 'action' => 'reject'], admin_url('users.php'));
+                return '<a href="' . esc_url($approve_url) . '">Approve</a> | <a href="' . esc_url($reject_url) . '">Reject</a>';
+            }
         }
     }
-    return $value;
+
+    return $value; // Always return the value
 }
 add_action('manage_users_custom_column', 'cac_auth_display_user_status_column', 10, 3);
 
@@ -53,16 +64,21 @@ add_action('admin_init', 'cac_auth_handle_user_action');
 
 // Add a custom admin menu for user approvals
 function cac_auth_add_admin_menu() {
-    add_menu_page(
-        'User Approvals',
-        'User Approvals',
-        'manage_options',
-        'cac-user-approvals',
-        'cac_auth_user_approvals_page',
-        'dashicons-groups',
-        30
-    );
+    $user_approval_required = (bool) get_option('cac_auth_user_approval', false);
+
+    if ($user_approval_required) {
+        add_menu_page(
+            'User Approvals',
+            'User Approvals',
+            'manage_options',
+            'cac-user-approvals',
+            'cac_auth_user_approvals_page',
+            'dashicons-groups',
+            30
+        );
+    }
 }
+
 add_action('admin_menu', 'cac_auth_add_admin_menu');
 
 // User Approvals page content
