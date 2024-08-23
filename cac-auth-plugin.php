@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.5.6
+ * Version: 4.5.7
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -22,20 +22,21 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.5.6');
+define('CAC_AUTH_PLUGIN_VERSION', '4.5.7');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
 // Include necessary files
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-auth-functions.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-auth-restrictions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-registration-page.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/dev-sec.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-auth-download-metrics.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/post-columns.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/comment-control.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-user-list.php';
-require_once CAC_AUTH_PLUGIN_DIR . 'includes/post-columns.php';
-require_once CAC_AUTH_PLUGIN_DIR . 'includes/comment-control.php';
-require_once CAC_AUTH_PLUGIN_DIR . 'includes/cac-auth-restrictions.php';
 
 // Plugin update checker
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
@@ -158,3 +159,41 @@ function cac_auth_add_settings_link($links) {
     
     return $links;
 }
+
+function cac_auth_create_download_metrics_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'cac_download_metrics';
+
+    // Check if the table already exists
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            attachment_id bigint(20) NOT NULL,
+            download_count int(11) NOT NULL DEFAULT 0,
+            last_downloaded datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY attachment_id (attachment_id)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    } else {
+        // Table exists, check if it needs to be updated
+        $current_version = get_option('cac_auth_download_metrics_db_version', '1.0');
+        $latest_version = '1.1'; // Increment this when you make changes to the table structure
+
+        if (version_compare($current_version, $latest_version, '<')) {
+            // Perform any necessary updates to the existing table
+            // For example, adding new columns or modifying existing ones
+            // Use dbDelta() for this as well
+
+            // Update the database version option
+            update_option('cac_auth_download_metrics_db_version', $latest_version);
+        }
+    }
+}
+
+register_activation_hook(__FILE__, 'cac_auth_create_download_metrics_table');
+add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');

@@ -7,7 +7,7 @@ $securityMitigationsDescriptions = [
     'set_dynamic_httponly_cookies' => 'Add HTTPOnly or Secure to Cookies Dynamically',
     'remove_script_version' => 'Remove jQuery Version Information',
     'restrict_direct_access' => 'Restricting Direct Access to Filetypes: zip|pdf|doc|docx|xls|xlsx|exe|msi',
-    'elementor_form_protection' => 'Protection Elementor Forms with CSRF',
+    'elementor_form_protection' => 'CSRF Protection in Elementor Forms',
 
 ];
 

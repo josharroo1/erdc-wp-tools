@@ -182,6 +182,9 @@ function cac_auth_handle_protected_download() {
         exit;
     }
 
+    // Record the download
+    cac_auth_record_download($attachment_id);
+
     // Serve the file
     $file_path = get_attached_file($attachment_id);
     if (!$file_path) {
@@ -209,6 +212,22 @@ function cac_auth_handle_protected_download() {
     exit;
 }
 add_action('init', 'cac_auth_handle_protected_download');
+
+function cac_auth_record_download($attachment_id) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'cac_download_metrics';
+
+    $wpdb->query($wpdb->prepare(
+        "INSERT INTO $table_name (attachment_id, download_count, last_downloaded)
+        VALUES (%d, 1, %s)
+        ON DUPLICATE KEY UPDATE
+        download_count = download_count + 1,
+        last_downloaded = %s",
+        $attachment_id,
+        current_time('mysql'),
+        current_time('mysql')
+    ));
+}
 
 // Redirect to intended download after successful authentication
 function cac_auth_redirect_after_login() {
