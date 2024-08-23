@@ -1,8 +1,8 @@
 <?php
 function cac_auth_add_download_metrics_page() {
     add_menu_page(
-        'Download Metrics',
-        'Download Metrics',
+        'Download Info',
+        'Download Info',
         'manage_options',
         'cac-auth-download-metrics',
         'cac_auth_render_download_metrics_page',
