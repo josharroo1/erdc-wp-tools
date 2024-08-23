@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.5.3');
+define('CAC_AUTH_PLUGIN_VERSION', '4.5.4');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 

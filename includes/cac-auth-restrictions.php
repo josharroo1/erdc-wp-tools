@@ -117,19 +117,35 @@ function cac_auth_get_protected_download_url($attachment_id) {
 
 // Generate a token that includes the attachment ID
 function cac_auth_generate_token($attachment_id) {
-    return wp_generate_password(16, false) . '_' . intval($attachment_id);
+    $expiration = time() + (30 * 60); // 30 minutes from now
+    $random = wp_generate_password(16, false);
+    $token = $random . '_' . $attachment_id . '_' . $expiration;
+    $hash = wp_hash($token);
+    return $hash . '_' . $token;
 }
 
 // Decode the token to extract the attachment ID
 function cac_auth_decode_token($token) {
-    $parts = explode('_', sanitize_text_field($token));
-    if (count($parts) === 2 && is_numeric($parts[1])) {
-        return intval($parts[1]);
+    $parts = explode('_', $token);
+    if (count($parts) !== 4) {
+        return false;
     }
-    return false;
+    $hash = $parts[0];
+    $actual_token = $parts[1] . '_' . $parts[2] . '_' . $parts[3];
+    if (wp_hash($actual_token) !== $hash) {
+        return false;
+    }
+    $expiration = intval($parts[3]);
+    if (time() > $expiration) {
+        return false;
+    }
+    return intval($parts[2]);
 }
 
 function cac_auth_handle_protected_download() {
+    // Run cleanup at the start of each download request
+    cac_auth_cleanup_expired_transients();
+    
     if (!isset($_GET['file_download'])) {
         return;
     }
@@ -137,18 +153,14 @@ function cac_auth_handle_protected_download() {
     $token = sanitize_text_field($_GET['file_download']);
     $attachment_id = get_transient('file_download_' . sanitize_key($token));
 
-    if (!$attachment_id && is_user_logged_in()) {
-        $attachment_id = cac_auth_decode_token($token);
-        if ($attachment_id) {
-            $new_token = cac_auth_generate_token($attachment_id);
-            set_transient('file_download_' . sanitize_key($new_token), $attachment_id, 30 * MINUTE_IN_SECONDS);
-            wp_safe_redirect(add_query_arg(array('file_download' => $new_token), home_url()));
-            exit;
-        }
-    }
-
     if (!$attachment_id) {
-        wp_die('Download link has expired. Please return to the original page and try again.');
+        $attachment_id = cac_auth_decode_token($token);
+        if (!$attachment_id) {
+            wp_die('Invalid or expired download link. Please return to the original page and try again.');
+        }
+    } else {
+        // Delete the transient to ensure one-time use
+        delete_transient('file_download_' . sanitize_key($token));
     }
 
     $is_protected = get_post_meta($attachment_id, '_cac_protected', true);
@@ -260,3 +272,23 @@ function cac_auth_check_restrictions() {
 
 // Add this function to the 'template_redirect' hook to check restrictions on every page load
 add_action('template_redirect', 'cac_auth_check_restrictions', 1);
+
+// Add a function to clean up expired transients
+function cac_auth_cleanup_expired_transients() {
+    global $wpdb;
+    $expired = $wpdb->get_col(
+        $wpdb->prepare(
+            "SELECT option_name FROM $wpdb->options
+            WHERE option_name LIKE %s
+            AND option_value < %d",
+            $wpdb->esc_like('_transient_timeout_file_download_') . '%',
+            time()
+        )
+    );
+
+    if ($expired) {
+        foreach ($expired as $transient) {
+            delete_transient(str_replace('_transient_timeout_', '', $transient));
+        }
+    }
+}
