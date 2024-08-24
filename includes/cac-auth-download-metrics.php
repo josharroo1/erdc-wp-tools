@@ -52,7 +52,7 @@ function cac_auth_render_download_metrics_page() {
         echo '<a href="' . esc_url($export_url) . '" class="page-title-action">Export to CSV</a>';
         ?>
         <div class="total-downloads-info">
-            <p><strong>Total Downloads: </strong><?php echo number_format($total_downloads); ?></p>
+            <p><strong>Total File Downloads: </strong><?php echo number_format($total_downloads); ?></p>
         </div>
         <form method="get">
             <input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page']) ?>">
@@ -89,7 +89,7 @@ function cac_auth_render_download_metrics_page() {
                         <td><?php echo esc_html($metric->download_count); ?></td>
                         <td><?php echo esc_html($metric->last_downloaded); ?></td>
                         <td>
-                            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=cac-auth-download-metrics&action=reset&attachment_id=' . $metric->attachment_id), 'reset_metrics_' . $metric->attachment_id); ?>" class="button button-secondary">Reset Metrics</a>
+                            <a href="<?php echo wp_nonce_url(admin_url('admin.php?page=cac-auth-download-metrics&action=reset&attachment_id=' . $metric->attachment_id), 'reset_metrics_' . $metric->attachment_id); ?>" class="button button-secondary">Reset This Metric</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
