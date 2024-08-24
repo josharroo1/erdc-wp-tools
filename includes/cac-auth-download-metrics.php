@@ -1,8 +1,12 @@
 <?php
+/**
+ * CAC Authentication Download Metrics
+ */
+
 function cac_auth_add_download_metrics_page() {
     add_menu_page(
-        'Download Info',
-        'Download Info',
+        'Downloads Info',
+        'Downloads Info',
         'manage_options',
         'cac-auth-download-metrics',
         'cac_auth_render_download_metrics_page',
@@ -18,27 +22,52 @@ function cac_auth_render_download_metrics_page() {
 
     $orderby = isset($_GET['orderby']) ? sanitize_text_field($_GET['orderby']) : 'download_count';
     $order = isset($_GET['order']) ? sanitize_text_field($_GET['order']) : 'desc';
+    $search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
 
-    $metrics = $wpdb->get_results(
-        $wpdb->prepare(
-            "SELECT m.*, p.post_title
-            FROM $table_name m
-            JOIN {$wpdb->posts} p ON m.attachment_id = p.ID
-            ORDER BY %s %s",
-            $orderby,
-            $order
-        )
-    );
+    // Calculate total downloads
+    $total_downloads = $wpdb->get_var("SELECT SUM(download_count) FROM $table_name");
+    $total_downloads = $total_downloads ? $total_downloads : 0; // Ensure it's not null
+
+    $query = "SELECT m.*, p.post_title, p.guid
+              FROM $table_name m
+              JOIN {$wpdb->posts} p ON m.attachment_id = p.ID";
+
+    if (!empty($search)) {
+        $query .= $wpdb->prepare(
+            " WHERE p.post_title LIKE %s OR p.guid LIKE %s",
+            '%' . $wpdb->esc_like($search) . '%',
+            '%' . $wpdb->esc_like($search) . '%'
+        );
+    }
+
+    $query .= " ORDER BY $orderby $order";
+
+    $metrics = $wpdb->get_results($query);
 
     ?>
     <div class="wrap">
-        <h1>Download Metrics</h1>
+        <h1 class="wp-heading-inline">Download Metrics</h1>
+        <?php
+        $export_url = wp_nonce_url(admin_url('admin-post.php?action=export_download_metrics'), 'export_download_metrics');
+        echo '<a href="' . esc_url($export_url) . '" class="page-title-action">Export to CSV</a>';
+        ?>
+        <div class="total-downloads-info">
+            <p><strong>Total Downloads: </strong><?php echo number_format($total_downloads); ?></p>
+        </div>
+        <form method="get">
+            <input type="hidden" name="page" value="<?php echo esc_attr($_REQUEST['page']) ?>">
+            <p class="search-box">
+                <label class="screen-reader-text" for="download-metrics-search-input">Search Downloads:</label>
+                <input type="search" id="download-metrics-search-input" name="s" value="<?php echo esc_attr($search) ?>">
+                <input type="submit" id="search-submit" class="button" value="Search Downloads">
+            </p>
+        </form>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
                     <th scope="col"><?php echo cac_auth_sortable_column('File Name', 'post_title'); ?></th>
-    <th scope="col">File ID</th>
-                    <th scope="col">File URL</th>
+                    <th scope="col">Media ID</th>
+                    <th scope="col">File Path</th>
                     <th scope="col"><?php echo cac_auth_sortable_column('Download Count', 'download_count'); ?></th>
                     <th scope="col"><?php echo cac_auth_sortable_column('Last Downloaded', 'last_downloaded'); ?></th>
                     <th scope="col">Actions</th>
@@ -49,7 +78,14 @@ function cac_auth_render_download_metrics_page() {
                     <tr>
                         <td><?php echo esc_html($metric->post_title); ?></td>
                         <td><?php echo esc_html($metric->attachment_id); ?></td>
-                        <td><?php echo esc_url(wp_get_attachment_url($metric->attachment_id)); ?></td>
+                        <td>
+                            <?php
+                            $full_url = esc_url($metric->guid);
+                            $site_url = site_url();
+                            $relative_path = str_replace($site_url, '', $full_url);
+                            echo "<a href='{$full_url}' target='_blank'>" . esc_html($relative_path) . "</a>";
+                            ?>
+                        </td>
                         <td><?php echo esc_html($metric->download_count); ?></td>
                         <td><?php echo esc_html($metric->last_downloaded); ?></td>
                         <td>
@@ -95,14 +131,10 @@ function cac_auth_handle_reset_metrics() {
         global $wpdb;
         $table_name = $wpdb->prefix . 'cac_download_metrics';
         
-        $wpdb->update(
+        // Delete the entry instead of updating it
+        $wpdb->delete(
             $table_name,
-            array(
-                'download_count' => 0,
-                'last_downloaded' => '0000-00-00 00:00:00'
-            ),
             array('attachment_id' => $attachment_id),
-            array('%d', '%s'),
             array('%d')
         );
         
@@ -111,3 +143,41 @@ function cac_auth_handle_reset_metrics() {
     }
 }
 add_action('admin_init', 'cac_auth_handle_reset_metrics');
+
+function cac_auth_export_download_metrics() {
+    if (!current_user_can('manage_options')) {
+        wp_die('You do not have sufficient permissions to access this page.');
+    }
+
+    check_admin_referer('export_download_metrics');
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'cac_download_metrics';
+
+    $metrics = $wpdb->get_results(
+        "SELECT m.*, p.post_title, p.guid
+        FROM $table_name m
+        JOIN {$wpdb->posts} p ON m.attachment_id = p.ID
+        ORDER BY m.download_count DESC"
+    );
+
+    header('Content-Type: text/csv');
+    header('Content-Disposition: attachment; filename="download_metrics.csv"');
+
+    $output = fopen('php://output', 'w');
+    fputcsv($output, array('File Name', 'File ID', 'File URL', 'Download Count', 'Last Downloaded'));
+
+    foreach ($metrics as $metric) {
+        fputcsv($output, array(
+            $metric->post_title,
+            $metric->attachment_id,
+            $metric->guid,
+            $metric->download_count,
+            $metric->last_downloaded
+        ));
+    }
+
+    fclose($output);
+    exit;
+}
+add_action('admin_post_export_download_metrics', 'cac_auth_export_download_metrics');

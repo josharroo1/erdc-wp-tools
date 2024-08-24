@@ -217,16 +217,34 @@ function cac_auth_record_download($attachment_id) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'cac_download_metrics';
 
-    $wpdb->query($wpdb->prepare(
-        "INSERT INTO $table_name (attachment_id, download_count, last_downloaded)
-        VALUES (%d, 1, %s)
-        ON DUPLICATE KEY UPDATE
-        download_count = download_count + 1,
-        last_downloaded = %s",
-        $attachment_id,
-        current_time('mysql'),
-        current_time('mysql')
+    // Check if the record exists
+    $exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COUNT(*) FROM $table_name WHERE attachment_id = %d",
+        $attachment_id
     ));
+
+    if ($exists) {
+        // If the record exists, update it
+        $wpdb->query($wpdb->prepare(
+            "UPDATE $table_name 
+            SET download_count = download_count + 1,
+            last_downloaded = %s
+            WHERE attachment_id = %d",
+            current_time('mysql'),
+            $attachment_id
+        ));
+    } else {
+        // If the record doesn't exist, insert a new one
+        $wpdb->insert(
+            $table_name,
+            array(
+                'attachment_id' => $attachment_id,
+                'download_count' => 1,
+                'last_downloaded' => current_time('mysql')
+            ),
+            array('%d', '%d', '%s')
+        );
+    }
 }
 
 // Redirect to intended download after successful authentication

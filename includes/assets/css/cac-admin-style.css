@@ -160,3 +160,18 @@ table.cac-auth-custom-fields {
     font-style: italic;
     color: #6182a7;
 }
+
+.total-downloads-info {
+    background-color: #f0f0f1;
+    border: 1px solid #c3c4c7;
+    border-left: 4px solid #2271b1;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    margin: 10px 0 20px;
+    padding: 1px 12px;
+}
+
+.total-downloads-info p {
+    font-size: 14px;
+    margin: 0.5em 0;
+    padding: 2px;
+}
