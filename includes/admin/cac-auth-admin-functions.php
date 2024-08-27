@@ -266,3 +266,57 @@ function cac_admin_styles() {
     </style>';
 }
 add_action('admin_head', 'cac_admin_styles');
+
+function cac_auth_add_dod_id_field($user) {
+    // Check if the current user can edit other users
+    if (!current_user_can('edit_users')) {
+        return;
+    }
+
+    // Check if the user already has a hashed DoD ID
+    $hashed_dod_id = get_user_meta($user->ID, 'hashed_dod_id', true);
+
+    if (empty($hashed_dod_id)) {
+        ?>
+        <h3><?php _e('CAC Authentication', 'cac-auth'); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><label for="dod_id"><?php _e('DoD ID Number', 'cac-auth'); ?></label></th>
+                <td>
+                    <input type="text" name="dod_id" id="dod_id" value="" class="regular-text" />
+                    <p class="description"><?php _e('Enter the user\'s DoD ID number to associate with their CAC.', 'cac-auth'); ?></p>
+                </td>
+            </tr>
+        </table>
+        <?php
+    } else {
+        ?>
+        <h3><?php _e('CAC Authentication', 'cac-auth'); ?></h3>
+        <table class="form-table">
+            <tr>
+                <th><?php _e('DoD ID Status', 'cac-auth'); ?></th>
+                <td>
+                    <p><strong><?php _e('DoD ID is set for this user.', 'cac-auth'); ?></strong></p>
+                </td>
+            </tr>
+        </table>
+        <?php
+    }
+}
+
+function cac_auth_save_dod_id_field($user_id) {
+    if (!current_user_can('edit_user', $user_id)) {
+        return false;
+    }
+
+    if (isset($_POST['dod_id']) && !empty($_POST['dod_id'])) {
+        $dod_id = sanitize_text_field($_POST['dod_id']);
+        $hashed_dod_id = hash('sha256', $dod_id);
+        update_user_meta($user_id, 'hashed_dod_id', $hashed_dod_id);
+    }
+}
+
+add_action('show_user_profile', 'cac_auth_add_dod_id_field');
+add_action('edit_user_profile', 'cac_auth_add_dod_id_field');
+add_action('personal_options_update', 'cac_auth_save_dod_id_field');
+add_action('edit_user_profile_update', 'cac_auth_save_dod_id_field');
