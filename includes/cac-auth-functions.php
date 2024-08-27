@@ -42,17 +42,19 @@ function cac_extract_names($dn) {
     $attributes = explode(',', sanitize_text_field($dn));
     $cn = sanitize_text_field($attributes[0]);  // Assuming CN is the first attribute
 
+    // Remove the "CN = " prefix if present
+    $cn = preg_replace('/^CN\s*=\s*/', '', $cn);
+
     // Split the CN by periods
     $cn_parts = explode('.', $cn);
 
-    // Ensure we have enough parts to extract names
-    if (count($cn_parts) < 4) {
+    // Ensure we have at least 2 parts (last name and first name)
+    if (count($cn_parts) < 2) {
         return array('first_name' => '', 'last_name' => '');
     }
 
-    $dod_index = count($cn_parts) - 1;  // Index of the DoD ID
-    $last_name = ucwords(strtolower(sanitize_text_field($cn_parts[$dod_index - 3])));
-    $first_name = ucwords(strtolower(sanitize_text_field($cn_parts[$dod_index - 2])));
+    $last_name = ucwords(strtolower(sanitize_text_field($cn_parts[0])));
+    $first_name = ucwords(strtolower(sanitize_text_field($cn_parts[1])));
 
     // Log extracted names for debugging
     error_log("Extracted names: Last Name=$last_name, First Name=$first_name");
