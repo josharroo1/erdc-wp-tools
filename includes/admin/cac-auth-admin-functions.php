@@ -136,6 +136,8 @@ function cac_auth_admin_enqueue_scripts($hook) {
     if ('settings_page_cac-auth-settings' !== $hook) {
         return;
     }
+    wp_enqueue_media();
+
     wp_enqueue_script('wp-color-picker');
 
     // Enqueue color picker styles
@@ -150,9 +152,16 @@ function cac_auth_admin_enqueue_scripts($hook) {
     wp_add_inline_script('wp-color-picker', $script);
     
     wp_enqueue_style('cac-auth-styles', CAC_AUTH_PLUGIN_URL . 'includes/assets/css/cac-admin-style.css', array(), CAC_AUTH_PLUGIN_VERSION);
-    wp_enqueue_script('cac-auth-admin', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-admin.js', array('jquery'), CAC_AUTH_PLUGIN_VERSION, true);
+    wp_enqueue_script('cac-auth-admin', CAC_AUTH_PLUGIN_URL . 'includes/assets/js/cac-auth-admin.js', array('jquery', 'media-upload', 'thickbox', 'wp-color-picker'), CAC_AUTH_PLUGIN_VERSION, true);
+
+    // Localize the script with new data
+    $script_data = array(
+        'choose_image' => __('Choose or Upload an Image', 'cac-auth'),
+    );
+    wp_localize_script('cac-auth-admin', 'cacAuthData', $script_data);
 }
 add_action('admin_enqueue_scripts', 'cac_auth_admin_enqueue_scripts');
+
 
 // Display additional user meta from CAC registration
 add_action('show_user_profile', 'cac_show_additional_user_meta');

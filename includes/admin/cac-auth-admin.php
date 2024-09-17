@@ -185,7 +185,7 @@ register_setting('cac_auth_settings', 'cac_auth_custom_login_logo', array(
 
     add_settings_section(
         'cac_auth_color_picker_section',
-        'Color Settings',
+        'CAC Form Color Settings',
         'cac_auth_render_color_settings',
         'cac-auth-settings'
     );
@@ -468,7 +468,7 @@ function cac_auth_custom_login_logo_callback() {
     $logo_url = get_option('cac_auth_custom_login_logo', '');
     ?>
     <input type="text" name="cac_auth_custom_login_logo" id="cac_auth_custom_login_logo" value="<?php echo esc_url($logo_url); ?>" class="regular-text">
-    <input type="button" class="button button-secondary" value="Choose Logo" id="cac_auth_choose_logo">
+    <input type="button" class="button button-secondary cac-auth-add-field" value="Choose Logo" id="cac_auth_choose_logo">
     <p class="description">Enter a URL or choose an image for the custom login logo.</p>
     <script>
     jQuery(document).ready(function($) {
@@ -487,3 +487,4 @@ function cac_auth_custom_login_logo_callback() {
     </script>
     <?php
 }
+

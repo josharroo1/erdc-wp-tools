@@ -102,6 +102,7 @@ function cac_auth_custom_login_page() {
             #cac-login-form input[type="submit"]:hover,
             .cac-login-button:hover {
                 background-color: #333333;
+                color: white;
             }
             .login-remember {
                 display: flex;

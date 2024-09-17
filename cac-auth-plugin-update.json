@@ -1,6 +1,6 @@
 {
     "name": "ERDC WP Tools",
-    "version": "4.6.5",
+    "version": "4.6.6",
     "download_url": "https://github.com/josharroo1/erdc-wp-tools/archive/main.zip",
     "sections": {
       "description": "A suite of tools for managing WordPress within USACE ERDC."
