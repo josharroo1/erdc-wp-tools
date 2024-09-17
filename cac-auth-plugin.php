@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.6.2
+ * Version: 4.6.3
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.6.2');
+define('CAC_AUTH_PLUGIN_VERSION', '4.6.3');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -37,6 +37,8 @@ require_once CAC_AUTH_PLUGIN_DIR . 'includes/comment-control.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-admin-functions.php';
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/admin/cac-auth-user-list.php';
+require_once CAC_AUTH_PLUGIN_DIR . 'includes/custom-login-page.php';
+
 
 // Plugin update checker
 require_once CAC_AUTH_PLUGIN_DIR . 'includes/plugin-update-checker/plugin-update-checker.php';
@@ -197,3 +199,28 @@ function cac_auth_create_download_metrics_table() {
 
 register_activation_hook(__FILE__, 'cac_auth_create_download_metrics_table');
 add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');
+
+// Add these new functions
+function cac_auth_custom_login_page_init() {
+    global $pagenow;
+    if ($pagenow == 'wp-login.php' && !isset($_GET['action'])) {
+        cac_auth_custom_login_page();
+    }
+}
+add_action('init', 'cac_auth_custom_login_page_init');
+
+function cac_auth_redirect_login_page() {
+    $login_page = home_url('/wp-login.php');
+    $page_viewed = basename($_SERVER['REQUEST_URI']);
+
+    if ($page_viewed == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET') {
+        wp_redirect($login_page);
+        exit;
+    }
+}
+add_action('init', 'cac_auth_redirect_login_page');
+
+// Modify the existing login_style_changer function
+function login_style_changer() {
+    // Remove this function or leave it empty if you want to use only the custom login page styles
+}

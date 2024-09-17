@@ -93,6 +93,13 @@ function cac_auth_register_settings() {
         'sanitize_callback' => 'rest_sanitize_boolean',
     ));
 
+    // Add this to the existing cac_auth_register_settings function
+register_setting('cac_auth_settings', 'cac_auth_custom_login_logo', array(
+    'type' => 'string',
+    'sanitize_callback' => 'esc_url_raw',
+    'default' => '',
+));
+
     add_settings_section(
         'cac_auth_general_section',
         'CAC Sync Settings',
@@ -219,6 +226,22 @@ function cac_auth_register_settings() {
         'cac_auth_disable_comments_callback',
         'cac-auth-settings',
         'cac_auth_comment_section'
+    );
+
+    // Add this new section and field
+    add_settings_section(
+        'cac_auth_login_customization_section',
+        'Login Page Customization',
+        'cac_auth_login_customization_section_callback',
+        'cac-auth-settings'
+    );
+
+    add_settings_field(
+        'cac_auth_custom_login_logo',
+        'Custom Login Logo',
+        'cac_auth_custom_login_logo_callback',
+        'cac-auth-settings',
+        'cac_auth_login_customization_section'
     );
 
     add_settings_section(
@@ -433,5 +456,34 @@ function cac_auth_enable_post_restriction_callback() {
     <input type="checkbox" id="cac_auth_enable_post_restriction" name="cac_auth_enable_post_restriction" value="1" <?php checked($enable_post_restriction, true); ?>>
     <label for="cac_auth_enable_post_restriction">Allow post-specific CAC authentication restrictions</label>
     <p class="description">If enabled, you can set CAC authentication requirements for individual posts/pages.</p>
+    <?php
+}
+
+// Add these new callbacks
+function cac_auth_login_customization_section_callback() {
+    echo '<p>Customize the appearance of the login page.</p>';
+}
+
+function cac_auth_custom_login_logo_callback() {
+    $logo_url = get_option('cac_auth_custom_login_logo', '');
+    ?>
+    <input type="text" name="cac_auth_custom_login_logo" id="cac_auth_custom_login_logo" value="<?php echo esc_url($logo_url); ?>" class="regular-text">
+    <input type="button" class="button button-secondary" value="Choose Logo" id="cac_auth_choose_logo">
+    <p class="description">Enter a URL or choose an image for the custom login logo.</p>
+    <script>
+    jQuery(document).ready(function($) {
+        $('#cac_auth_choose_logo').click(function(e) {
+            e.preventDefault();
+            var image = wp.media({
+                title: 'Upload Image',
+                multiple: false
+            }).open().on('select', function(e){
+                var uploaded_image = image.state().get('selection').first();
+                var image_url = uploaded_image.toJSON().url;
+                $('#cac_auth_custom_login_logo').val(image_url);
+            });
+        });
+    });
+    </script>
     <?php
 }

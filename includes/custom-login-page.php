@@ -1,0 +1,129 @@
+<?php
+function cac_auth_custom_login_page() {
+    $custom_logo_url = get_option('cac_auth_custom_login_logo', '');
+    $default_logo_url = plugins_url('assets/images/default-logo.png', __FILE__);
+    $logo_url = $custom_logo_url ? $custom_logo_url : $default_logo_url;
+
+    $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
+    
+    // Output buffering to capture the login form
+    ob_start();
+    wp_login_form(array(
+        'echo' => true,
+        'redirect' => home_url(),
+        'form_id' => 'cac-login-form',
+        'label_username' => __('Username'),
+        'label_password' => __('Password'),
+        'label_remember' => __('Remember Me'),
+        'label_log_in' => __('Log In'),
+        'id_username' => 'user_login',
+        'id_password' => 'user_pass',
+        'id_remember' => 'rememberme',
+        'id_submit' => 'wp-submit',
+    ));
+    $login_form = ob_get_clean();
+
+    // Custom login page HTML
+    ?>
+    <!DOCTYPE html>
+    <html <?php language_attributes(); ?>>
+    <head>
+        <meta charset="<?php bloginfo('charset'); ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?php echo esc_html(get_bloginfo('name')); ?> - Login</title>
+        <?php wp_head(); ?>
+        <style>
+            body {
+                background-color: #f0f2f5;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .login-container {
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+                padding: 40px;
+                width: 100%;
+                max-width: 400px;
+            }
+            .login-logo {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .login-logo img {
+                max-width: 200px;
+                height: auto;
+            }
+            #cac-login-form {
+                display: flex;
+                flex-direction: column;
+            }
+            #cac-login-form input[type="text"],
+            #cac-login-form input[type="password"] {
+                border: 1px solid #dddfe2;
+                border-radius: 6px;
+                font-size: 16px;
+                padding: 14px 16px;
+                margin-bottom: 15px;
+            }
+            #cac-login-form input[type="submit"],
+            .cac-login-button {
+                background-color: #1e1e1e;
+                border: none;
+                border-radius: 6px;
+                color: #ffffff;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 14px 16px;
+                transition: background-color 0.3s;
+            }
+            #cac-login-form input[type="submit"]:hover,
+            .cac-login-button:hover {
+                background-color: #333333;
+            }
+            .login-separator {
+                border-bottom: 1px solid #dadde1;
+                margin: 20px 0;
+                text-align: center;
+            }
+            .login-separator span {
+                background-color: #ffffff;
+                padding: 0 10px;
+                position: relative;
+                top: 10px;
+                color: #96999e;
+            }
+            .cac-login-button-wrapper {
+                text-align: center;
+            }
+            .cac-login-button {
+                display: inline-block;
+                text-decoration: none;
+                margin-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+            </div>
+            <?php echo $login_form; ?>
+            <div class="login-separator">
+                <span>or</span>
+            </div>
+            <div class="cac-login-button-wrapper">
+                <a href="<?php echo esc_url($cac_auth_url); ?>" class="cac-login-button">Login with CAC</a>
+            </div>
+        </div>
+        <?php wp_footer(); ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
