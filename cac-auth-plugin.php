@@ -200,27 +200,45 @@ function cac_auth_create_download_metrics_table() {
 register_activation_hook(__FILE__, 'cac_auth_create_download_metrics_table');
 add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');
 
-// Add these new functions
+// Modify the existing cac_auth_custom_login_page_init function
 function cac_auth_custom_login_page_init() {
     global $pagenow;
-    if ($pagenow == 'wp-login.php' && !isset($_GET['action'])) {
-        cac_auth_custom_login_page();
+    if ($pagenow == 'wp-login.php') {
+        // Allow standard WordPress actions to work
+        $allowed_actions = array('logout', 'lostpassword', 'rp', 'resetpass');
+        if (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions)) {
+            cac_auth_custom_login_page();
+        }
     }
 }
 add_action('init', 'cac_auth_custom_login_page_init');
 
-function cac_auth_redirect_login_page() {
-    $login_page = home_url('/wp-login.php');
-    $page_viewed = basename($_SERVER['REQUEST_URI']);
+// Add this new function to handle login authentication
+function cac_auth_authenticate($user, $username, $password) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
+        $creds = array(
+            'user_login'    => $username,
+            'user_password' => $password,
+            'remember'      => isset($_POST['rememberme']),
+        );
 
-    if ($page_viewed == "wp-login.php" && $_SERVER['REQUEST_METHOD'] == 'GET') {
-        wp_redirect($login_page);
-        exit;
+        $user = wp_authenticate($username, $password);
+
+        if (is_wp_error($user)) {
+            // If authentication failed, let WordPress handle the error
+            return $user;
+        } else {
+            // If authentication succeeded, log the user in
+            wp_set_auth_cookie($user->ID, isset($_POST['rememberme']));
+            wp_set_current_user($user->ID);
+            do_action('wp_login', $user->user_login, $user);
+
+            // Redirect to the desired page after login
+            wp_redirect(home_url());
+            exit;
+        }
     }
-}
-add_action('init', 'cac_auth_redirect_login_page');
 
-// Modify the existing login_style_changer function
-function login_style_changer() {
-    // Remove this function or leave it empty if you want to use only the custom login page styles
+    return $user;
 }
+add_filter('authenticate', 'cac_auth_authenticate', 30, 3);

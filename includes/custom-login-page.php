@@ -1,27 +1,44 @@
 <?php
+/**
+ * Custom Login Page for ERDC WP Tools
+ */
+
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
 function cac_auth_custom_login_page() {
+    // Check if user is already logged in
+    if (is_user_logged_in()) {
+        wp_redirect(home_url());
+        exit;
+    }
+
     $custom_logo_url = get_option('cac_auth_custom_login_logo', '');
-    $default_logo_url = plugins_url('assets/images/default-logo.png', __FILE__);
+    $default_logo_url = plugins_url('assets/images/default-logo.png', dirname(__FILE__));
     $logo_url = $custom_logo_url ? $custom_logo_url : $default_logo_url;
 
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
     
-    // Output buffering to capture the login form
-    ob_start();
-    wp_login_form(array(
-        'echo' => true,
-        'redirect' => home_url(),
-        'form_id' => 'cac-login-form',
-        'label_username' => __('Username'),
-        'label_password' => __('Password'),
-        'label_remember' => __('Remember Me'),
-        'label_log_in' => __('Log In'),
-        'id_username' => 'user_login',
-        'id_password' => 'user_pass',
-        'id_remember' => 'rememberme',
-        'id_submit' => 'wp-submit',
-    ));
-    $login_form = ob_get_clean();
+    $error_message = '';
+
+    // Check if the form is submitted
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
+        $creds = array(
+            'user_login'    => wp_unslash($_POST['log']),
+            'user_password' => $_POST['pwd'],
+            'remember'      => isset($_POST['rememberme']),
+        );
+
+        $user = wp_signon($creds, is_ssl());
+
+        if (is_wp_error($user)) {
+            $error_message = $user->get_error_message();
+        } else {
+            wp_redirect(home_url());
+            exit;
+        }
+    }
 
     // Custom login page HTML
     ?>
@@ -86,6 +103,14 @@ function cac_auth_custom_login_page() {
             .cac-login-button:hover {
                 background-color: #333333;
             }
+            .login-remember {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            .login-remember input[type="checkbox"] {
+                margin-right: 8px;
+            }
             .login-separator {
                 border-bottom: 1px solid #dadde1;
                 margin: 20px 0;
@@ -106,6 +131,26 @@ function cac_auth_custom_login_page() {
                 text-decoration: none;
                 margin-top: 15px;
             }
+            .login-error {
+                background-color: #ffebe8;
+                border: 1px solid #c00;
+                color: #333;
+                margin-bottom: 16px;
+                padding: 12px;
+                border-radius: 6px;
+            }
+            .login-links {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 14px;
+            }
+            .login-links a {
+                color: #1e1e1e;
+                text-decoration: none;
+            }
+            .login-links a:hover {
+                text-decoration: underline;
+            }
         </style>
     </head>
     <body>
@@ -113,12 +158,29 @@ function cac_auth_custom_login_page() {
             <div class="login-logo">
                 <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
             </div>
-            <?php echo $login_form; ?>
+            <?php
+            if (!empty($error_message)) {
+                echo '<div class="login-error">' . esc_html($error_message) . '</div>';
+            }
+            ?>
+            <form name="loginform" id="cac-login-form" action="<?php echo esc_url(wp_login_url()); ?>" method="post">
+                <input type="text" name="log" id="user_login" placeholder="Username" required>
+                <input type="password" name="pwd" id="user_pass" placeholder="Password" required>
+                <div class="login-remember">
+                    <input name="rememberme" type="checkbox" id="rememberme" value="forever">
+                    <label for="rememberme">Remember Me</label>
+                </div>
+                <input type="submit" name="wp-submit" id="wp-submit" value="Log In">
+                <input type="hidden" name="redirect_to" value="<?php echo esc_url(home_url()); ?>">
+            </form>
             <div class="login-separator">
                 <span>or</span>
             </div>
             <div class="cac-login-button-wrapper">
                 <a href="<?php echo esc_url($cac_auth_url); ?>" class="cac-login-button">Login with CAC</a>
+            </div>
+            <div class="login-links">
+                <a href="<?php echo esc_url(wp_lostpassword_url()); ?>">Lost your password?</a>
             </div>
         </div>
         <?php wp_footer(); ?>
@@ -127,3 +189,28 @@ function cac_auth_custom_login_page() {
     <?php
     exit;
 }
+
+// Function to handle login errors
+function cac_auth_login_errors($errors) {
+    if (empty($errors)) {
+        return $errors;
+    }
+
+    $error_codes = $errors->get_error_codes();
+    $custom_errors = array(
+        'invalid_username' => 'Invalid username or password.',
+        'incorrect_password' => 'Invalid username or password.',
+        'empty_username' => 'Please enter a username.',
+        'empty_password' => 'Please enter a password.',
+    );
+
+    foreach ($error_codes as $code) {
+        if (isset($custom_errors[$code])) {
+            $errors->remove($code);
+            $errors->add($code, $custom_errors[$code]);
+        }
+    }
+
+    return $errors;
+}
+add_filter('wp_login_errors', 'cac_auth_login_errors');
