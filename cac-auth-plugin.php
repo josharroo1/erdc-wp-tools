@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.7.2
+ * Version: 4.7.3
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.7.2');
+define('CAC_AUTH_PLUGIN_VERSION', '4.7.3');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -201,21 +201,27 @@ function cac_auth_create_download_metrics_table() {
 register_activation_hook(__FILE__, 'cac_auth_create_download_metrics_table');
 add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');
 
-// Modify the existing cac_auth_custom_login_page_init function
+/**
+ * Initialize Custom Authentication Pages
+ */
 function cac_auth_custom_login_page_init() {
     global $pagenow;
+
     if ($pagenow === 'wp-login.php') {
-        // Allow specific WordPress actions to work
+        // Define the allowed actions
         $allowed_actions = array('logout', 'lostpassword', 'rp', 'resetpass');
         $action = isset($_GET['action']) ? $_GET['action'] : 'login';
-        
+
         if ($action === 'lostpassword') {
-            // Render custom forgot password page
+            // Render custom Forgot Password page
             cac_auth_custom_forgot_password_page();
             exit;
-        }
-        elseif (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions)) {
-            // Render custom login page
+        } elseif ($action === 'rp' || $action === 'resetpass') {
+            // Render custom Reset Password page
+            cac_auth_custom_reset_password_page();
+            exit;
+        } elseif (!isset($_GET['action']) || !in_array($action, $allowed_actions)) {
+            // Render custom Login page
             cac_auth_custom_login_page();
             exit;
         }
