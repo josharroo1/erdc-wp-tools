@@ -15,12 +15,27 @@ function cac_auth_custom_login_page() {
     }
 
     $custom_logo_url = get_option('cac_auth_custom_login_logo', '');
-    $default_logo_url = plugins_url('assets/images/default-logo.png', dirname(__FILE__));
+    $default_logo_url = plugins_url('includes/assets/images/default-logo.png', dirname(__FILE__));
     $logo_url = $custom_logo_url ? $custom_logo_url : $default_logo_url;
 
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
 
     $error_message = '';
+
+    // Determine the redirect URL based on settings
+    $redirect_setting = get_option('cac_auth_redirect_page', 'wp-admin'); // Default to 'wp-admin' if not set
+
+    if ($redirect_setting === 'wp-admin') {
+        $redirect_url = admin_url();
+    } elseif (is_numeric($redirect_setting)) {
+        $redirect_url = get_permalink($redirect_setting);
+        // Fallback to home_url() if the page doesn't exist
+        if (!$redirect_url) {
+            $redirect_url = home_url();
+        }
+    } else {
+        $redirect_url = home_url();
+    }
 
     // Check if the form is submitted
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
@@ -43,7 +58,7 @@ function cac_auth_custom_login_page() {
             if (is_wp_error($user)) {
                 $error_message = $user->get_error_message();
             } else {
-                wp_redirect(home_url());
+                wp_redirect($redirect_url);
                 exit;
             }
         }
@@ -183,7 +198,7 @@ function cac_auth_custom_login_page() {
                     <label for="rememberme">Remember Me</label>
                 </div>
                 <input type="submit" name="wp-submit" id="wp-submit" value="Log In">
-                <input type="hidden" name="redirect_to" value="<?php echo esc_url(home_url()); ?>">
+                <input type="hidden" name="redirect_to" value="<?php echo esc_url($redirect_url); ?>">
             </form>
             <div class="login-separator">
                 <span>or</span>
