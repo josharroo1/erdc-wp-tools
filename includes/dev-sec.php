@@ -162,3 +162,51 @@ function log_csrf_event($status, $token) {
     error_log($log_entry);
 }
 }
+/**
+ * Define the Default Logo URL for the Favicon
+ * Make sure that CAC_AUTH_PLUGIN_URL is defined and points to your plugin's URL
+ */
+$default_logo_url = CAC_AUTH_PLUGIN_URL . 'includes/assets/images/default-logo.png';
+
+/**
+ * Remove WordPress Branding and Language from Admin Backend
+ * @SecurityMitigation
+ */
+function remove_wordpress_branding() {
+    global $default_logo_url; // Access the global variable within the function
+
+    // 1. Remove WordPress logo from the admin bar
+    add_action('admin_bar_menu', function($wp_admin_bar) {
+        $wp_admin_bar->remove_node('wp-logo');
+    }, 999);
+
+    // 2. Customize the admin footer text
+    add_filter('admin_footer_text', function() {
+        return 'Designed for you by <a href="https://media.erdc.dren.mil" target="_blank">The ERDC Media Team</a>.';
+    });
+
+    // 3. Remove WordPress version from meta tags
+    add_filter('the_generator', '__return_empty_string');
+
+    // 4. Remove 'Powered by WordPress' from dashboard
+    remove_action('welcome_panel', 'wp_welcome_panel');
+
+    // 5. Remove dashboard widgets that reveal WordPress
+    add_action('wp_dashboard_setup', function() {
+        remove_meta_box('dashboard_right_now', 'dashboard', 'normal'); // Right Now
+        remove_meta_box('dashboard_activity', 'dashboard', 'normal'); // Activity
+        remove_meta_box('dashboard_quick_press', 'dashboard', 'side'); // Quick Press
+        remove_meta_box('dashboard_primary', 'dashboard', 'side'); // WordPress Events and News
+        // Add more remove_meta_box calls if needed
+    });
+
+    // 6. Remove WordPress favicon and add custom favicon
+    add_action('admin_head', function() use ($default_logo_url) {
+        // Remove WordPress favicon
+        remove_action('admin_head', 'wp_site_icon', 99);
+        
+        // Add your custom favicon
+        echo '<link rel="icon" href="' . esc_url($default_logo_url) . '" />';
+    });
+}
+add_action('init', 'remove_wordpress_branding');
