@@ -291,16 +291,8 @@ function cac_auth_custom_forgot_password_page() {
                         // Construct the reset URL
                         $reset_url = network_site_url("wp-login.php?action=rp&key=$reset_key&login=" . rawurlencode($user->user_login), 'login');
 
-                        // Prepare email
-                        $message = __('Someone requested that the password be reset for the following account:') . "\r\n\r\n";
-                        $message .= network_home_url('/') . "\r\n\r\n";
-                        $message .= sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
-                        $message .= __('If this was a mistake, just ignore this email and nothing will happen.') . "\r\n\r\n";
-                        $message .= __('To reset your password, visit the following address:') . "\r\n\r\n";
-                        $message .= '<' . $reset_url . ">\r\n";
-
-                        // Send email
-                        $sent = wp_mail($user_email, __('Password Reset Request'), $message);
+                        // Send the custom HTML email
+                        $sent = cac_auth_send_custom_password_reset_email($user, $reset_url);
 
                         if ($sent) {
                             $success_message = 'A password reset link has been sent to your email address.';
@@ -469,40 +461,42 @@ function cac_auth_custom_reset_password_page() {
         // Verify nonce for security
         if (!isset($_POST['cac_auth_reset_password_nonce']) || !wp_verify_nonce($_POST['cac_auth_reset_password_nonce'], 'cac_auth_reset_password_action')) {
             $error_message = 'Invalid security token.';
+            error_log('CAC Auth: Invalid security token in password reset.');
         } else {
             // Sanitize and validate passwords
             $pass1 = $_POST['pass1'];
             $pass2 = $_POST['pass2'];
             $post_key = sanitize_text_field($_POST['key']);
             $post_login = sanitize_user($_POST['login']);
-
+    
             if (empty($pass1) || empty($pass2)) {
                 $error_message = 'Please enter both password fields.';
             } elseif ($pass1 !== $pass2) {
                 $error_message = 'Passwords do not match.';
-            } elseif (strlen($pass1) < 8) {
-                $error_message = 'Password must be at least 8 characters long.';
+            } elseif (strlen($pass1) < 12) {  // Increased minimum length to 12 for better security
+                $error_message = 'Password must be at least 12 characters long.';
             } else {
                 // Retrieve the user by login
-                $user = get_user_by('login', $post_login);
-                if (!$user) {
-                    $error_message = 'Invalid username.';
-                } else {
-                    // Validate the reset key
-                    $valid_key = check_password_reset_key($post_key, $user->user_login);
-                    if (is_wp_error($valid_key)) {
-                        if ($valid_key->get_error_code() === 'invalid_key') {
-                            $error_message = 'Invalid reset key.';
-                        } elseif ($valid_key->get_error_code() === 'expired_key') {
-                            $error_message = 'Reset key has expired.';
-                        } else {
-                            $error_message = 'Invalid reset key.';
-                        }
+                $user = check_password_reset_key($post_key, $post_login);
+                if (is_wp_error($user)) {
+                    if ($user->get_error_code() === 'invalid_key') {
+                        $error_message = 'Invalid reset key.';
+                    } elseif ($user->get_error_code() === 'expired_key') {
+                        $error_message = 'Reset key has expired.';
                     } else {
-                        // Reset the password
-                        reset_password($user, $post_key, $pass1);
+                        $error_message = 'Invalid reset key.';
+                    }
+                    error_log('CAC Auth: Invalid reset key - ' . $user->get_error_message());
+                } else {
+                    // Reset the password
+                    $result = reset_password($user, $pass1);
+                    if (is_wp_error($result)) {
+                        $error_message = 'Failed to reset password: ' . $result->get_error_message();
+                        error_log('CAC Auth: Failed to reset password - ' . $result->get_error_message());
+                    } else {
                         $success_message = 'Your password has been reset successfully. You can now <a href="' . esc_url(wp_login_url()) . '">log in</a> with your new password.';
-
+                        error_log('CAC Auth: Password reset successful for user ' . $post_login);
+    
                         // Redirect based on plugin settings after 5 seconds
                         ?>
                         <script>
@@ -532,7 +526,7 @@ function cac_auth_custom_reset_password_page() {
 
     // Custom Reset Password page HTML
     ?>
-    <!DOCTYPE html>
+     <!DOCTYPE html>
     <html <?php language_attributes(); ?>>
     <head>
         <meta charset="<?php bloginfo('charset'); ?>">
@@ -645,37 +639,32 @@ function cac_auth_custom_reset_password_page() {
             .login-links a:hover {
                 text-decoration: underline;
             }
+            #password-strength {
+                margin-bottom: 0px;
+                margin-top: 5px;
+                font-weight: bold;
+            }
+            .very-weak { color: #ff0000; }
+            .weak { color: #ff4500; }
+            .medium { color: #ffa500; }
+            .strong { color: #9acd32; }
+            .very-strong { color: #006400; }
+            #password-strength-meter {
+                width: 100%;
+                height: 15px;
+                margin-top: 5px;
+                background-color: #f0f0f0;
+                margin-bottom: 25px;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+            #password-strength-meter div {
+                height: 100%;
+                width: 0;
+                transition: width 0.3s ease-in-out;
+            }
         </style>
-            <script>
-        // Password Strength Meter JavaScript
-        document.addEventListener('DOMContentLoaded', function() {
-            var pass1 = document.getElementById('pass1');
-            var strengthDiv = document.getElementById('password-strength');
-
-            pass1.addEventListener('input', function() {
-                var strength = wp.passwordStrength.meter(pass1.value, null, 'password');
-                var strengthText = '';
-                switch(strength) {
-                    case 0:
-                    case 1:
-                        strengthText = 'Weak';
-                        strengthDiv.style.color = '#c00';
-                        break;
-                    case 2:
-                        strengthText = 'Medium';
-                        strengthDiv.style.color = '#e6b800';
-                        break;
-                    case 3:
-                    case 4:
-                        strengthText = 'Strong';
-                        strengthDiv.style.color = '#46a049';
-                        break;
-                }
-                strengthDiv.textContent = 'Password Strength: ' + strengthText;
-            });
-        });
-    </script>
-    </head>
+            </head>
     <body>
         <div class="login-container">
             <div class="login-logo">
@@ -686,19 +675,18 @@ function cac_auth_custom_reset_password_page() {
                 echo '<div class="login-error">' . esc_html($error_message) . '</div>';
             }
             if (!empty($success_message)) {
-                echo '<div class="login-success">' . $success_message . '</div>'; // Allow HTML in success message
+                echo '<div class="login-success">' . $success_message . '</div>';
             }
 
-            // Only show the form if there's no success message
             if (empty($success_message)) :
             ?>
             <form name="resetpasswordform" id="cac-reset-password-form" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
                 <?php wp_nonce_field('cac_auth_reset_password_action', 'cac_auth_reset_password_nonce'); ?>
                 <input type="password" name="pass1" id="pass1" placeholder="New Password" required>
-                <div id="password-strength">Password Strength: </div>
                 <input type="password" name="pass2" id="pass2" placeholder="Confirm New Password" required>
+                <div id="password-strength">Password Strength: <span></span></div>
+                <div id="password-strength-meter"><div></div></div>
                 <input type="submit" name="wp-submit" id="wp-submit" value="Reset Password">
-                <input type="hidden" name="action" value="resetpass">
                 <input type="hidden" name="key" value="<?php echo esc_attr($key); ?>">
                 <input type="hidden" name="login" value="<?php echo esc_attr($login); ?>">
             </form>
@@ -707,6 +695,144 @@ function cac_auth_custom_reset_password_page() {
                 <a href="<?php echo esc_url(wp_login_url()); ?>">Back to Login</a>
             </div>
         </div>
+        <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cache DOM elements for better performance
+    const passwordInput = document.getElementById('pass1');
+    const confirmPasswordInput = document.getElementById('pass2');
+    const strengthDisplay = document.querySelector('#password-strength span');
+    const strengthMeter = document.querySelector('#password-strength-meter div');
+    const submitButton = document.getElementById('wp-submit');
+
+    // Configuration for password strength criteria
+    const PASSWORD_CONFIG = {
+        minLength: 8,
+        maxLength: 32,
+        patterns: {
+            lowercase: /[a-z]/,
+            uppercase: /[A-Z]/,
+            numeric: /\d/,
+            specialChar: /[^a-zA-Z\d]/,
+            repeatedChars: /(.)\1{2,}/, // Three or more repeated characters
+            sequentialChars: /abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/i,
+        },
+        commonPasswords: ['password', '123456', 'qwerty', 'admin'],
+        scoring: {
+            length: 25,
+            lowercase: 10,
+            uppercase: 10,
+            numeric: 10,
+            specialChar: 10,
+            noRepeatedChars: 10,
+            noSequentialChars: 10,
+            noCommonPasswords: 10,
+        },
+        strengthLevels: [
+            { score: 80, label: 'Very Strong', class: 'very-strong', width: '100%' },
+            { score: 60, label: 'Strong', class: 'strong', width: '80%' },
+            { score: 40, label: 'Medium', class: 'medium', width: '60%' },
+            { score: 20, label: 'Weak', class: 'weak', width: '40%' },
+            { score: 0, label: 'Very Weak', class: 'very-weak', width: '20%' }
+        ],
+        minRequiredScore: 40 // Minimum score required to enable submission
+    };
+
+    /**
+     * Calculates the strength score of the given password based on predefined criteria.
+     * @param {string} password - The password to evaluate.
+     * @returns {number} - The calculated strength score.
+     */
+    function calculatePasswordScore(password) {
+        let score = 0;
+
+        // Length scoring
+        if (password.length >= PASSWORD_CONFIG.minLength) {
+            const lengthScore = password.length >= PASSWORD_CONFIG.maxLength
+                ? PASSWORD_CONFIG.scoring.length
+                : Math.floor(((password.length - PASSWORD_CONFIG.minLength) / (PASSWORD_CONFIG.maxLength - PASSWORD_CONFIG.minLength)) * PASSWORD_CONFIG.scoring.length);
+            score += lengthScore;
+        } else {
+            // If password is shorter than minLength, no need to evaluate further
+            return 0;
+        }
+
+        // Character type scoring
+        if (PASSWORD_CONFIG.patterns.lowercase.test(password)) score += PASSWORD_CONFIG.scoring.lowercase;
+        if (PASSWORD_CONFIG.patterns.uppercase.test(password)) score += PASSWORD_CONFIG.scoring.uppercase;
+        if (PASSWORD_CONFIG.patterns.numeric.test(password)) score += PASSWORD_CONFIG.scoring.numeric;
+        if (PASSWORD_CONFIG.patterns.specialChar.test(password)) score += PASSWORD_CONFIG.scoring.specialChar;
+
+        // Additional checks
+        if (!PASSWORD_CONFIG.patterns.repeatedChars.test(password)) {
+            score += PASSWORD_CONFIG.scoring.noRepeatedChars;
+        }
+
+        if (!PASSWORD_CONFIG.patterns.sequentialChars.test(password)) {
+            score += PASSWORD_CONFIG.scoring.noSequentialChars;
+        }
+
+        const isCommon = PASSWORD_CONFIG.commonPasswords.some(commonPwd => password.toLowerCase().includes(commonPwd));
+        if (!isCommon) {
+            score += PASSWORD_CONFIG.scoring.noCommonPasswords;
+        }
+
+        return score;
+    }
+
+    /**
+     * Determines the strength level based on the score.
+     * @param {number} score - The password strength score.
+     * @returns {object} - The strength level object containing label, class, and width.
+     */
+    function getStrengthLevel(score) {
+        for (let level of PASSWORD_CONFIG.strengthLevels) {
+            if (score >= level.score) {
+                return level;
+            }
+        }
+        // Default to the lowest strength level
+        return PASSWORD_CONFIG.strengthLevels[PASSWORD_CONFIG.strengthLevels.length - 1];
+    }
+
+    /**
+     * Updates the password strength meter and messages based on the current password.
+     */
+    function updatePasswordStrength() {
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        const score = calculatePasswordScore(password);
+
+        // Determine strength level
+        const strengthLevel = getStrengthLevel(score);
+
+        // Update strength display
+        strengthDisplay.textContent = strengthLevel.label;
+        strengthDisplay.className = strengthLevel.class;
+        strengthMeter.style.width = strengthLevel.width;
+        strengthMeter.style.backgroundColor = getComputedStyle(strengthDisplay).color;
+
+        // Validate password confirmation
+        if (confirmPassword) {
+            if (password !== confirmPassword) {
+                strengthDisplay.textContent = 'Passwords do not match';
+                strengthDisplay.className = 'very-weak';
+                strengthMeter.style.width = '0';
+                submitButton.disabled = true;
+                return;
+            }
+        }
+
+        // Enable or disable submit button based on strength and confirmation
+        submitButton.disabled = score < PASSWORD_CONFIG.minRequiredScore;
+    }
+
+    // Event listeners for real-time validation
+    passwordInput.addEventListener('input', updatePasswordStrength);
+    confirmPasswordInput.addEventListener('input', updatePasswordStrength);
+});
+</script>
+
+
         <?php wp_footer(); ?>
     </body>
     </html>
@@ -715,64 +841,86 @@ function cac_auth_custom_reset_password_page() {
 }
 
 /**
- * Customize Password Reset Email Content
+ * Sends a custom HTML password reset email.
  *
- * @param string $message The email message.
- * @param string $key     The password reset key.
- * @param string $user_login The user's login name.
- * @param WP_User $user_data The WP_User object.
- * @return string Modified email message.
+ * @param WP_User $user The user object.
+ * @param string  $reset_url The password reset URL.
+ * @return bool Whether the email was sent successfully.
  */
-function cac_auth_custom_password_reset_email($message, $key, $user_login, $user_data) {
-    // Construct the reset URL
-    $reset_url = network_site_url("wp-login.php?action=rp&key=$key&login=" . rawurlencode($user_login), 'login');
+function cac_auth_send_custom_password_reset_email($user, $reset_url) {
+    $custom_logo_url = get_option('cac_auth_custom_login_logo', '');
+    $default_logo_url = CAC_AUTH_PLUGIN_URL . 'includes/assets/images/default-logo.png';
+    $logo_url = $custom_logo_url ? $custom_logo_url : $default_logo_url;
 
-    // Customize the email content
-    $message = sprintf(__('Hi %s,'), $user_login) . "\r\n\r\n";
-    $message .= __('You requested a password reset for your account at ') . get_bloginfo('name') . " (" . network_home_url('/') . ").\r\n\r\n";
-    $message .= __('If this was a mistake, just ignore this email and nothing will happen.') . "\r\n\r\n";
-    $message .= __('To reset your password, visit the following address:') . "\r\n\r\n";
-    $message .= '<' . $reset_url . ">\r\n\r\n";
-    $message .= __('Thanks!') . "\r\n";
+    $subject = sprintf(__('Password Reset Request for %s'), get_bloginfo('name'));
 
-    return $message;
+    $html_message = '
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Reset Request</title>
+    </head>
+    <body style="font-family: Arial, sans-serif; font-size: 14px; color: #333333; line-height: 1.6; margin: 0; padding: 0; background-color: #f0f2f5;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f0f2f5;">
+            <tr>
+                <td align="center" style="padding: 20px 0;">
+                    <table cellpadding="0" cellspacing="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0px 2px 6px 0px #0000001c;">
+                        <tr>
+                            <td style="padding: 40px;">
+                                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                    <tr>
+                                        <td align="center" style="padding-bottom: 20px;">
+                                            <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_bloginfo('name')) . ' Logo" style="max-width: 200px; height: auto;">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 16px; color: #333333;">
+                                            <p>Hi ' . esc_html($user->user_login) . ',</p>
+                                            <p>You recently requested to reset your password for your account at <strong>' . esc_html(get_bloginfo('name')) . '</strong>.</p>
+                                            <p>If this was a mistake, just ignore this email and no changes will be made.</p>
+                                            <p>To reset your password, click the button below:</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding: 20px 0;">
+                                            <a href="' . esc_url($reset_url) . '" style="display: inline-block; padding: 12px 24px; background-color: #1e1e1e; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold;">Reset Password</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 11px; color: #999999;">
+                                            <p>If the button above does not work, copy and paste the following link into your browser:</p>
+                                            <p><a href="' . esc_url($reset_url) . '" style="color: #1e1e1e; text-decoration: underline;">' . esc_html($reset_url) . '</a></p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-top: 30px; font-size: 12px; color: #999999;">
+                                            <p>Thanks,<br>' . esc_html(get_bloginfo('name')) . ' Team</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>';
+
+    add_filter('wp_mail_content_type', 'cac_auth_set_html_content_type');
+    $sent = wp_mail($user->user_email, $subject, $html_message);
+    remove_filter('wp_mail_content_type', 'cac_auth_set_html_content_type');
+
+    return $sent;
 }
-add_filter('retrieve_password_message', 'cac_auth_custom_password_reset_email', 10, 4);
 
 /**
- * Redirect User After Successful Password Reset
+ * Sets the email content type to HTML.
  *
- * @param WP_User $user The WP_User object.
- * @param string  $new_pass The new password.
+ * @return string The content type.
  */
-function cac_auth_after_password_reset($user, $new_pass) {
-    $redirect_page = get_option('cac_auth_redirect_page', 'wp-admin');
-
-    if ($redirect_page === 'wp-admin') {
-        wp_safe_redirect(admin_url());
-    } elseif (!empty($redirect_page)) {
-        $page = get_post($redirect_page);
-        if ($page) {
-            wp_safe_redirect(get_permalink($page->ID));
-        } else {
-            wp_safe_redirect(home_url());
-        }
-    } else {
-        wp_safe_redirect(home_url());
-    }
-    exit;
+function cac_auth_set_html_content_type() {
+    return 'text/html';
 }
-add_action('password_reset', 'cac_auth_after_password_reset', 10, 2);
-
-/**
- * Enqueue Password Strength Scripts on Custom Reset Password Page
- */
-function cac_auth_enqueue_password_strength_scripts() {
-    // Only enqueue on custom reset password page
-    global $pagenow, $action;
-    if ($pagenow === 'wp-login.php' && ($action === 'rp' || $action === 'resetpass')) {
-        wp_enqueue_script('zxcvbn');
-        wp_enqueue_script('password-strength-meter');
-    }
-}
-add_action('wp_enqueue_scripts', 'cac_auth_enqueue_password_strength_scripts');
