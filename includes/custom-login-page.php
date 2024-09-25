@@ -408,7 +408,7 @@ function cac_auth_custom_forgot_password_page() {
     <body>
         <div class="login-container">
             <div class="login-logo">
-                <img src="<?php echo esc_url(get_option('cac_auth_custom_login_logo', CAC_AUTH_PLUGIN_URL . 'assets/images/default-logo.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+                <img src="<?php echo esc_url(get_option('cac_auth_custom_login_logo', CAC_AUTH_PLUGIN_URL . 'includes/assets/images/default-logo.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
             </div>
             <?php
             if (!empty($error_message)) {
