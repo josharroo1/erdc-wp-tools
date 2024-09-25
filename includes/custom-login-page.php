@@ -97,7 +97,7 @@ function cac_auth_custom_login_page() {
                 margin-bottom: 30px;
             }
             .login-logo img {
-                max-width: 200px;
+                max-width: 145px;
                 height: auto;
             }
             #cac-login-form {
@@ -181,12 +181,21 @@ function cac_auth_custom_login_page() {
             .login-links a:hover {
                 text-decoration: underline;
             }
+            .login-logo-text {
+                display: block;
+                margin-top: 10px;
+                font-size: 15px;
+                color: #a29999;
+                font-weight: 600;
+                font-style: italic;
+            }
         </style>
     </head>
     <body>
         <div class="login-container">
             <div class="login-logo">
                 <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+                <span class="login-logo-text"><?php echo esc_attr(get_bloginfo('name')); ?> Administration</span>
             </div>
             <?php
             if (!empty($error_message)) {
@@ -338,7 +347,7 @@ function cac_auth_custom_forgot_password_page() {
                 margin-bottom: 30px;
             }
             .login-logo img {
-                max-width: 200px;
+                max-width: 145px;
                 height: auto;
             }
             #cac-forgot-password-form {
@@ -395,12 +404,21 @@ function cac_auth_custom_forgot_password_page() {
             .login-links a:hover {
                 text-decoration: underline;
             }
+            .login-logo-text {
+                display: block;
+                margin-top: 10px;
+                font-size: 15px;
+                color: #a29999;
+                font-weight: 600;
+                font-style: italic;
+            }
         </style>
     </head>
     <body>
         <div class="login-container">
             <div class="login-logo">
                 <img src="<?php echo esc_url(get_option('cac_auth_custom_login_logo', CAC_AUTH_PLUGIN_URL . 'includes/assets/images/default-logo.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+                <span class="login-logo-text"><?php echo esc_attr(get_bloginfo('name')); ?> Administration</span>
             </div>
             <?php
             if (!empty($error_message)) {
@@ -564,7 +582,7 @@ function cac_auth_custom_reset_password_page() {
             }
 
             .login-logo img {
-                max-width: 200px;
+                max-width: 145px;
                 height: auto;
             }
 
@@ -663,12 +681,21 @@ function cac_auth_custom_reset_password_page() {
                 width: 0;
                 transition: width 0.3s ease-in-out;
             }
+            .login-logo-text {
+                display: block;
+                margin-top: 10px;
+                font-size: 15px;
+                color: #a29999;
+                font-weight: 600;
+                font-style: italic;
+            }
         </style>
             </head>
     <body>
         <div class="login-container">
             <div class="login-logo">
                 <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+                <span class="login-logo-text"><?php echo esc_attr(get_bloginfo('name')); ?> Administration</span>
             </div>
             <?php
             if (!empty($error_message)) {
@@ -872,7 +899,7 @@ function cac_auth_send_custom_password_reset_email($user, $reset_url) {
                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                     <tr>
                                         <td align="center" style="padding-bottom: 20px;">
-                                            <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_bloginfo('name')) . ' Logo" style="max-width: 200px; height: auto;">
+                                            <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_bloginfo('name')) . ' Logo" style="max-width: 145px; height: auto;">
                                         </td>
                                     </tr>
                                     <tr>
