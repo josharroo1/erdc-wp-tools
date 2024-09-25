@@ -165,6 +165,10 @@ function cac_auth_custom_login_page() {
                 padding: 12px;
                 border-radius: 6px;
             }
+            .login-error a {
+                color: #484848;
+                text-decoration: underline;
+            }
             .login-links {
                 text-align: center;
                 margin-top: 20px;
@@ -241,3 +245,191 @@ function cac_auth_login_errors($errors) {
     return $errors;
 }
 add_filter('wp_login_errors', 'cac_auth_login_errors');
+
+function cac_auth_custom_forgot_password_page() {
+    // Check if user is already logged in
+    if (is_user_logged_in()) {
+        wp_redirect(home_url());
+        exit;
+    }
+
+    // Define the plugin URL constant if not already defined
+    if (!defined('CAC_AUTH_PLUGIN_URL')) {
+        define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
+    }
+
+    $cac_auth_url = CAC_AUTH_PLUGIN_URL . 'cac-auth-endpoint.php';
+    $error_message = '';
+    $success_message = '';
+
+    // Handle form submission
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_email'])) {
+        // Verify nonce for security
+        if (!isset($_POST['cac_auth_forgot_password_nonce']) || !wp_verify_nonce($_POST['cac_auth_forgot_password_nonce'], 'cac_auth_forgot_password_action')) {
+            $error_message = 'Invalid security token.';
+        } else {
+            // Sanitize email input
+            $user_email = sanitize_email($_POST['user_email']);
+
+            if (empty($user_email)) {
+                $error_message = 'Please enter your email address.';
+            } elseif (!is_email($user_email)) {
+                $error_message = 'Please enter a valid email address.';
+            } else {
+                // Attempt to retrieve the user by email
+                $user = get_user_by('email', $user_email);
+
+                if (!$user) {
+                    $error_message = 'There is no user registered with that email address.';
+                } else {
+                    // Generate a password reset key
+                    $reset_key = get_password_reset_key($user);
+
+                    if (is_wp_error($reset_key)) {
+                        $error_message = 'An error occurred while generating a reset link. Please try again.';
+                    } else {
+                        // Construct the reset URL
+                        $reset_url = network_site_url("wp-login.php?action=rp&key=$reset_key&login=" . rawurlencode($user->user_login), 'login');
+
+                        // Prepare email
+                        $message = __('Someone requested that the password be reset for the following account:') . "\r\n\r\n";
+                        $message .= network_home_url('/') . "\r\n\r\n";
+                        $message .= sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
+                        $message .= __('If this was a mistake, just ignore this email and nothing will happen.') . "\r\n\r\n";
+                        $message .= __('To reset your password, visit the following address:') . "\r\n\r\n";
+                        $message .= '<' . $reset_url . ">\r\n";
+
+                        // Send email
+                        $sent = wp_mail($user_email, __('Password Reset Request'), $message);
+
+                        if ($sent) {
+                            $success_message = 'A password reset link has been sent to your email address.';
+                        } else {
+                            $error_message = 'Failed to send password reset email. Please try again later.';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Custom forgot password page HTML
+    ?>
+    <!DOCTYPE html>
+    <html <?php language_attributes(); ?>>
+    <head>
+        <meta charset="<?php bloginfo('charset'); ?>">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?php echo esc_html(get_bloginfo('name')); ?> - Forgot Password</title>
+        <?php wp_head(); ?>
+        <style>
+            /* Reuse the same CSS styles as the login page for consistency */
+            body {
+                background-color: #f0f2f5;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .login-container {
+                background-color: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+                padding: 40px;
+                width: 100%;
+                max-width: 400px;
+            }
+            .login-logo {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+            .login-logo img {
+                max-width: 200px;
+                height: auto;
+            }
+            #cac-forgot-password-form {
+                display: flex;
+                flex-direction: column;
+            }
+            #cac-forgot-password-form input[type="email"] {
+                border: 1px solid #dddfe2;
+                border-radius: 6px;
+                font-size: 16px;
+                padding: 14px 16px;
+                margin-bottom: 15px;
+            }
+            #cac-forgot-password-form input[type="submit"] {
+                background-color: #1e1e1e;
+                border: none;
+                border-radius: 6px;
+                color: #ffffff;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+                padding: 14px 16px;
+                transition: background-color 0.3s;
+            }
+            #cac-forgot-password-form input[type="submit"]:hover {
+                background-color: #333333;
+                color: white;
+            }
+            .login-error {
+                background-color: #ffebe8;
+                border: 1px solid #c00;
+                color: #333;
+                margin-bottom: 16px;
+                padding: 12px;
+                border-radius: 6px;
+            }
+            .login-success {
+                background-color: #e6ffed;
+                border: 1px solid #46a049;
+                color: #333;
+                margin-bottom: 16px;
+                padding: 12px;
+                border-radius: 6px;
+            }
+            .login-links {
+                text-align: center;
+                margin-top: 20px;
+                font-size: 14px;
+            }
+            .login-links a {
+                color: #1e1e1e;
+                text-decoration: none;
+            }
+            .login-links a:hover {
+                text-decoration: underline;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <div class="login-logo">
+                <img src="<?php echo esc_url(get_option('cac_auth_custom_login_logo', CAC_AUTH_PLUGIN_URL . 'assets/images/default-logo.png')); ?>" alt="<?php echo esc_attr(get_bloginfo('name')); ?> Logo">
+            </div>
+            <?php
+            if (!empty($error_message)) {
+                echo '<div class="login-error">' . esc_html($error_message) . '</div>';
+            }
+            if (!empty($success_message)) {
+                echo '<div class="login-success">' . esc_html($success_message) . '</div>';
+            }
+            ?>
+            <form name="forgotpasswordform" id="cac-forgot-password-form" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
+                <?php wp_nonce_field('cac_auth_forgot_password_action', 'cac_auth_forgot_password_nonce'); ?>
+                <input type="email" name="user_email" id="user_email" placeholder="Email Address" required>
+                <input type="submit" name="wp-submit" id="wp-submit" value="Reset Password">
+            </form>
+            <div class="login-links">
+                <a href="<?php echo esc_url(wp_login_url()); ?>">Back to Login</a>
+            </div>
+        </div>
+        <?php wp_footer(); ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
