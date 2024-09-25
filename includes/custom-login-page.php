@@ -186,7 +186,7 @@ function cac_auth_custom_login_page() {
             </div>
             <?php
             if (!empty($error_message)) {
-                echo '<div class="login-error">' . esc_html($error_message) . '</div>';
+                echo '<div class="login-error">' . $error_message . '</div>';
             }
             ?>
             <form name="loginform" id="cac-login-form" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
