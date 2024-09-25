@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.6.6
+ * Version: 4.6.7
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.6.6');
+define('CAC_AUTH_PLUGIN_VERSION', '4.6.7');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -204,7 +204,7 @@ add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');
 // Modify the existing cac_auth_custom_login_page_init function
 function cac_auth_custom_login_page_init() {
     global $pagenow;
-    if ($pagenow == 'wp-login.php') {
+    if ($pagenow === 'wp-login.php') {
         // Allow standard WordPress actions to work
         $allowed_actions = array('logout', 'lostpassword', 'rp', 'resetpass');
         if (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions)) {
@@ -213,33 +213,3 @@ function cac_auth_custom_login_page_init() {
     }
 }
 add_action('init', 'cac_auth_custom_login_page_init');
-
-// Add this new function to handle login authentication
-function cac_auth_authenticate($user, $username, $password) {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
-        $creds = array(
-            'user_login'    => $username,
-            'user_password' => $password,
-            'remember'      => isset($_POST['rememberme']),
-        );
-
-        $user = wp_authenticate($username, $password);
-
-        if (is_wp_error($user)) {
-            // If authentication failed, let WordPress handle the error
-            return $user;
-        } else {
-            // If authentication succeeded, log the user in
-            wp_set_auth_cookie($user->ID, isset($_POST['rememberme']));
-            wp_set_current_user($user->ID);
-            do_action('wp_login', $user->user_login, $user);
-
-            // Redirect to the desired page after login
-            wp_redirect(home_url());
-            exit;
-        }
-    }
-
-    return $user;
-}
-add_filter('authenticate', 'cac_auth_authenticate', 30, 3);

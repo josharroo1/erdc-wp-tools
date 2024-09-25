@@ -19,24 +19,33 @@ function cac_auth_custom_login_page() {
     $logo_url = $custom_logo_url ? $custom_logo_url : $default_logo_url;
 
     $cac_auth_url = plugins_url('cac-auth-endpoint.php', dirname(__FILE__));
-    
+
     $error_message = '';
 
     // Check if the form is submitted
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['log'], $_POST['pwd'])) {
-        $creds = array(
-            'user_login'    => wp_unslash($_POST['log']),
-            'user_password' => $_POST['pwd'],
-            'remember'      => isset($_POST['rememberme']),
-        );
-
-        $user = wp_signon($creds, is_ssl());
-
-        if (is_wp_error($user)) {
-            $error_message = $user->get_error_message();
+        // Verify nonce for security
+        if (!isset($_POST['cac_auth_login_nonce']) || !wp_verify_nonce($_POST['cac_auth_login_nonce'], 'cac_auth_login_action')) {
+            $error_message = 'Invalid security token.';
         } else {
-            wp_redirect(home_url());
-            exit;
+            // Sanitize user input
+            $username = sanitize_user($_POST['log']);
+            $password = $_POST['pwd']; // Passwords should not be sanitized to allow all characters
+
+            $creds = array(
+                'user_login'    => $username,
+                'user_password' => $password,
+                'remember'      => isset($_POST['rememberme']),
+            );
+
+            $user = wp_signon($creds, is_ssl());
+
+            if (is_wp_error($user)) {
+                $error_message = $user->get_error_message();
+            } else {
+                wp_redirect(home_url());
+                exit;
+            }
         }
     }
 
@@ -50,6 +59,7 @@ function cac_auth_custom_login_page() {
         <title><?php echo esc_html(get_bloginfo('name')); ?> - Login</title>
         <?php wp_head(); ?>
         <style>
+            /* Your existing CSS styles */
             body {
                 background-color: #f0f2f5;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
@@ -164,7 +174,8 @@ function cac_auth_custom_login_page() {
                 echo '<div class="login-error">' . esc_html($error_message) . '</div>';
             }
             ?>
-            <form name="loginform" id="cac-login-form" action="<?php echo esc_url(wp_login_url()); ?>" method="post">
+            <form name="loginform" id="cac-login-form" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>" method="post">
+                <?php wp_nonce_field('cac_auth_login_action', 'cac_auth_login_nonce'); ?>
                 <input type="text" name="log" id="user_login" placeholder="Username" required>
                 <input type="password" name="pwd" id="user_pass" placeholder="Password" required>
                 <div class="login-remember">
@@ -199,10 +210,10 @@ function cac_auth_login_errors($errors) {
 
     $error_codes = $errors->get_error_codes();
     $custom_errors = array(
-        'invalid_username' => 'Invalid username or password.',
+        'invalid_username'   => 'Invalid username or password.',
         'incorrect_password' => 'Invalid username or password.',
-        'empty_username' => 'Please enter a username.',
-        'empty_password' => 'Please enter a password.',
+        'empty_username'     => 'Please enter a username.',
+        'empty_password'     => 'Please enter a password.',
     );
 
     foreach ($error_codes as $code) {
