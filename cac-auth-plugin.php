@@ -3,7 +3,7 @@
  * Plugin Name: ERDC WP Tools
  * Plugin URI: https://github.com/josharroo1/erdc-wp-tools
  * Description: A suite of tools for managing WordPress within USACE ERDC.
- * Version: 4.7.0
+ * Version: 4.7.1
  * Author: Josh Arruda
  * Author URI: https://github.com/josharroo1/erdc-wp-tools
  * License: GPL-2.0+
@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 }
 
 // Define plugin constants
-define('CAC_AUTH_PLUGIN_VERSION', '4.7.0');
+define('CAC_AUTH_PLUGIN_VERSION', '4.7.1');
 define('CAC_AUTH_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('CAC_AUTH_PLUGIN_URL', plugin_dir_url(__FILE__));
 
@@ -202,18 +202,6 @@ register_activation_hook(__FILE__, 'cac_auth_create_download_metrics_table');
 add_action('plugins_loaded', 'cac_auth_create_download_metrics_table');
 
 // Modify the existing cac_auth_custom_login_page_init function
-function cac_auth_custom_login_page_init() {
-    global $pagenow;
-    if ($pagenow === 'wp-login.php') {
-        // Allow standard WordPress actions to work
-        $allowed_actions = array('logout', 'lostpassword', 'rp', 'resetpass');
-        if (!isset($_GET['action']) || !in_array($_GET['action'], $allowed_actions)) {
-            cac_auth_custom_login_page();
-        }
-    }
-}
-add_action('init', 'cac_auth_custom_login_page_init');
-
 function cac_auth_custom_login_page_init() {
     global $pagenow;
     if ($pagenow === 'wp-login.php') {
