@@ -97,7 +97,7 @@ function cac_auth_custom_login_page() {
                 margin-bottom: 30px;
             }
             .login-logo img {
-                max-width: 145px;
+                max-width: 120px;
                 height: auto;
             }
             #cac-login-form {
@@ -347,7 +347,7 @@ function cac_auth_custom_forgot_password_page() {
                 margin-bottom: 30px;
             }
             .login-logo img {
-                max-width: 145px;
+                max-width: 120px;
                 height: auto;
             }
             #cac-forgot-password-form {
@@ -582,7 +582,7 @@ function cac_auth_custom_reset_password_page() {
             }
 
             .login-logo img {
-                max-width: 145px;
+                max-width: 120px;
                 height: auto;
             }
 
@@ -899,7 +899,7 @@ function cac_auth_send_custom_password_reset_email($user, $reset_url) {
                                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                                     <tr>
                                         <td align="center" style="padding-bottom: 20px;">
-                                            <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_bloginfo('name')) . ' Logo" style="max-width: 145px; height: auto;">
+                                            <img src="' . esc_url($logo_url) . '" alt="' . esc_attr(get_bloginfo('name')) . ' Logo" style="max-width: 120px; height: auto;">
                                         </td>
                                     </tr>
                                     <tr>
