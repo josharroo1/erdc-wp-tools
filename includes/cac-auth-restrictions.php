@@ -77,7 +77,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
     );
 
     // Shortcode example (optional)
-    $shortcode_example = '[protected_download id="' . esc_attr($post->ID) . '"]';
+    $shortcode_example = '[protected_download id="' . esc_attr($post->ID) . '"]<br><br>[protected_download url="' . esc_url(get_permalink($post->ID)) . '"]';
     $form_fields['cac_shortcode_example'] = array(
         'label' => 'Download Link Shortcode',
         'input' => 'html',
@@ -263,14 +263,27 @@ function cac_auth_redirect_after_login() {
 }
 add_action('wp_login', 'cac_auth_redirect_after_login');
 
+function cac_auth_get_attachment_id_from_url($url) {
+    global $wpdb;
+    $attachment = $wpdb->get_col($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE guid='%s';", $url ));
+    return $attachment ? $attachment[0] : 0;
+}
+
 function cac_auth_protected_download_shortcode($atts) {
     $atts = shortcode_atts(array(
         'id' => 0,
+        'url' => '',
     ), $atts, 'protected_download');
 
     $attachment_id = intval($atts['id']);
+
+    // If no ID is provided, try to get it from the URL
+    if (!$attachment_id && !empty($atts['url'])) {
+        $attachment_id = cac_auth_get_attachment_id_from_url($atts['url']);
+    }
+
     if (!$attachment_id) {
-        return esc_html__('Invalid attachment ID', 'your-text-domain');
+        return esc_html__('Invalid attachment ID or URL', 'your-text-domain');
     }
 
     $download_url = cac_auth_get_protected_download_url($attachment_id);
