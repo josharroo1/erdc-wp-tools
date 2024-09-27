@@ -83,7 +83,7 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
         'label' => 'Download Link Shortcode',
         'input' => 'html',
         'html' => '<input type="text" value="' . esc_attr($shortcode_example) . '" readonly onclick="this.select();" style="width: 100%;" />' . '<br>' . '<input type="text" value="' . esc_attr($shortcode_example_url) . '" readonly onclick="this.select();" style="width: 100%;" />',
-        'helps' => 'Use this shortcode to add the CAC protected download link to your content.',
+        'helps' => 'Use one of these shortcodes to add the CAC protected download link to your content.',
     );
 
     return $form_fields;
