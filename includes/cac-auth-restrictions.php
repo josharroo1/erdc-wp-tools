@@ -77,11 +77,12 @@ function cac_auth_add_media_protection_field($form_fields, $post) {
     );
 
     // Shortcode example (optional)
-    $shortcode_example = '[protected_download id="' . esc_attr($post->ID) . '"]<br><br>[protected_download url="' . esc_url(get_permalink($post->ID)) . '"]';
+    $shortcode_example = '[protected_download id="' . esc_attr($post->ID) . '"]';
+    $shortcode_example_url = '[protected_download url="' . esc_url(get_permalink($post->ID)) . '"]';
     $form_fields['cac_shortcode_example'] = array(
         'label' => 'Download Link Shortcode',
         'input' => 'html',
-        'html' => '<input type="text" value="' . esc_attr($shortcode_example) . '" readonly onclick="this.select();" style="width: 100%;" />',
+        'html' => '<input type="text" value="' . esc_attr($shortcode_example) . '" readonly onclick="this.select();" style="width: 100%;" />' . '<br>' . '<input type="text" value="' . esc_attr($shortcode_example_url) . '" readonly onclick="this.select();" style="width: 100%;" />',
         'helps' => 'Use this shortcode to add the CAC protected download link to your content.',
     );
 
